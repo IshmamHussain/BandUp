@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reading test · BandUp IELTS</title>
+  <script>if(localStorage.theme==='dark'||(!('theme' in localStorage)&&matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.classList.add('dark')</script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/js/tw-config.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/custom.css">
+</head>
+<body class="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 antialiased">
+
+  <div class="md:pl-64 min-h-screen flex flex-col">
+    <header id="topbar"></header>
+
+    <!-- Exam bar: back link, title, timer, navigator -->
+    <div class="sticky top-16 z-20 bg-white/90 dark:bg-slate-950/90 backdrop-blur border-b border-slate-200 dark:border-slate-800">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 py-2.5 flex flex-wrap items-center gap-x-4 gap-y-2">
+        <a href="/pages/reading.html" class="flex items-center gap-1 text-sm font-medium text-slate-500 hover:text-brand-600 dark:hover:text-brand-400 transition">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+          Passages
+        </a>
+        <p id="test-title" class="font-display font-semibold text-sm sm:text-base truncate flex-1 min-w-[120px]">
+          <span class="skeleton inline-block w-48">&nbsp;</span>
+        </p>
+        <div id="nav-dots" class="hidden sm:flex flex-wrap items-center gap-1" aria-label="Question navigator"></div>
+        <span id="timer" class="font-mono font-bold text-sm px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 tabular-nums" role="timer" aria-live="off">--:--</span>
+      </div>
+    </div>
+
+    <!-- Two-pane exam layout -->
+    <main class="flex-1 max-w-7xl w-full mx-auto grid lg:grid-cols-2 gap-0 lg:gap-6 px-4 sm:px-6 py-5 page-enter">
+      <!-- Passage pane -->
+      <section class="reading-pane lg:sticky lg:top-[7.5rem] lg:self-start lg:max-h-[calc(100vh-9rem)] lg:overflow-y-auto lg:pr-2" aria-label="Reading passage">
+        <article id="passage-body" class="card p-6 prose-sm leading-relaxed text-[0.95rem] text-slate-700 dark:text-slate-300 space-y-4">
+          <span class="skeleton block h-4 w-full"></span>
+          <span class="skeleton block h-4 w-11/12"></span>
+          <span class="skeleton block h-4 w-full"></span>
+          <span class="skeleton block h-4 w-3/4"></span>
+        </article>
+      </section>
+
+      <!-- Questions pane -->
+      <section class="mt-5 lg:mt-0" aria-label="Questions">
+        <div id="questions"></div>
+        <div id="submit-row" class="hidden mt-5 mb-8">
+          <button id="submit-btn" class="w-full py-3 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold transition disabled:opacity-60">
+            Submit answers
+          </button>
+          <p class="text-xs text-center text-slate-400 mt-2">You'll see the correct answer and an explanation for every question.</p>
+        </div>
+        <div id="results" class="hidden mb-10"></div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Confirm modal for unanswered questions -->
+  <div id="confirm-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true">
+    <div class="card w-full max-w-sm p-6 m-4">
+      <h3 class="font-display font-bold text-lg">Submit with unanswered questions?</h3>
+      <p id="confirm-text" class="text-sm text-slate-500 dark:text-slate-400 mt-2"></p>
+      <div class="flex gap-2 mt-5">
+        <button id="confirm-cancel" class="flex-1 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition">Keep working</button>
+        <button id="confirm-submit" class="flex-1 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold transition">Submit anyway</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/js/pages/reading-test.js"></script>
+</body>
+</html>

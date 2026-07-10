@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BandUp · Your AI IELTS examiner</title>
+  <meta name="description" content="Practise IELTS with an AI examiner that grades your writing, explains every answer, and builds your band score day by day.">
+  <script>if(localStorage.theme==='dark'||(!('theme' in localStorage)&&matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.classList.add('dark')</script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/js/tw-config.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/custom.css">
+</head>
+<body class="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 antialiased">
+
+  <!-- ===== Nav ===== -->
+  <header class="sticky top-0 z-40 bg-white/85 dark:bg-slate-950/85 backdrop-blur border-b border-slate-100 dark:border-slate-800/70">
+    <nav class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center gap-6">
+      <a href="/" class="flex items-center gap-2.5">
+        <span class="grid place-items-center w-8 h-8 rounded-lg bg-gradient-to-br from-brand-600 to-cyan-500 text-white font-display font-bold text-sm">B</span>
+        <span class="font-display font-bold text-lg">BandUp</span>
+      </a>
+      <div class="hidden md:flex items-center gap-6 text-sm font-medium text-slate-600 dark:text-slate-300">
+        <a href="#features" class="hover:text-brand-600 dark:hover:text-brand-400 transition">Features</a>
+        <a href="#how" class="hover:text-brand-600 dark:hover:text-brand-400 transition">How it works</a>
+        <a href="#pricing" class="hover:text-brand-600 dark:hover:text-brand-400 transition">Pricing</a>
+        <a href="#faq" class="hover:text-brand-600 dark:hover:text-brand-400 transition">FAQ</a>
+      </div>
+      <div class="ml-auto flex items-center gap-2">
+        <button data-theme-toggle class="p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800" aria-label="Toggle theme">
+          <span data-icon-moon><svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg></span>
+          <span data-icon-sun class="hidden"><svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></span>
+        </button>
+        <a href="/pages/login.html" id="nav-login" class="hidden sm:block px-4 py-2 rounded-xl text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition">Log in</a>
+        <a href="/pages/register.html" id="nav-cta" class="px-4 py-2 rounded-xl text-sm font-semibold bg-brand-600 hover:bg-brand-700 text-white transition">Start free</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <!-- ===== Hero ===== -->
+    <section class="relative overflow-hidden">
+      <div class="absolute inset-0 -z-10 bg-gradient-to-b from-brand-50/80 via-white to-white dark:from-brand-900/15 dark:via-slate-950 dark:to-slate-950"></div>
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 pt-16 sm:pt-24 pb-16 grid lg:grid-cols-2 gap-12 items-center">
+        <div class="page-enter">
+          <p class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 border border-brand-100 dark:border-brand-800/50 mb-5">
+            <span class="w-1.5 h-1.5 rounded-full bg-brand-500 animate-pulse"></span>
+            AI examiner · available 24/7
+          </p>
+          <h1 class="font-display font-extrabold text-4xl sm:text-5xl lg:text-[3.4rem] leading-[1.08] tracking-tight">
+            The band score you need,<br>
+            <span class="text-gradient">explained answer by answer.</span>
+          </h1>
+          <p class="mt-5 text-lg text-slate-600 dark:text-slate-300 max-w-lg leading-relaxed">
+            BandUp grades your essays on all four IELTS criteria, explains why every reading answer is right or wrong, and turns your weak spots into a daily plan.
+          </p>
+          <div class="mt-8 flex flex-wrap gap-3">
+            <a href="/pages/register.html" class="px-6 py-3 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold transition shadow-lg shadow-brand-600/25">
+              Start practising free
+            </a>
+            <a href="#how" class="px-6 py-3 rounded-xl border border-slate-300 dark:border-slate-700 font-semibold hover:border-brand-400 dark:hover:border-brand-600 transition">
+              See how it works
+            </a>
+          </div>
+          <p class="mt-4 text-xs text-slate-400">No card required · Works on any device</p>
+        </div>
+
+        <!-- Hero visual: the band gauge, animated -->
+        <div class="relative mx-auto w-full max-w-md">
+          <div class="card p-8">
+            <div id="hero-gauge" class="grid place-items-center"></div>
+            <div class="mt-6 space-y-3">
+              <div class="flex items-center justify-between text-sm">
+                <span class="text-slate-500 dark:text-slate-400">Task Achievement</span>
+                <span class="font-mono font-bold text-brand-600 dark:text-brand-400">7.0</span>
+              </div>
+              <div class="h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+                <div class="h-full w-[78%] rounded-full bg-gradient-to-r from-brand-500 to-cyan-500"></div>
+              </div>
+              <div class="flex items-center justify-between text-sm">
+                <span class="text-slate-500 dark:text-slate-400">Lexical Resource</span>
+                <span class="font-mono font-bold text-brand-600 dark:text-brand-400">7.5</span>
+              </div>
+              <div class="h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+                <div class="h-full w-[83%] rounded-full bg-gradient-to-r from-brand-500 to-cyan-500"></div>
+              </div>
+            </div>
+            <div class="mt-6 p-3.5 rounded-xl bg-brand-50/70 dark:bg-brand-900/20 text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+              <span class="font-semibold text-brand-700 dark:text-brand-400">Examiner's note: </span>
+              Your argument structure is strong. Replace repeated linking words ("moreover" ×4) with a wider range to lift Coherence above 7.
+            </div>
+          </div>
+          <div class="absolute -top-3 -right-3 px-3 py-1.5 rounded-full bg-amber-400 text-amber-950 text-xs font-bold shadow-lg rotate-3">
+            +1.0 band in 8 weeks
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== Stats strip ===== -->
+    <section class="border-y border-slate-100 dark:border-slate-800/70 bg-slate-50/60 dark:bg-slate-900/40">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 py-10 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+        <div><p class="font-mono font-bold text-3xl text-gradient">4</p><p class="text-xs text-slate-500 dark:text-slate-400 mt-1">IELTS criteria graded</p></div>
+        <div><p class="font-mono font-bold text-3xl text-gradient">15s</p><p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Average feedback time</p></div>
+        <div><p class="font-mono font-bold text-3xl text-gradient">100%</p><p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Answers explained</p></div>
+        <div><p class="font-mono font-bold text-3xl text-gradient">24/7</p><p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Examiner availability</p></div>
+      </div>
+    </section>
+
+    <!-- ===== Features ===== -->
+    <section id="features" class="max-w-6xl mx-auto px-4 sm:px-6 py-20">
+      <div class="max-w-2xl mb-12">
+        <h2 class="font-display font-bold text-3xl sm:text-4xl">Everything a private tutor does.<br class="hidden sm:block"> On your schedule.</h2>
+        <p class="mt-3 text-slate-600 dark:text-slate-300">Every module is built around one idea: never leave you wondering <em>why</em> you got something wrong.</p>
+      </div>
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <article class="card p-6">
+          <span class="grid place-items-center w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 mb-4">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 3a2.8 2.8 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/></svg>
+          </span>
+          <h3 class="font-display font-semibold mb-1.5">AI writing evaluation</h3>
+          <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">Submit any Task 1 or Task 2 essay and get a band for each criterion, your grammar mistakes corrected, and one paragraph rewritten at band 8 so you can see the gap.</p>
+        </article>
+        <article class="card p-6">
+          <span class="grid place-items-center w-10 h-10 rounded-xl bg-brand-50 dark:bg-brand-900/30 text-brand-600 dark:text-brand-400 mb-4">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 6.5C10 4.8 7.5 4 4 4v14c3.5 0 6 .8 8 2.5 2-1.7 4.5-2.5 8-2.5V4c-3.5 0-6 .8-8 2.5z"/><path d="M12 6.5V20.5"/></svg>
+          </span>
+          <h3 class="font-display font-semibold mb-1.5">Reading with reasons</h3>
+          <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">Timed academic and general passages. After you submit, every question comes back with the correct answer and the exact line of reasoning behind it.</p>
+        </article>
+        <article class="card p-6">
+          <span class="grid place-items-center w-10 h-10 rounded-xl bg-cyan-50 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400 mb-4">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 9h8M8 13h5"/></svg>
+          </span>
+          <h3 class="font-display font-semibold mb-1.5">Band 7–9 vocabulary</h3>
+          <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">Flip cards with IPA pronunciation, synonyms, and real example sentences. Quiz mode tracks which words you've truly mastered.</p>
+        </article>
+        <article class="card p-6">
+          <span class="grid place-items-center w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 mb-4">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg>
+          </span>
+          <h3 class="font-display font-semibold mb-1.5">Progress you can see</h3>
+          <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">Your dashboard tracks study time, accuracy by module, and your band estimate over time, so effort turns into evidence.</p>
+        </article>
+        <article class="card p-6">
+          <span class="grid place-items-center w-10 h-10 rounded-xl bg-rose-50 dark:bg-rose-900/30 text-rose-500 dark:text-rose-400 mb-4">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c1 4-3 5.5-3 9a3 3 0 0 0 6 .2C15 8 19 9 19 14a7 7 0 1 1-14 0c0-5 5-7 7-12z"/></svg>
+          </span>
+          <h3 class="font-display font-semibold mb-1.5">Streaks that stick</h3>
+          <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">A daily streak rewards showing up. Fifteen focused minutes a day beats a six-hour panic the week before your exam.</p>
+        </article>
+        <article class="card p-6">
+          <span class="grid place-items-center w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 text-indigo-500 dark:text-indigo-400 mb-4">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+          </span>
+          <h3 class="font-display font-semibold mb-1.5">Real exam timing</h3>
+          <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">Every passage runs on an exam clock with a question navigator, so pacing becomes a habit before test day, not a surprise on it.</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- ===== How it works ===== -->
+    <section id="how" class="bg-slate-50/60 dark:bg-slate-900/40 border-y border-slate-100 dark:border-slate-800/70">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 py-20">
+        <h2 class="font-display font-bold text-3xl sm:text-4xl mb-12">From first login to test day</h2>
+        <div class="grid md:grid-cols-3 gap-8">
+          <div class="relative">
+            <p class="font-mono font-bold text-5xl text-brand-200 dark:text-brand-900">1</p>
+            <h3 class="font-display font-semibold mt-2 mb-1.5">Set your target</h3>
+            <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">Tell BandUp your exam date and target band. Your dashboard counts down and keeps both in front of you.</p>
+          </div>
+          <div class="relative">
+            <p class="font-mono font-bold text-5xl text-brand-200 dark:text-brand-900">2</p>
+            <h3 class="font-display font-semibold mt-2 mb-1.5">Practise with feedback</h3>
+            <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">Work through timed reading, vocabulary, and essays. Every answer gets explained; every essay gets a full examiner report.</p>
+          </div>
+          <div class="relative">
+            <p class="font-mono font-bold text-5xl text-brand-200 dark:text-brand-900">3</p>
+            <h3 class="font-display font-semibold mt-2 mb-1.5">Watch the band climb</h3>
+            <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">Your band estimate updates with every essay. Weak areas surface on the dashboard so you always know what to practise next.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== Testimonials ===== -->
+    <section class="max-w-6xl mx-auto px-4 sm:px-6 py-20">
+      <h2 class="font-display font-bold text-3xl sm:text-4xl mb-12">Students who moved their band</h2>
+      <div class="grid md:grid-cols-3 gap-5">
+        <figure class="card p-6">
+          <blockquote class="text-sm leading-relaxed text-slate-600 dark:text-slate-300">"The essay feedback is brutal in the best way. Seeing my own paragraph rewritten at band 8 taught me more than a month of YouTube videos."</blockquote>
+          <figcaption class="mt-4 flex items-center gap-3">
+            <span class="grid place-items-center w-9 h-9 rounded-full bg-gradient-to-br from-brand-600 to-cyan-500 text-white text-xs font-bold">NR</span>
+            <div><p class="text-sm font-semibold">Nadia R.</p><p class="text-xs text-slate-400">6.5 → 7.5 · Dhaka</p></div>
+          </figcaption>
+        </figure>
+        <figure class="card p-6">
+          <blockquote class="text-sm leading-relaxed text-slate-600 dark:text-slate-300">"I finally understood why my True/False/Not Given answers kept failing. The explanations point at the exact sentence in the passage."</blockquote>
+          <figcaption class="mt-4 flex items-center gap-3">
+            <span class="grid place-items-center w-9 h-9 rounded-full bg-gradient-to-br from-amber-500 to-rose-500 text-white text-xs font-bold">AK</span>
+            <div><p class="text-sm font-semibold">Arif K.</p><p class="text-xs text-slate-400">6.0 → 7.0 · Sylhet</p></div>
+          </figcaption>
+        </figure>
+        <figure class="card p-6">
+          <blockquote class="text-sm leading-relaxed text-slate-600 dark:text-slate-300">"The streak got me. Twenty minutes with coffee every morning, and after two months my reading accuracy went from 55% to 80%."</blockquote>
+          <figcaption class="mt-4 flex items-center gap-3">
+            <span class="grid place-items-center w-9 h-9 rounded-full bg-gradient-to-br from-cyan-500 to-indigo-500 text-white text-xs font-bold">TD</span>
+            <div><p class="text-sm font-semibold">Tuli D.</p><p class="text-xs text-slate-400">Target 7.0 · Chattogram</p></div>
+          </figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <!-- ===== Pricing ===== -->
+    <section id="pricing" class="bg-slate-50/60 dark:bg-slate-900/40 border-y border-slate-100 dark:border-slate-800/70">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 py-20">
+        <div class="max-w-2xl mb-12">
+          <h2 class="font-display font-bold text-3xl sm:text-4xl">Simple pricing</h2>
+          <p class="mt-3 text-slate-600 dark:text-slate-300">Start free. Upgrade when you want unlimited AI evaluations.</p>
+        </div>
+        <div class="grid md:grid-cols-3 gap-5 items-start">
+          <div class="card p-6">
+            <h3 class="font-display font-semibold">Free</h3>
+            <p class="font-mono font-bold text-3xl mt-2">৳0<span class="text-sm font-body font-medium text-slate-400">/month</span></p>
+            <ul class="mt-5 space-y-2.5 text-sm text-slate-600 dark:text-slate-300">
+              <li class="flex gap-2"><span class="text-brand-500">✓</span>All reading passages</li>
+              <li class="flex gap-2"><span class="text-brand-500">✓</span>Full vocabulary builder</li>
+              <li class="flex gap-2"><span class="text-brand-500">✓</span>3 AI essay evaluations / month</li>
+              <li class="flex gap-2"><span class="text-brand-500">✓</span>Progress dashboard</li>
+            </ul>
+            <a href="/pages/register.html" class="block mt-6 text-center py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 text-sm font-semibold hover:border-brand-400 transition">Start free</a>
+          </div>
+          <div class="card p-6 border-brand-500 dark:border-brand-600 relative shadow-lg shadow-brand-600/10">
+            <span class="absolute -top-3 left-6 px-3 py-1 rounded-full bg-brand-600 text-white text-xs font-bold">Most popular</span>
+            <h3 class="font-display font-semibold">Premium</h3>
+            <p class="font-mono font-bold text-3xl mt-2">৳499<span class="text-sm font-body font-medium text-slate-400">/month</span></p>
+            <ul class="mt-5 space-y-2.5 text-sm text-slate-600 dark:text-slate-300">
+              <li class="flex gap-2"><span class="text-brand-500">✓</span>Everything in Free</li>
+              <li class="flex gap-2"><span class="text-brand-500">✓</span>Unlimited AI essay evaluations</li>
+              <li class="flex gap-2"><span class="text-brand-500">✓</span>Full submission history</li>
+              <li class="flex gap-2"><span class="text-brand-500">✓</span>Priority evaluation queue</li>
+            </ul>
+            <a href="/pages/register.html" class="block mt-6 text-center py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold transition">Go Premium</a>
+          </div>
+          <div class="card p-6">
+            <h3 class="font-display font-semibold">Institution</h3>
+            <p class="font-mono font-bold text-3xl mt-2">Custom</p>
+            <ul class="mt-5 space-y-2.5 text-sm text-slate-600 dark:text-slate-300">
+              <li class="flex gap-2"><span class="text-brand-500">✓</span>Everything in Premium</li>
+              <li class="flex gap-2"><span class="text-brand-500">✓</span>Teacher review dashboard</li>
+              <li class="flex gap-2"><span class="text-brand-500">✓</span>Class progress reports</li>
+              <li class="flex gap-2"><span class="text-brand-500">✓</span>Bulk student accounts</li>
+            </ul>
+            <a href="#faq" class="block mt-6 text-center py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 text-sm font-semibold hover:border-brand-400 transition">Contact us</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== FAQ ===== -->
+    <section id="faq" class="max-w-3xl mx-auto px-4 sm:px-6 py-20">
+      <h2 class="font-display font-bold text-3xl sm:text-4xl mb-10">Questions, answered</h2>
+      <div class="space-y-3">
+        <details class="card p-5 group">
+          <summary class="font-semibold text-sm cursor-pointer list-none flex items-center justify-between">
+            How accurate is the AI band score?
+            <span class="text-brand-500 transition group-open:rotate-45 text-lg leading-none">+</span>
+          </summary>
+          <p class="mt-3 text-sm text-slate-500 dark:text-slate-400 leading-relaxed">The AI grades against the official public IELTS band descriptors, criterion by criterion. Treat it as a well-calibrated estimate and a diagnosis of what to fix, not a guarantee of your official result — no practice tool can promise that.</p>
+        </details>
+        <details class="card p-5 group">
+          <summary class="font-semibold text-sm cursor-pointer list-none flex items-center justify-between">
+            Is this for Academic or General Training?
+            <span class="text-brand-500 transition group-open:rotate-45 text-lg leading-none">+</span>
+          </summary>
+          <p class="mt-3 text-sm text-slate-500 dark:text-slate-400 leading-relaxed">Both. Reading passages are tagged Academic or General, and the writing evaluator handles Task 1 and Task 2 for either exam type.</p>
+        </details>
+        <details class="card p-5 group">
+          <summary class="font-semibold text-sm cursor-pointer list-none flex items-center justify-between">
+            Do I need to pay to start?
+            <span class="text-brand-500 transition group-open:rotate-45 text-lg leading-none">+</span>
+          </summary>
+          <p class="mt-3 text-sm text-slate-500 dark:text-slate-400 leading-relaxed">No. The free plan includes every reading passage, the full vocabulary builder, and three AI essay evaluations each month. No card required.</p>
+        </details>
+        <details class="card p-5 group">
+          <summary class="font-semibold text-sm cursor-pointer list-none flex items-center justify-between">
+            Does it work on my phone?
+            <span class="text-brand-500 transition group-open:rotate-45 text-lg leading-none">+</span>
+          </summary>
+          <p class="mt-3 text-sm text-slate-500 dark:text-slate-400 leading-relaxed">Yes — BandUp is built mobile-first. Flashcards on the bus, essays at your desk.</p>
+        </details>
+      </div>
+    </section>
+
+    <!-- ===== Final CTA ===== -->
+    <section class="max-w-6xl mx-auto px-4 sm:px-6 pb-20">
+      <div class="card p-10 sm:p-14 text-center bg-gradient-to-br from-brand-700 to-cyan-700 border-0">
+        <h2 class="font-display font-bold text-3xl sm:text-4xl text-white">Your examiner is ready when you are.</h2>
+        <p class="mt-3 text-brand-100 max-w-xl mx-auto">Fifteen minutes today is a higher band tomorrow. Start with a reading passage — it's free.</p>
+        <a href="/pages/register.html" class="inline-block mt-7 px-8 py-3.5 rounded-xl bg-white text-brand-700 font-bold hover:bg-brand-50 transition shadow-xl">
+          Create your free account
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <!-- ===== Footer ===== -->
+  <footer class="border-t border-slate-100 dark:border-slate-800/70">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-10 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <a href="/" class="flex items-center gap-2.5">
+        <span class="grid place-items-center w-7 h-7 rounded-lg bg-gradient-to-br from-brand-600 to-cyan-500 text-white font-display font-bold text-xs">B</span>
+        <span class="font-display font-bold">BandUp</span>
+      </a>
+      <p class="text-xs text-slate-400">© 2026 BandUp. Built by students, for students. IELTS is a registered trademark of its owners; BandUp is not affiliated with or endorsed by them.</p>
+    </div>
+  </footer>
+
+  <script type="module">
+    import { initThemeToggles } from '/js/theme.js';
+    import { renderGauge } from '/js/gauge.js';
+    import { api } from '/js/api.js';
+
+    initThemeToggles();
+    renderGauge(document.getElementById('hero-gauge'), { value: 7.5, target: 8, label: 'Estimated band', size: 210 });
+
+    // If already logged in, point the CTAs at the dashboard instead.
+    api.me().then(() => {
+      const cta = document.getElementById('nav-cta');
+      cta.textContent = 'Open dashboard';
+      cta.href = '/pages/dashboard.html';
+      document.getElementById('nav-login').classList.add('hidden');
+    }).catch(() => { /* not logged in - leave defaults */ });
+  </script>
+</body>
+</html>
