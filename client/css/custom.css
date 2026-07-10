@@ -1,0 +1,163 @@
+/* ===================================================================
+   Custom styles beyond Tailwind utilities.
+   Tokens, the band-gauge signature, flip cards, skeletons, toasts.
+   =================================================================== */
+
+:root {
+  --brand-50: #f0fdfa;
+  --brand-500: #14b8a6;
+  --brand-600: #0d9488;
+  --brand-700: #0f766e;
+  --accent: #f59e0b;
+  --ink: #0f172a;
+}
+
+html { scroll-behavior: smooth; }
+body { font-family: 'Inter', system-ui, sans-serif; }
+.font-display { font-family: 'Bricolage Grotesque', 'Inter', sans-serif; }
+
+/* Focus visibility for keyboard users, consistent everywhere */
+:focus-visible {
+  outline: 2px solid var(--brand-500);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ---- Brand gradient text ---- */
+.text-gradient {
+  background: linear-gradient(120deg, #0d9488 0%, #06b6d4 60%, #22d3ee 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* ---- Card base ---- */
+.card {
+  border-radius: 1rem;
+  background: white;
+  border: 1px solid rgb(226 232 240);
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.04), 0 8px 24px -12px rgb(15 23 42 / 0.10);
+}
+.dark .card {
+  background: rgb(15 23 42);
+  border-color: rgb(30 41 59);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.4);
+}
+
+/* ---- Skeleton shimmer ---- */
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: rgb(226 232 240);
+  border-radius: 0.5rem;
+}
+.dark .skeleton { background: rgb(30 41 59); }
+.skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.35), transparent);
+  animation: shimmer 1.4s infinite;
+}
+.dark .skeleton::after {
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.06), transparent);
+}
+@keyframes shimmer { 100% { transform: translateX(100%); } }
+
+/* ---- Toasts ---- */
+#toast-root {
+  position: fixed;
+  bottom: 1.25rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: center;
+  pointer-events: none;
+}
+.toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1rem;
+  border-radius: 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: white;
+  box-shadow: 0 10px 30px -10px rgb(0 0 0 / 0.4);
+  animation: toast-in 0.25s ease;
+}
+.toast.leaving { animation: toast-out 0.25s ease forwards; }
+.toast-success { background: #0f766e; }
+.toast-error { background: #b91c1c; }
+.toast-info { background: #1e293b; }
+@keyframes toast-in { from { opacity: 0; transform: translateY(10px); } }
+@keyframes toast-out { to { opacity: 0; transform: translateY(10px); } }
+
+/* ---- Vocabulary flip cards ---- */
+.flip-scene { perspective: 1200px; }
+.flip-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.55s cubic-bezier(0.2, 0.7, 0.3, 1);
+  transform-style: preserve-3d;
+}
+.flip-scene.flipped .flip-inner { transform: rotateY(180deg); }
+.flip-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border-radius: 1rem;
+  overflow: hidden;
+}
+.flip-back { transform: rotateY(180deg); }
+
+/* ---- Band gauge (SVG signature element) ---- */
+.gauge-seg { transition: stroke 0.4s ease; }
+
+/* ---- Question navigator dots ---- */
+.nav-dot {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 0.4rem;
+  font-size: 0.65rem;
+  font-weight: 600;
+  display: grid;
+  place-items: center;
+  border: 1.5px solid rgb(203 213 225);
+  color: rgb(100 116 139);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.dark .nav-dot { border-color: rgb(51 65 85); color: rgb(148 163 184); }
+.nav-dot.answered {
+  background: var(--brand-600);
+  border-color: var(--brand-600);
+  color: white;
+}
+.nav-dot:hover { transform: translateY(-1px); }
+
+/* ---- Subtle page enter ---- */
+.page-enter { animation: page-in 0.35s ease; }
+@keyframes page-in { from { opacity: 0; transform: translateY(6px); } }
+
+/* ---- Modal ---- */
+.modal-backdrop {
+  position: fixed; inset: 0; z-index: 60;
+  background: rgb(2 6 23 / 0.55);
+  backdrop-filter: blur(3px);
+  display: grid; place-items: center;
+  animation: page-in 0.2s ease;
+}
+
+/* Respect users who prefer less motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  html { scroll-behavior: auto; }
+}
