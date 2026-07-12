@@ -43,7 +43,7 @@ export const env = {
   },
 
   ai: {
-    apiKey: process.env.ANTHROPIC_API_KEY || '',
-    model: process.env.AI_MODEL || 'claude-sonnet-4-6',
+    apiKey: process.env.GEMINI_API_KEY || '',
+    model: process.env.AI_MODEL || 'gemini-2.0-flash',
   },
 };
