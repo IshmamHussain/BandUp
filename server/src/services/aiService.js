@@ -1,10 +1,4 @@
-// AI writing evaluation service.
-// The frontend NEVER talks to the AI API directly - only this server does.
-// That keeps the API key secret and lets us control cost and prompts.
-//
-// If ANTHROPIC_API_KEY is missing (e.g. a teammate developing the UI),
-// evaluateEssay returns a clearly-labelled mock so the rest of the app
-// still works end to end.
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import { env } from '../config/env.js';
 
 const SYSTEM_PROMPT = `You are a certified IELTS examiner. Evaluate the student's essay strictly against the official IELTS Writing band descriptors.
@@ -36,6 +30,27 @@ Rules:
 - Comments must be specific to THIS essay, never generic.
 - If the essay is off-topic or under 100 words, reflect that honestly in task_achievement.`;
 
+// Deterministic mock used when no API key is configured. Word-count based
+// so the UI has realistic-looking data to render during development.
+function mockEvaluation(essayText) {
+  const words = essayText.trim().split(/\s+/).length;
+  const base = words < 150 ? 5.0 : words < 250 ? 6.0 : 6.5;
+  return {
+    band_overall: base,
+    criteria: {
+      task_achievement: { band: base, comment: '[MOCK] Add a GEMINI_API_KEY to .env for real evaluation. This placeholder score is based only on word count.' },
+      coherence_cohesion: { band: base, comment: '[MOCK] Placeholder comment.' },
+      lexical_resource: { band: base + 0.5, comment: '[MOCK] Placeholder comment.' },
+      grammatical_range_accuracy: { band: base - 0.5, comment: '[MOCK] Placeholder comment.' },
+    },
+    grammar_mistakes: [],
+    vocabulary_suggestions: [],
+    strengths: ['[MOCK] Real strengths will appear here once the AI key is configured.'],
+    improvements: ['[MOCK] Real improvement advice will appear here once the AI key is configured.'],
+    improved_sample_paragraph: '[MOCK] A band 8 sample paragraph will appear here with a real API key.',
+  };
+}
+
 export async function evaluateEssay({ taskType, promptText, essayText }) {
   if (!env.ai.apiKey) {
     return { evaluation: mockEvaluation(essayText), isMock: true };
@@ -49,67 +64,37 @@ Student essay:
 ${essayText}
 """`;
 
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': env.ai.apiKey,
-      'anthropic-version': '2023-06-01',
-    },
-    body: JSON.stringify({
-      model: env.ai.model,
-      max_tokens: 2000,
-      system: SYSTEM_PROMPT,
-      messages: [{ role: 'user', content: userMessage }],
-    }),
-  });
+  try {
+    const genAI = new GoogleGenerativeAI(env.ai.apiKey);
+    const model = genAI.getGenerativeModel({
+      model: env.ai.model || "gemini-flash-lite-latest",
+      systemInstruction: SYSTEM_PROMPT
+    });
 
-  if (!response.ok) {
-    const body = await response.text();
-    console.error('AI API error:', response.status, body.slice(0, 300));
+    const result = await model.generateContent({
+      contents: [{ role: 'user', parts: [{ text: userMessage }] }],
+      generationConfig: { responseMimeType: "application/json" }
+    });
+
+    const responseText = result.response.text();
+
+    // Strip accidental markdown fences before parsing.
+    const clean = responseText.replace(/```json|```/g, '').trim();
+    let evaluation;
+    try {
+      evaluation = JSON.parse(clean);
+    } catch {
+      console.error('AI returned unparseable JSON:', clean.slice(0, 300));
+      throw new Error('The AI evaluator returned an unexpected response. Your essay was saved - please try again.');
+    }
+
+    if (typeof evaluation.band_overall !== 'number' || !evaluation.criteria) {
+      throw new Error('The AI evaluation was incomplete. Your essay was saved - please try again.');
+    }
+
+    return { evaluation, isMock: false };
+  } catch (error) {
+    console.error("Gemini API Error:", error);
     throw new Error('The AI evaluator is temporarily unavailable. Your essay was saved - please try evaluating again in a minute.');
   }
-
-  const data = await response.json();
-  const text = (data.content || [])
-    .filter((block) => block.type === 'text')
-    .map((block) => block.text)
-    .join('\n');
-
-  // Strip accidental markdown fences before parsing.
-  const clean = text.replace(/```json|```/g, '').trim();
-  let evaluation;
-  try {
-    evaluation = JSON.parse(clean);
-  } catch {
-    console.error('AI returned unparseable JSON:', clean.slice(0, 300));
-    throw new Error('The AI evaluator returned an unexpected response. Your essay was saved - please try again.');
-  }
-
-  if (typeof evaluation.band_overall !== 'number' || !evaluation.criteria) {
-    throw new Error('The AI evaluation was incomplete. Your essay was saved - please try again.');
-  }
-
-  return { evaluation, isMock: false };
-}
-
-// Deterministic mock used when no API key is configured. Word-count based
-// so the UI has realistic-looking data to render during development.
-function mockEvaluation(essayText) {
-  const words = essayText.trim().split(/\s+/).length;
-  const base = words < 150 ? 5.0 : words < 250 ? 6.0 : 6.5;
-  return {
-    band_overall: base,
-    criteria: {
-      task_achievement: { band: base, comment: '[MOCK] Add an ANTHROPIC_API_KEY to .env for real evaluation. This placeholder score is based only on word count.' },
-      coherence_cohesion: { band: base, comment: '[MOCK] Placeholder comment.' },
-      lexical_resource: { band: base + 0.5, comment: '[MOCK] Placeholder comment.' },
-      grammatical_range_accuracy: { band: base - 0.5, comment: '[MOCK] Placeholder comment.' },
-    },
-    grammar_mistakes: [],
-    vocabulary_suggestions: [],
-    strengths: ['[MOCK] Real strengths will appear here once the AI key is configured.'],
-    improvements: ['[MOCK] Real improvement advice will appear here once the AI key is configured.'],
-    improved_sample_paragraph: '[MOCK] A band 8 sample paragraph will appear here with a real API key.',
-  };
 }
