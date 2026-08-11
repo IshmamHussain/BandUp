@@ -4,9 +4,9 @@ AI-powered IELTS preparation platform. Node.js + Express + MySQL backend, HTML +
 
 ## Current status
 
-- [x] Database schema + seed content (3 reading passages, 15 questions, 18 vocabulary words, 4 writing prompts)
-- [x] REST API: auth, reading, vocabulary, writing (AI evaluation), dashboard
-- [x] Frontend: landing page, auth, dashboard (Chart.js), reading test, vocabulary flashcards + quiz, writing evaluator - dark/light mode, skeletons, toasts, mobile responsive
+- [x] Database schema + seed content (8 reading passages, 51 questions, 92 vocabulary words, 4 writing prompts, 2 listening tests)
+- [x] REST API: auth, reading, listening, vocabulary, writing (AI evaluation), speaking (AI evaluation), admin, dashboard
+- [x] Frontend: landing page, auth, dashboard (Chart.js), reading test, listening test, vocabulary flashcards + quiz, writing evaluator, speaking evaluator — dark/light mode, skeletons, toasts, mobile responsive
 
 ## Project structure
 
