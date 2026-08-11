@@ -13,6 +13,16 @@ AI-powered IELTS preparation platform. Node.js + Express + MySQL backend, HTML +
 ```
 BandUp/
 ├── client/                  # Frontend (HTML + Tailwind + vanilla JS) — served by Express
+│   ├── index.html           # Landing page
+│   ├── css/custom.css       # Custom styles
+│   ├── pages/               # dashboard, reading, listening, writing, speaking, vocabulary, login, register, admin/
+│   └── js/
+│       ├── api.js           # Fetch wrapper for all API calls
+│       ├── shell.js         # Shared layout, nav, auth state
+│       ├── theme.js         # Dark/light mode toggle
+│       ├── toast.js         # Notification toasts
+│       ├── admin-*.js       # Admin panel logic
+│       └── pages/           # Per-page JS (dashboard, reading-test, writing, speaking, etc.)
 ├── server/
 │   ├── server.js            # Entry point
 │   ├── package.json         # Dependencies & scripts
