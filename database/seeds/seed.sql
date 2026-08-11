@@ -334,41 +334,6 @@ INSERT INTO vocabulary (word, meaning, synonyms, antonyms, example_sentence, pro
 ('hierarchy','A system in which people are ranked according to status','ranking, order, structure','equality','The rigid hierarchy in the workplace stifled innovation.','/ˈhaɪərɑːki/','general','7'),
 ('superficial','Existing on the surface; lacking depth','shallow, surface-level, cursory','deep, thorough','A superficial understanding of the issue led to poor decision-making.','/ˌsuːpəˈfɪʃl/','general','7');
 
--- ---------------------------------------------------------------------
--- Writing prompts (10 prompts: 4 Task 1 with charts, 6 Task 2)
--- ---------------------------------------------------------------------
-INSERT INTO writing_prompts (task_type, prompt_text, category, chart_data) VALUES
--- Task 1: Line chart — Internet access
-('task1',
- 'The chart below shows the percentage of households with internet access in four countries between 2005 and 2025. Summarise the information by selecting and reporting the main features, and make comparisons where relevant.',
- 'technology',
- '{"type":"line","data":{"labels":["2005","2010","2015","2020","2025"],"datasets":[{"label":"South Korea","data":[73,92,98,99,99],"borderColor":"#0d9488","backgroundColor":"rgba(13,148,136,0.08)","tension":0.3},{"label":"Germany","data":[58,78,88,93,96],"borderColor":"#6366f1","backgroundColor":"rgba(99,102,241,0.08)","tension":0.3},{"label":"Brazil","data":[21,40,58,75,85],"borderColor":"#f59e0b","backgroundColor":"rgba(245,158,11,0.08)","tension":0.3},{"label":"Nigeria","data":[5,16,32,55,70],"borderColor":"#ec4899","backgroundColor":"rgba(236,72,153,0.08)","tension":0.3}]},"options":{"responsive":true,"maintainAspectRatio":false,"plugins":{"legend":{"position":"bottom","labels":{"usePointStyle":true,"boxWidth":8}},"title":{"display":true,"text":"Household Internet Access (%)","font":{"size":13}}},"scales":{"y":{"min":0,"max":100,"ticks":{"callback":"PERCENT"}}}}}'),
-
--- Task 1: Bar chart — Water usage
-('task1',
- 'The bar chart below shows the average daily water consumption per person in six different countries in 2023. Summarise the information by selecting and reporting the main features, and make comparisons where relevant.',
- 'environment',
- '{"type":"bar","data":{"labels":["USA","Australia","Japan","UK","India","Ethiopia"],"datasets":[{"label":"Litres per day","data":[375,340,280,150,135,40],"backgroundColor":["#0d9488","#06b6d4","#6366f1","#f59e0b","#ec4899","#64748b"],"borderRadius":6,"maxBarThickness":48}]},"options":{"responsive":true,"maintainAspectRatio":false,"plugins":{"legend":{"display":false},"title":{"display":true,"text":"Average Daily Water Consumption per Person (Litres, 2023)","font":{"size":13}}},"scales":{"y":{"beginAtZero":true,"ticks":{"callback":"LITRES"}}}}}'),
-
--- Task 1: Pie/Doughnut chart — Energy sources
-('task1',
- 'The pie chart below shows the share of electricity generated from different energy sources worldwide in 2023. Summarise the information by selecting and reporting the main features, and make comparisons where relevant.',
- 'energy',
- '{"type":"doughnut","data":{"labels":["Coal","Natural Gas","Hydroelectric","Nuclear","Wind","Solar","Other Renewables"],"datasets":[{"data":[35,22,15,10,8,5,5],"backgroundColor":["#334155","#64748b","#06b6d4","#6366f1","#0d9488","#f59e0b","#ec4899"],"borderWidth":0,"spacing":2,"borderRadius":4}]},"options":{"responsive":true,"maintainAspectRatio":false,"cutout":"55%","plugins":{"legend":{"position":"bottom","labels":{"usePointStyle":true,"boxWidth":8,"padding":12}},"title":{"display":true,"text":"Global Electricity Generation by Source (2023)","font":{"size":13}}}}}'),
-
--- Task 1: Grouped bar chart — Transport modes
-('task1',
- 'The chart below compares the percentage of people using different modes of transport to commute to work in London and Tokyo in 2022. Summarise the information by selecting and reporting the main features, and make comparisons where relevant.',
- 'transport',
- '{"type":"bar","data":{"labels":["Train/Metro","Bus","Car","Bicycle","Walking"],"datasets":[{"label":"London","data":[40,15,30,5,10],"backgroundColor":"#0d9488","borderRadius":4,"maxBarThickness":32},{"label":"Tokyo","data":[55,10,15,12,8],"backgroundColor":"#6366f1","borderRadius":4,"maxBarThickness":32}]},"options":{"responsive":true,"maintainAspectRatio":false,"plugins":{"legend":{"position":"bottom","labels":{"usePointStyle":true,"boxWidth":8}},"title":{"display":true,"text":"Commuter Transport Modes — London vs Tokyo (2022, %)","font":{"size":13}}},"scales":{"y":{"beginAtZero":true,"max":60,"ticks":{"callback":"PERCENT"}}}}}'),
-
--- Task 2 prompts (no chart_data)
-('task2','Some people believe that universities should focus on preparing students for employment, while others think universities should provide knowledge for its own sake. Discuss both views and give your own opinion.','education',NULL),
-('task2','In many countries, the amount of household waste is increasing. What are the causes of this? What can be done to reduce it?','environment',NULL),
-('task2','Some argue that governments should invest more in public transport instead of building new roads. To what extent do you agree or disagree?','infrastructure',NULL),
-('task2','Many people believe that social media has a negative impact on young people. To what extent do you agree or disagree?','technology',NULL),
-('task2','In some countries, an increasing number of people are choosing to live alone. What are the reasons for this? Is this a positive or negative trend?','society',NULL),
-('task2','Some people think that the best way to reduce crime is to give longer prison sentences. Others believe there are better ways to reduce crime. Discuss both views and give your own opinion.','law',NULL);
 
 -- ---------------------------------------------------------------------
 -- Listening module seeds
@@ -382,4 +347,32 @@ INSERT INTO questions (listening_test_id, module, question_type, question_text, 
 (1, 'listening', 'fill_blank', 'The man wants to join the ________.', NULL, 'library', 'He says "I''d like to join the library, please."', 2),
 (2, 'listening', 'mcq', 'Where does the campus tour start?', '["Science labs", "Main building", "Library", "Cafeteria"]', 'Main building', 'The guide states: "We will start here at the main building".', 1),
 (2, 'listening', 'fill_blank', 'After the main building, they will visit the ________.', NULL, 'science labs', 'The guide says they will "head over to the science labs".', 2);
+-- Test student account
 INSERT INTO users (name, email, password_hash) VALUES ('Test User', 'test@example.com', '$2a$10$xiXEl/jHEGh8np75t.bngOCvxpWf8TSX1yJni3FqnXoqXb04iCUcq');
+INSERT INTO profiles (user_id) VALUES (LAST_INSERT_ID());
+
+-- Admin account: admin@bandup.com / Admin@123
+INSERT INTO users (name, email, password_hash, role) VALUES ('Admin', 'admin@bandup.com', '$2a$12$t37kVn.rHkijlLMNbW1WzuOs7xFIwb.xKbA6zHA3l2DDdnIdkWT/6', 'admin');
+INSERT INTO profiles (user_id) VALUES (LAST_INSERT_ID());
+INSERT INTO writing_prompts (task_type, category, prompt_text, chart_data) VALUES
+('task1', 'Academic Test 1', 'The chart below shows the number of men and women in further education in Britain in three periods and whether they were studying full-time or part-time. Summarise the information by selecting and reporting the main features, and make comparisons where relevant.', '{
+  \"type\": \"bar\",
+  \"data\": {
+    \"labels\": [\"1970/71\", \"1980/81\", \"1990/91\"],
+    \"datasets\": [
+      { \"label\": \"Men Full-time\", \"data\": [100, 150, 200], \"backgroundColor\": \"#3b82f6\" },
+      { \"label\": \"Men Part-time\", \"data\": [1000, 850, 950], \"backgroundColor\": \"#60a5fa\" },
+      { \"label\": \"Women Full-time\", \"data\": [80, 120, 250], \"backgroundColor\": \"#ec4899\" },
+      { \"label\": \"Women Part-time\", \"data\": [750, 800, 1050], \"backgroundColor\": \"#f472b6\" }
+    ]
+  },
+  \"options\": {
+    \"responsive\": true,
+    \"scales\": {
+      \"y\": { \"beginAtZero\": true, \"title\": { \"display\": true, \"text\": \"Thousands\" } }
+    }
+  }
+}'),
+('task2', 'Academic Test 1', 'Some people believe that university education should be free for everyone. Others think that students should pay for their higher education. Discuss both these views and give your own opinion. Give reasons for your answer and include any relevant examples from your own knowledge or experience.', NULL),
+('task1', 'General Training Test 1', 'You recently stayed at a hotel and had a problem with the service. Write a letter to the hotel manager. In your letter: state when you stayed there, explain the problem, and suggest what the hotel should do.', NULL),
+('task2', 'General Training Test 1', 'In many countries, the amount of crime is increasing. What do you think are the main causes of this? What can be done to reduce crime rates? Give reasons for your answer and include any relevant examples from your own knowledge or experience.', NULL);

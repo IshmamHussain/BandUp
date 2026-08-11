@@ -22,7 +22,7 @@ ielts-platform/
 │       ├── routes/          # index.js - all URL -> controller mappings
 │       ├── controllers/     # Request handling + validation (no SQL here)
 │       ├── models/          # ALL SQL lives here (prepared statements only)
-│       ├── services/        # aiService.js - Anthropic API essay evaluation
+│       ├── services/        # aiService.js - Gemini API essay evaluation
 │       └── utils/           # helpers.js, validate.js
 └── database/
     ├── schema.sql           # Creates the ielts_prep database + tables

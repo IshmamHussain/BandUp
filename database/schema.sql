@@ -20,9 +20,19 @@ CREATE TABLE users (
   role          ENUM('student','admin') NOT NULL DEFAULT 'student',
   target_band   DECIMAL(2,1)  NULL,          -- e.g. 7.5
   exam_date     DATE          NULL,
+  is_verified   BOOLEAN       NOT NULL DEFAULT FALSE,
   created_at    TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at    TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP
                               ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+CREATE TABLE email_verification_tokens (
+  id         INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  user_id    INT UNSIGNED NOT NULL,
+  token      VARCHAR(255) NOT NULL UNIQUE,
+  expires_at TIMESTAMP    NOT NULL,
+  created_at TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_token_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
 CREATE TABLE profiles (
@@ -40,14 +50,26 @@ CREATE TABLE profiles (
 -- ---------------------------------------------------------------------
 -- Reading module
 -- ---------------------------------------------------------------------
+CREATE TABLE reading_tests (
+  id           INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  title        VARCHAR(255) NOT NULL,
+  difficulty   ENUM('easy','medium','hard') NOT NULL DEFAULT 'medium',
+  time_limit   SMALLINT UNSIGNED NOT NULL DEFAULT 60, -- minutes
+  created_at   TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
 CREATE TABLE reading_passages (
   id           INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  test_id      INT UNSIGNED NULL,
   title        VARCHAR(255) NOT NULL,
   body         MEDIUMTEXT   NOT NULL,
   passage_type ENUM('academic','general') NOT NULL DEFAULT 'academic',
   difficulty   ENUM('easy','medium','hard') NOT NULL DEFAULT 'medium',
+  position     SMALLINT UNSIGNED NOT NULL DEFAULT 1,
   time_limit   SMALLINT UNSIGNED NOT NULL DEFAULT 20, -- minutes
-  created_at   TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+  created_at   TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_passages_test
+    FOREIGN KEY (test_id) REFERENCES reading_tests(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
 -- ---------------------------------------------------------------------

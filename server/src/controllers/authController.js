@@ -1,8 +1,10 @@
 // Authentication controller: register, login, logout, current user.
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
 import { env } from '../config/env.js';
 import * as userModel from '../models/userModel.js';
+import * as emailService from '../services/emailService.js';
 import { ok, fail, asyncHandler } from '../utils/helpers.js';
 import { isNonEmptyString, isValidEmail, isValidPassword } from '../utils/validate.js';
 
@@ -16,7 +18,6 @@ function setTokenCookie(res, user) {
     httpOnly: true,                          // JS in the browser cannot read it
     secure: env.isProduction,                // HTTPS only in production
     sameSite: 'strict',                      // CSRF protection
-    maxAge: 7 * 24 * 60 * 60 * 1000,         // 7 days, matches JWT expiry
   });
 }
 
@@ -35,10 +36,13 @@ export const register = asyncHandler(async (req, res) => {
 
   const existing = await userModel.findByEmail(email.toLowerCase());
   if (existing) {
-    return fail(res, 'An account with this email already exists. Try logging in.', 409);
+    if (existing.is_verified) {
+      return fail(res, 'An account with this email already exists. Try logging in.', 409);
+    } else {
+      await userModel.deleteUnverifiedUser(email.toLowerCase());
+    }
   }
 
-  // bcrypt with 12 rounds: slow by design, so stolen hashes are expensive to crack.
   const passwordHash = await bcrypt.hash(password, 12);
   const userId = await userModel.createUser({
     name: name.trim(),
@@ -46,9 +50,13 @@ export const register = asyncHandler(async (req, res) => {
     passwordHash,
   });
 
-  const user = { id: userId, name: name.trim(), role: 'student' };
-  setTokenCookie(res, user);
-  return ok(res, { id: userId, name: user.name, email: email.toLowerCase(), role: 'student' }, 201);
+  const token = crypto.randomBytes(32).toString('hex');
+  await userModel.createVerificationToken(userId, token);
+  
+  // Send email asynchronously without blocking the response
+  emailService.sendVerificationEmail(email.toLowerCase(), name.trim(), token).catch(console.error);
+
+  return ok(res, { message: 'Please check your email to verify your account.' }, 201);
 });
 
 export const login = asyncHandler(async (req, res) => {
@@ -65,6 +73,10 @@ export const login = asyncHandler(async (req, res) => {
 
   const passwordMatches = await bcrypt.compare(password, user.password_hash);
   if (!passwordMatches) return fail(res, invalidMessage, 401);
+
+  if (!user.is_verified && user.role !== 'admin') {
+    return fail(res, 'Please verify your email address before logging in. Check your inbox for the verification link.', 403);
+  }
 
   setTokenCookie(res, user);
   return ok(res, { id: user.id, name: user.name, email: user.email, role: user.role });
@@ -96,4 +108,20 @@ export const updateGoals = asyncHandler(async (req, res) => {
 
   await userModel.updateGoals(req.user.id, { targetBand, examDate });
   return ok(res, { message: 'Goals updated.' });
+});
+
+export const verifyEmail = asyncHandler(async (req, res) => {
+  const { token } = req.query;
+  
+  if (!token) {
+    return res.redirect('/pages/login.html?error=missing_token');
+  }
+
+  const success = await userModel.verifyUserEmail(token);
+  
+  if (success) {
+    res.redirect('/pages/login.html?verified=true');
+  } else {
+    res.redirect('/pages/login.html?error=invalid_token');
+  }
 });

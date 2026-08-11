@@ -4,7 +4,7 @@ import { pool } from '../config/db.js';
 
 export async function findByEmail(email) {
   const [rows] = await pool.execute(
-    'SELECT id, name, email, password_hash, role FROM users WHERE email = ?',
+    'SELECT id, name, email, password_hash, role, is_verified FROM users WHERE email = ?',
     [email]
   );
   return rows[0] || null;
@@ -70,5 +70,55 @@ export async function updateBandEstimate(userId, band) {
   await pool.execute(
     'UPDATE profiles SET current_band_estimate = ? WHERE user_id = ?',
     [band, userId]
+  );
+}
+
+export async function createVerificationToken(userId, token) {
+  // Token expires in 24 hours
+  const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+  await pool.execute(
+    'INSERT INTO email_verification_tokens (user_id, token, expires_at) VALUES (?, ?, ?)',
+    [userId, token, expiresAt]
+  );
+}
+
+export async function verifyUserEmail(token) {
+  const connection = await pool.getConnection();
+  try {
+    await connection.beginTransaction();
+    
+    // Check if token exists and is not expired
+    const [tokens] = await connection.execute(
+      'SELECT user_id FROM email_verification_tokens WHERE token = ? AND expires_at > NOW()',
+      [token]
+    );
+    
+    if (tokens.length === 0) {
+      await connection.rollback();
+      return false; // Token invalid or expired
+    }
+    
+    const userId = tokens[0].user_id;
+    
+    // Mark user as verified
+    await connection.execute('UPDATE users SET is_verified = TRUE WHERE id = ?', [userId]);
+    
+    // Delete the used token
+    await connection.execute('DELETE FROM email_verification_tokens WHERE token = ?', [token]);
+    
+    await connection.commit();
+    return true;
+  } catch (err) {
+    await connection.rollback();
+    throw err;
+  } finally {
+    connection.release();
+  }
+}
+
+export async function deleteUnverifiedUser(email) {
+  await pool.execute(
+    'DELETE FROM users WHERE email = ? AND is_verified = FALSE',
+    [email]
   );
 }
