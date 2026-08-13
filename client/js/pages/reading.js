@@ -19,48 +19,47 @@ function starIcon(filled) {
     <path d="M12 3l2.7 5.7 6.3.8-4.6 4.3 1.2 6.2L12 17l-5.6 3 1.2-6.2L3 9.5l6.3-.8z"/></svg>`;
 }
 
-function passageCard(passage) {
+function testCard(test) {
   const card = document.createElement('article');
   card.className = 'card p-5 flex flex-col';
   card.innerHTML = `
     <div class="flex items-start justify-between gap-2">
       <h3 class="font-display font-semibold leading-snug"></h3>
       <button class="bookmark-btn shrink-0 -mt-1 -mr-1 p-1.5 rounded-lg transition
-        ${passage.bookmarked ? 'text-amber-500' : 'text-slate-300 dark:text-slate-600 hover:text-amber-400'}"
-        aria-label="${passage.bookmarked ? 'Remove bookmark' : 'Bookmark this passage'}"
-        aria-pressed="${Boolean(passage.bookmarked)}">
-        ${starIcon(Boolean(passage.bookmarked))}
+        ${test.bookmarked ? 'text-amber-500' : 'text-slate-300 dark:text-slate-600 hover:text-amber-400'}"
+        aria-label="${test.bookmarked ? 'Remove bookmark' : 'Bookmark this test'}"
+        aria-pressed="${Boolean(test.bookmarked)}">
+        ${starIcon(Boolean(test.bookmarked))}
       </button>
     </div>
     <div class="flex flex-wrap items-center gap-2 mt-3">
-      <span class="px-2 py-0.5 rounded-md text-xs font-semibold capitalize ${DIFFICULTY_STYLES[passage.difficulty]}">${passage.difficulty}</span>
-      <span class="px-2 py-0.5 rounded-md text-xs font-semibold capitalize bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">${passage.passage_type}</span>
-      <span class="text-xs text-slate-500 dark:text-slate-400">${passage.question_count} questions · ${passage.time_limit} min</span>
+      <span class="px-2 py-0.5 rounded-md text-xs font-semibold capitalize ${DIFFICULTY_STYLES[test.difficulty]}">${test.difficulty}</span>
+      <span class="text-xs text-slate-500 dark:text-slate-400">${test.question_count} questions / ${test.time_limit} min</span>
     </div>
     <div class="mt-4 mb-4 text-xs text-slate-500 dark:text-slate-400">
-      ${passage.best_accuracy !== null
-        ? `Best score: <span class="font-mono font-bold text-brand-600 dark:text-brand-400">${passage.best_accuracy}%</span>`
+      ${test.best_accuracy !== null
+        ? `Best score: <span class="font-mono font-bold text-brand-600 dark:text-brand-400">${test.best_accuracy}%</span>`
         : 'Not attempted yet'}
     </div>
-    <a href="/pages/reading-test.html?id=${passage.id}"
+    <a href="/pages/reading-test.html?id=${test.id}"
        class="mt-auto text-center py-2.5 rounded-xl text-sm font-semibold transition
-       ${passage.best_accuracy !== null
+       ${test.best_accuracy !== null
          ? 'border border-brand-500/50 text-brand-600 dark:text-brand-400 hover:bg-brand-50 dark:hover:bg-brand-900/20'
          : 'bg-brand-600 hover:bg-brand-700 text-white'}">
-      ${passage.best_accuracy !== null ? 'Practise again' : 'Start passage'}
+      ${test.best_accuracy !== null ? 'Practise again' : 'Start test'}
     </a>`;
 
-  card.querySelector('h3').textContent = passage.title;
+  card.querySelector('h3').textContent = test.title;
 
   const bookmarkBtn = card.querySelector('.bookmark-btn');
   bookmarkBtn.addEventListener('click', async () => {
     try {
-      const { bookmarked } = await api.togglePassageBookmark(passage.id);
+      const { bookmarked } = await api.toggleReadingBookmark(test.id);
       bookmarkBtn.innerHTML = starIcon(bookmarked);
       bookmarkBtn.className = `bookmark-btn shrink-0 -mt-1 -mr-1 p-1.5 rounded-lg transition ${
         bookmarked ? 'text-amber-500' : 'text-slate-300 dark:text-slate-600 hover:text-amber-400'}`;
       bookmarkBtn.setAttribute('aria-pressed', bookmarked);
-      toast(bookmarked ? 'Passage bookmarked' : 'Bookmark removed', 'success');
+      toast(bookmarked ? 'Test bookmarked' : 'Bookmark removed', 'success');
     } catch (err) {
       toast(err.message, 'error');
     }
@@ -69,11 +68,11 @@ function passageCard(passage) {
 }
 
 try {
-  const passages = await api.passages();
+  const tests = await api.readingTests();
   listEl.innerHTML = '';
-  passages.forEach((passage) => listEl.appendChild(passageCard(passage)));
+  tests.forEach((test) => listEl.appendChild(testCard(test)));
 } catch (err) {
   listEl.innerHTML = `<div class="card p-6 sm:col-span-2 lg:col-span-3 text-center text-sm text-slate-500">
-    Could not load passages. Please refresh the page.</div>`;
+    Could not load tests. Please refresh the page.</div>`;
   toast(err.message, 'error');
 }

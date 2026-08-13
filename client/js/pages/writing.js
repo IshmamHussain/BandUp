@@ -4,9 +4,12 @@ import { api } from '../api.js';
 import { toast } from '../toast.js';
 import { renderGauge } from '../gauge.js';
 
-await initShell({ active: 'writing', title: 'Writing' });
+const user = await initShell({ active: 'writing', title: 'Writing' });
 
 const el = (id) => document.getElementById(id);
+let TARGET_WORDS = 250;
+const CACHE_KEY = `ielts_saved_essays_${user.id}`;
+let savedEssays = JSON.parse(localStorage.getItem(CACHE_KEY) || '{}'); // Cache to store text when switching tasks
 
 // ---------- Prompts ----------
 let prompts = [];
@@ -16,53 +19,62 @@ try {
   toast(err.message, 'error');
 }
 
-const promptSelect = el('prompt-select');
-prompts.forEach((prompt) => {
+const tests = [...new Set(prompts.map((p) => p.category || 'General'))];
+const testSelect = el('test-select');
+tests.forEach((test) => {
   const option = document.createElement('option');
-  option.value = prompt.id;
-  option.textContent = `${prompt.task_type === 'task1' ? 'Task 1' : 'Task 2'} · ${prompt.category} · ${prompt.prompt_text.slice(0, 60)}…`;
-  promptSelect.appendChild(option);
+  option.value = test;
+  option.textContent = test;
+  testSelect.appendChild(option);
 });
 
-function selectedPrompt() {
-  return prompts.find((p) => p.id === Number(promptSelect.value));
+let currentTask1 = null;
+let currentTask2 = null;
+let promptChartT1 = null;
+let promptChartT2 = null;
+
+function populateTest() {
+  const selectedTest = testSelect.value;
+  const testPrompts = prompts.filter((p) => (p.category || 'General') === selectedTest);
+  
+  currentTask1 = testPrompts.find(p => p.task_type === 'task1');
+  currentTask2 = testPrompts.find(p => p.task_type === 'task2');
+
+  setupTask('t1', currentTask1, 150);
+  setupTask('t2', currentTask2, 250);
 }
 
-let promptChart = null;
+function setupTask(prefix, prompt, targetWords) {
+  if (!prompt) return;
 
-function showPromptText() {
-  const prompt = selectedPrompt();
-  el('prompt-text').textContent = prompt?.prompt_text || '';
+  el(`prompt-text-${prefix}`).textContent = prompt.prompt_text || '';
 
-  // Render or hide the Task 1 chart
-  const chartContainer = el('prompt-chart-container');
-  if (promptChart) {
-    promptChart.destroy();
-    promptChart = null;
+  // Chart setup
+  const chartContainer = el(`prompt-chart-container-${prefix}`);
+  let chartInstance = prefix === 't1' ? promptChartT1 : promptChartT2;
+  
+  if (chartInstance) {
+    chartInstance.destroy();
+    chartInstance = null;
   }
 
-  if (prompt?.chart_data) {
+  if (prompt.chart_data) {
     chartContainer.classList.remove('hidden');
     const config = JSON.parse(JSON.stringify(prompt.chart_data)); // deep clone
-
-    // Resolve tick callback placeholders
+    
     const resolveCallbacks = (obj) => {
       if (!obj) return;
-      if (obj.ticks?.callback === 'PERCENT') {
-        obj.ticks.callback = (v) => v + '%';
-      }
-      if (obj.ticks?.callback === 'LITRES') {
-        obj.ticks.callback = (v) => v + 'L';
-      }
+      if (obj.ticks?.callback === 'PERCENT') obj.ticks.callback = (v) => v + '%';
+      if (obj.ticks?.callback === 'LITRES') obj.ticks.callback = (v) => v + 'L';
     };
-    if (config.options?.scales) {
-      Object.values(config.options.scales).forEach(resolveCallbacks);
-    }
+    
+    resolveCallbacks(config.options?.scales?.y);
+    resolveCallbacks(config.options?.scales?.x);
 
-    // Apply dark mode colors
     const isDark = document.documentElement.classList.contains('dark');
     const textColor = isDark ? '#94a3b8' : '#64748b';
     const gridColor = isDark ? 'rgba(51,65,85,0.5)' : 'rgba(226,232,240,0.8)';
+    
     if (config.options?.scales) {
       Object.values(config.options.scales).forEach((scale) => {
         if (scale.ticks) scale.ticks.color = textColor;
@@ -71,75 +83,146 @@ function showPromptText() {
         if (scale.pointLabels) scale.pointLabels.color = textColor;
       });
     }
-    if (config.options?.plugins?.legend?.labels) {
-      config.options.plugins.legend.labels.color = textColor;
-    }
-    if (config.options?.plugins?.title) {
-      config.options.plugins.title.color = textColor;
-    }
 
-    promptChart = new Chart(el('prompt-chart'), config);
+    const newChart = new Chart(el(`prompt-chart-${prefix}`), config);
+    if (prefix === 't1') promptChartT1 = newChart;
+    else promptChartT2 = newChart;
   } else {
     chartContainer.classList.add('hidden');
   }
+
+  // Restore essay box text and reset counters
+  const savedText = savedEssays[prompt.id] || '';
+  el(`essay-${prefix}`).value = savedText;
+  
+  const count = savedText.trim() ? savedText.trim().split(/\s+/).length : 0;
+  el(`word-count-${prefix}`).textContent = count;
+  el(`word-progress-${prefix}`).style.width = `${Math.min(100, (100 * count) / targetWords)}%`;
+  el(`elapsed-${prefix}`).textContent = '00:00';
+  
+  // Hide evaluation panel if open
+  el(`evaluation-${prefix}`).classList.add('hidden');
 }
-promptSelect.addEventListener('change', showPromptText);
-if (prompts.length) showPromptText();
 
-// ---------- Editor: word count + writing timer ----------
-const essay = el('essay');
-const TARGET_WORDS = 250;
-let timerStarted = false;
-let seconds = 0;
+testSelect.addEventListener('change', populateTest);
+if (tests.length) populateTest();
 
-essay.addEventListener('input', () => {
-  const count = essay.value.trim() ? essay.value.trim().split(/\s+/).length : 0;
-  el('word-count').textContent = count;
-  el('word-progress').style.width = `${Math.min(100, (100 * count) / TARGET_WORDS)}%`;
+// ---------- Editor logic ----------
+function bindEditor(prefix, targetWords) {
+  const essayEl = el(`essay-${prefix}`);
+  let timerStarted = false;
+  let seconds = 0;
 
-  if (!timerStarted && count > 0) {
-    timerStarted = true;
-    setInterval(() => {
-      seconds++;
-      const mm = String(Math.floor(seconds / 60)).padStart(2, '0');
-      const ss = String(seconds % 60).padStart(2, '0');
-      el('elapsed').textContent = `${mm}:${ss}`;
-    }, 1000);
+  essayEl.addEventListener('input', () => {
+    const text = essayEl.value;
+    const prompt = prefix === 't1' ? currentTask1 : currentTask2;
+    if (prompt) {
+      savedEssays[prompt.id] = text;
+      localStorage.setItem(CACHE_KEY, JSON.stringify(savedEssays));
+    }
+
+    const count = text.trim() ? text.trim().split(/\s+/).length : 0;
+    el(`word-count-${prefix}`).textContent = count;
+    el(`word-progress-${prefix}`).style.width = `${Math.min(100, (100 * count) / targetWords)}%`;
+
+    if (!timerStarted && count > 0) {
+      timerStarted = true;
+      setInterval(() => {
+        seconds++;
+        const mm = String(Math.floor(seconds / 60)).padStart(2, '0');
+        const ss = String(seconds % 60).padStart(2, '0');
+        el(`elapsed-${prefix}`).textContent = `${mm}:${ss}`;
+      }, 1000);
+    }
+  });
+
+}
+
+async function evaluateTask(prefix, prompt, text) {
+  if (!prompt || !text || text.length < 20) return;
+
+  el(`evaluating-${prefix}`).classList.remove('hidden');
+  el(`evaluation-${prefix}`).classList.add('hidden');
+  el(`evaluation-${prefix}`).innerHTML = '';
+  
+  try {
+    const result = await api.submitEssay({
+      promptId: prompt.id,
+      taskType: prompt.task_type,
+      essayText: text,
+    });
+
+    renderEvaluation(el(`evaluation-${prefix}`), result.evaluation, {
+      isMock: result.isMock,
+      wordCount: text.split(/\s+/).length,
+      hideOverall: true
+    });
+    
+    el(`evaluating-${prefix}`).classList.add('hidden');
+    el(`evaluation-${prefix}`).classList.remove('hidden');
+    progressLoaded = false;
+    
+    return result.evaluation.band_overall;
+  } catch (err) {
+    el(`evaluating-${prefix}`).classList.add('hidden');
+    toast(err.message, 'error');
+    throw err;
   }
-});
+}
 
-// ---------- Submit ----------
-el('submit-btn').addEventListener('click', async () => {
-  const text = essay.value.trim();
-  const words = text ? text.split(/\s+/).length : 0;
-  if (words < 30) {
-    toast('Write at least a full paragraph before submitting.', 'error');
+el('submit-btn-both').addEventListener('click', async () => {
+  const textT1 = el('essay-t1').value.trim();
+  const textT2 = el('essay-t2').value.trim();
+
+  if (textT1.length < 20 && textT2.length < 20) {
+    toast('Please write at least 20 characters in one of the tasks before evaluating.', 'info');
     return;
   }
 
-  el('submit-btn').disabled = true;
-  el('evaluating').classList.remove('hidden');
-  el('evaluation').classList.add('hidden');
-  el('evaluating').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  const submitBtn = el('submit-btn-both');
+  submitBtn.disabled = true;
 
   try {
-    const prompt = selectedPrompt();
-    const result = await api.submitEssay({
-      promptId: prompt?.id ?? null,
-      taskType: prompt?.task_type ?? 'task2',
-      essayText: text,
-    });
-    renderEvaluation(el('evaluation'), result.evaluation, { isMock: result.isMock, wordCount: result.wordCount });
-    el('evaluation').classList.remove('hidden');
-    el('evaluation').scrollIntoView({ behavior: 'smooth', block: 'start' });
-    toast('Evaluation complete', 'success');
-  } catch (err) {
-    toast(err.message, 'error');
+    let scoreT1 = null;
+    let scoreT2 = null;
+
+    if (textT1.length >= 20 && currentTask1) {
+      el(`evaluating-t1`).scrollIntoView({ behavior: 'smooth', block: 'center' });
+      scoreT1 = await evaluateTask('t1', currentTask1, textT1);
+    }
+    
+    if (textT2.length >= 20 && currentTask2) {
+      el(`evaluating-t2`).scrollIntoView({ behavior: 'smooth', block: 'center' });
+      scoreT2 = await evaluateTask('t2', currentTask2, textT2);
+    }
+    
+    if (scoreT1 !== null && scoreT2 !== null) {
+      // Calculate overall test score: Task 2 is worth twice as much as Task 1
+      const rawScore = (scoreT1 + (scoreT2 * 2)) / 3;
+      const finalScore = Math.round(rawScore * 2) / 2; // round to nearest 0.5
+      
+      const overallEl = el('overall-test-score');
+      overallEl.innerHTML = `
+        <h2 class="font-display font-extrabold text-4xl sm:text-5xl mb-3">${finalScore.toFixed(1)}</h2>
+        <p class="text-indigo-100 font-medium text-lg uppercase tracking-wider">Overall Writing Band Score</p>
+        <p class="text-indigo-200 text-sm mt-3">Calculated from Task 1 (${scoreT1.toFixed(1)}) and Task 2 (${scoreT2.toFixed(1)})</p>
+      `;
+      overallEl.classList.remove('hidden');
+      overallEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } else {
+      el('overall-test-score').classList.add('hidden');
+    }
+    
+    toast('Evaluation complete for submitted tasks!', 'success');
+  } catch (e) {
+    console.error(e);
   } finally {
-    el('evaluating').classList.add('hidden');
-    el('submit-btn').disabled = false;
+    submitBtn.disabled = false;
   }
 });
+
+bindEditor('t1', 150);
+bindEditor('t2', 250);
 
 // ---------- Evaluation renderer (shared by write + history views) ----------
 const CRITERIA_LABELS = {
@@ -164,13 +247,13 @@ function criterionBar(key, criterion) {
     </div>`;
 }
 
-function renderEvaluation(container, evaluation, { isMock = false, wordCount = null } = {}) {
+function renderEvaluation(container, evaluation, { isMock = false, wordCount = null, hideOverall = false } = {}) {
   container.innerHTML = `
     ${isMock ? `<div class="p-3.5 mb-4 rounded-xl bg-amber-50 dark:bg-amber-900/25 border border-amber-200 dark:border-amber-800 text-sm text-amber-800 dark:text-amber-300">
       Development mode: this is a placeholder evaluation. Add an AI API key on the server for real grading.</div>` : ''}
 
-    <div class="card p-6 grid sm:grid-cols-2 gap-6 items-center mb-4">
-      <div class="grid place-items-center"><div class="eval-gauge"></div></div>
+    <div class="card p-6 grid ${hideOverall ? 'grid-cols-1' : 'sm:grid-cols-2'} gap-6 items-center mb-4">
+      ${!hideOverall ? `<div class="grid place-items-center"><div class="eval-gauge"></div></div>` : ''}
       <div class="space-y-4 eval-criteria"></div>
     </div>
 
@@ -200,11 +283,14 @@ function renderEvaluation(container, evaluation, { isMock = false, wordCount = n
       <p class="text-sm leading-relaxed text-slate-600 dark:text-slate-300 italic sample-text"></p>
     </div>`;
 
-  renderGauge(container.querySelector('.eval-gauge'), {
-    value: evaluation.band_overall,
-    label: wordCount ? `Overall · ${wordCount} words` : 'Overall band',
-    size: 190,
-  });
+  // 2. Render Gauge (if not hidden)
+  if (!hideOverall) {
+    renderGauge(container.querySelector('.eval-gauge'), {
+      value: evaluation.band_overall,
+      label: wordCount ? `Overall · ${wordCount} words` : 'Overall band',
+      size: 190,
+    });
+  }
 
   const criteriaEl = container.querySelector('.eval-criteria');
   Object.entries(evaluation.criteria || {}).forEach(([key, criterion]) => {
