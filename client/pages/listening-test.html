@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <link rel="icon" type="image/png" href="/favicon.png">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Listening test · BandUp IELTS</title>
@@ -37,9 +38,9 @@
       <section class="listening-pane lg:sticky lg:top-[7.5rem] lg:self-start lg:max-h-[calc(100vh-9rem)] lg:overflow-y-auto lg:pr-2" aria-label="Listening audio">
         <div class="card p-6 mb-4">
           <h3 class="font-display font-semibold mb-3">Audio recording</h3>
-          <audio id="audio-player" controls class="w-full h-12 rounded-lg bg-slate-100 dark:bg-slate-800">
-            Your browser does not support the audio element.
-          </audio>
+          <div id="media-container" class="w-full">
+            <audio id="audio-player" controls class="w-full h-12 rounded-lg bg-slate-100 dark:bg-slate-800 hidden"></audio>
+          </div>
         </div>
         <article class="card p-6 prose-sm leading-relaxed text-[0.95rem] text-slate-700 dark:text-slate-300">
           <div class="flex items-center justify-between mb-3">

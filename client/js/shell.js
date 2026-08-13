@@ -16,6 +16,8 @@ const NAV_ITEMS = [
     icon: '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 9h8M8 13h5"/>' },
   { id: 'writing', label: 'Writing', href: '/pages/writing.html',
     icon: '<path d="M17 3a2.8 2.8 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/>' },
+  { id: 'speaking', label: 'Speaking', href: '/pages/speaking.html',
+    icon: '<path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/>' },
 ];
 
 function iconSvg(paths, cls = 'w-5 h-5') {
@@ -43,7 +45,7 @@ export async function initShell({ active, title }) {
     'bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col';
   aside.innerHTML = `
     <a href="/pages/dashboard.html" class="flex items-center gap-2.5 px-6 h-16 border-b border-slate-200 dark:border-slate-800">
-      <span class="grid place-items-center w-8 h-8 rounded-lg bg-gradient-to-br from-brand-600 to-cyan-500 text-white font-display font-bold text-sm">B</span>
+      <img src="/favicon.png" alt="BandUp" class="w-8 h-8 rounded-lg">
       <span class="font-display font-bold text-lg text-slate-900 dark:text-white">BandUp</span>
     </a>
     <nav class="flex-1 px-3 py-4 space-y-1" aria-label="Main">

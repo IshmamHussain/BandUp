@@ -5,6 +5,7 @@
 async function request(path, { method = 'GET', body } = {}) {
   const res = await fetch(`/api${path}`, {
     method,
+    cache: 'no-store',
     credentials: 'same-origin',
     headers: body ? { 'Content-Type': 'application/json' } : undefined,
     body: body ? JSON.stringify(body) : undefined,
@@ -34,10 +35,10 @@ export const api = {
   updateGoals: (body) => request('/auth/goals', { method: 'PATCH', body }),
 
   // Reading
-  passages: () => request('/reading/passages'),
-  passage: (id) => request(`/reading/passages/${id}`),
-  submitReading: (id, body) => request(`/reading/passages/${id}/submit`, { method: 'POST', body }),
-  togglePassageBookmark: (id) => request(`/reading/passages/${id}/bookmark`, { method: 'POST' }),
+  readingTests: () => request('/reading/tests'),
+  readingTest: (id) => request(`/reading/tests/${id}`),
+  submitReading: (id, body) => request(`/reading/tests/${id}/submit`, { method: 'POST', body }),
+  toggleReadingBookmark: (id) => request(`/reading/tests/${id}/bookmark`, { method: 'POST' }),
 
   // Listening
   listeningTests: () => request('/listening/tests'),
@@ -63,6 +64,22 @@ export const api = {
   submissions: () => request('/writing/submissions'),
   submission: (id) => request(`/writing/submissions/${id}`),
   writingStats: () => request('/writing/stats'),
+
+  // Speaking
+  speakingPrompts: () => request('/speaking/prompts'),
+  speakingHistory: () => request('/speaking/history'),
+  speakingSubmission: (id) => request(`/speaking/${id}`),
+  speakingStats: () => request('/speaking/stats'),
+  submitSpeaking: async (formData) => {
+    const res = await fetch('/api/speaking/submit', {
+      method: 'POST',
+      body: formData // No Content-Type header so browser sets multipart/form-data boundary
+    });
+    let json;
+    try { json = await res.json(); } catch { json = { success: false, error: 'Unexpected response' }; }
+    if (!json.success) throw new Error(json.error || 'Request failed');
+    return json.data;
+  },
 
   // Dashboard
   dashboard: () => request('/dashboard'),

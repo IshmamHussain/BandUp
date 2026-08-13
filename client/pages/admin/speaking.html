@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manage Speaking · Admin · BandUp</title>
+  <script>if(localStorage.theme==='dark'||(!('theme' in localStorage)&&matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.classList.add('dark')</script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/js/tw-config.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/custom.css">
+</head>
+<body class="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 antialiased">
+  <div class="md:pl-64 min-h-screen flex flex-col">
+    <header id="topbar"></header>
+    <main class="flex-1 p-4 sm:p-6 max-w-6xl w-full mx-auto page-enter">
+      <div class="mb-6">
+        <h2 class="font-display font-bold text-2xl sm:text-3xl">Manage Speaking Prompts</h2>
+        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Add, edit, or delete speaking prompts.</p>
+      </div>
+      <div id="crud-container"></div>
+    </main>
+  </div>
+  <script type="module" src="/js/pages/admin/speaking.js"></script>
+</body>
+</html>

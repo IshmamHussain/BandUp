@@ -23,8 +23,14 @@ try {
 el('test-title').textContent = test.title;
 
 // Audio and transcript
-const audioEl = el('audio-player');
+const mediaContainer = el('media-container');
+const audioEl = document.createElement('audio');
+audioEl.id = 'audio-player';
+audioEl.controls = true;
+audioEl.className = 'w-full h-12 rounded-lg bg-slate-100 dark:bg-slate-800';
 audioEl.src = test.audio_url;
+mediaContainer.innerHTML = '';
+mediaContainer.appendChild(audioEl);
 
 const paragraphs = test.transcript.split(/\\n\\n|\n\n|\n/);
 el('transcript-body').innerHTML = '';

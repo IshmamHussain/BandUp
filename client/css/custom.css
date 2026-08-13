@@ -12,6 +12,15 @@
   --ink: #0f172a;
 }
 
+/* ---- Theme-switch circular ripple (View Transitions API) ---- */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+::view-transition-old(root) { z-index: 1; }
+::view-transition-new(root) { z-index: 9999; }
+
 html { scroll-behavior: smooth; }
 body { font-family: 'Inter', system-ui, sans-serif; }
 .font-display { font-family: 'Bricolage Grotesque', 'Inter', sans-serif; }
@@ -156,8 +165,338 @@ body { font-family: 'Inter', system-ui, sans-serif; }
   animation: page-in 0.2s ease;
 }
 
+/* ---- Admin data table ---- */
+.admin-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+.admin-table th { text-align: left; font-weight: 600; font-size: 0.75rem; text-transform: uppercase;
+  letter-spacing: 0.05em; color: rgb(100 116 139); padding: 0.75rem 1rem; border-bottom: 1px solid rgb(226 232 240);
+}
+.dark .admin-table th { color: rgb(148 163 184); border-color: rgb(30 41 59); }
+.admin-table td { padding: 0.75rem 1rem; border-bottom: 1px solid rgb(241 245 249); vertical-align: middle; }
+.dark .admin-table td { border-color: rgb(30 41 59); }
+.admin-table tbody tr { transition: background 0.15s ease; }
+.admin-table tbody tr:hover { background: rgb(248 250 252); }
+.dark .admin-table tbody tr:hover { background: rgb(15 23 42 / 0.5); }
+
+/* ---- Admin action buttons ---- */
+.admin-btn {
+  display: inline-flex; align-items: center; gap: 0.375rem;
+  padding: 0.375rem 0.75rem; border-radius: 0.5rem; font-size: 0.75rem; font-weight: 600;
+  border: 1px solid transparent; cursor: pointer; transition: all 0.15s ease;
+}
+.admin-btn-edit { color: #0d9488; background: rgb(240 253 250); border-color: rgb(204 251 241); }
+.admin-btn-edit:hover { background: rgb(204 251 241); }
+.dark .admin-btn-edit { color: #5eead4; background: rgb(13 148 136 / 0.15); border-color: rgb(13 148 136 / 0.3); }
+.dark .admin-btn-edit:hover { background: rgb(13 148 136 / 0.25); }
+.admin-btn-delete { color: #e11d48; background: rgb(255 241 242); border-color: rgb(254 205 211); }
+.admin-btn-delete:hover { background: rgb(254 205 211); }
+.dark .admin-btn-delete { color: #fb7185; background: rgb(225 29 72 / 0.12); border-color: rgb(225 29 72 / 0.25); }
+.dark .admin-btn-delete:hover { background: rgb(225 29 72 / 0.2); }
+.admin-btn-primary { color: white; background: #0d9488; border-color: #0d9488; }
+.admin-btn-primary:hover { background: #0f766e; }
+
+/* ---- Admin modal ---- */
+.admin-modal {
+  position: fixed; inset: 0; z-index: 60;
+  background: rgb(2 6 23 / 0.6);
+  backdrop-filter: blur(4px);
+  display: grid; place-items: center;
+  animation: page-in 0.2s ease;
+}
+.admin-modal-body {
+  width: 100%; max-width: 36rem; max-height: 90vh; overflow-y: auto;
+  margin: 1rem; border-radius: 1.25rem;
+  background: white; border: 1px solid rgb(226 232 240);
+  box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+}
+.dark .admin-modal-body { background: rgb(15 23 42); border-color: rgb(30 41 59); }
+
+/* ---- Status badge (admin) ---- */
+.admin-badge { display: inline-flex; align-items: center; padding: 0.25rem 0.625rem; border-radius: 9999px;
+  font-size: 0.6875rem; font-weight: 600; text-transform: capitalize; }
+.admin-badge-easy { background: rgb(236 253 245); color: rgb(4 120 87); }
+.dark .admin-badge-easy { background: rgb(6 78 59 / 0.3); color: rgb(52 211 153); }
+.admin-badge-medium { background: rgb(254 252 232); color: rgb(161 98 7); }
+.dark .admin-badge-medium { background: rgb(120 53 15 / 0.3); color: rgb(251 191 36); }
+.admin-badge-hard { background: rgb(255 241 242); color: rgb(190 18 60); }
+.dark .admin-badge-hard { background: rgb(136 19 55 / 0.3); color: rgb(251 113 133); }
+
+/* ---- Login page decorative orbs & aurora ---- */
+.login-orb {
+  position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.55;
+  animation: float-orb 9s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+.login-orb-1 { width: 450px; height: 450px; top: -120px; left: -100px;
+  background: radial-gradient(circle, #0d9488 0%, #06b6d4 100%); }
+.login-orb-2 { width: 380px; height: 380px; bottom: -100px; right: -80px;
+  background: radial-gradient(circle, #f59e0b 0%, #ec4899 100%); animation-delay: -4.5s; }
+.login-orb-3 { width: 280px; height: 280px; top: 35%; right: 15%;
+  background: radial-gradient(circle, #8b5cf6 0%, #3b82f6 100%); animation-delay: -2.5s; }
+@keyframes float-orb {
+  0% { transform: translate(0, 0) scale(1) rotate(0deg); }
+  50% { transform: translate(25px, -35px) scale(1.12) rotate(4deg); }
+  100% { transform: translate(-20px, 20px) scale(0.95) rotate(-4deg); }
+}
+
+/* ---- Ambient Tech Grid Background ---- */
+.tech-grid-bg {
+  background-image: radial-gradient(rgba(13, 148 136, 0.12) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+.dark .tech-grid-bg {
+  background-image: radial-gradient(rgba(34, 211, 238, 0.08) 1px, transparent 1px);
+}
+
+/* ---- Glassmorphism Card & 3D Tilt ---- */
+.login-glass {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(28px) saturate(2);
+  -webkit-backdrop-filter: blur(28px) saturate(2);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.08), 0 2px 10px rgba(0, 0, 0, 0.03);
+  transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.3s ease, border-color 0.3s ease;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+.dark .login-glass {
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(51, 65, 85, 0.6);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45), 0 0 30px rgba(13, 148, 136, 0.05);
+}
+
+/* Glass shine overlay */
+.login-glass::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 1rem;
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.6), transparent 50%, rgba(20, 184, 166, 0.2));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+.dark .login-glass::before {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), transparent 50%, rgba(20, 184, 166, 0.3));
+}
+
+/* Floating AI waveform animation */
+.ai-wave-bar {
+  animation: ai-wave 1.2s ease-in-out infinite alternate;
+}
+.ai-wave-bar:nth-child(2) { animation-delay: 0.2s; }
+.ai-wave-bar:nth-child(3) { animation-delay: 0.4s; }
+.ai-wave-bar:nth-child(4) { animation-delay: 0.15s; }
+.ai-wave-bar:nth-child(5) { animation-delay: 0.35s; }
+
+@keyframes ai-wave {
+  0% { height: 6px; opacity: 0.5; }
+  100% { height: 22px; opacity: 1; }
+}
+
+/* Glowing input field focus state */
+.input-focus-effect:focus-within {
+  box-shadow: 0 0 0 3.5px rgba(20, 184, 166, 0.25);
+  border-color: #0d9488;
+}
+.dark .input-focus-effect:focus-within {
+  box-shadow: 0 0 0 3.5px rgba(20, 184, 166, 0.2);
+  border-color: #14b8a6;
+}
+
+/* Admin input focus override */
+.admin-input {
+  width: 100%; padding: 0.625rem 0.875rem; border-radius: 0.75rem; font-size: 0.875rem;
+  border: 1px solid rgb(203 213 225); background: white; outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.admin-input:focus { border-color: #0d9488; box-shadow: 0 0 0 3px rgb(13 148 136 / 0.15); }
+.dark .admin-input { border-color: rgb(51 65 85); background: rgb(15 23 42); color: white; }
+.dark .admin-input:focus { border-color: #14b8a6; box-shadow: 0 0 0 3px rgb(20 184 166 / 0.15); }
+textarea.admin-input { resize: vertical; min-height: 5rem; }
+select.admin-input { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpath d='M2 4l4 4 4-4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 0.75rem center; padding-right: 2rem; }
+
+/* 3D floating animation for stat pills */
+.float-pill-1 { animation: float-pill 5s ease-in-out infinite alternate; }
+.float-pill-2 { animation: float-pill 6.5s ease-in-out infinite alternate-reverse; }
+.float-pill-3 { animation: float-pill 5.8s ease-in-out 1s infinite alternate; }
+
+@keyframes float-pill {
+  0% { transform: translateY(0px) rotate(0deg); }
+  100% { transform: translateY(-8px) rotate(1deg); }
+}
+
+/* Pulsing aura */
+.pulse-glow {
+  animation: aura-pulse 3s infinite;
+}
+@keyframes aura-pulse {
+  0%, 100% { box-shadow: 0 0 15px rgba(20, 184, 166, 0.4); }
+  50% { box-shadow: 0 0 30px rgba(6, 182, 212, 0.7); }
+}
+
+/* ---- Speaking: Staggered card entrance ---- */
+@keyframes stagger-in {
+  from { opacity: 0; transform: translateY(16px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.stagger-card {
+  opacity: 0;
+  animation: stagger-in 0.45s cubic-bezier(0.2, 0.8, 0.3, 1) forwards;
+}
+
+/* ---- Speaking: Topic card gradient accent ---- */
+.topic-card {
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+.topic-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #0d9488, #06b6d4, #22d3ee);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.3, 1);
+}
+.topic-card:hover::before { transform: scaleX(1); }
+.topic-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 32px -8px rgb(13 148 136 / 0.18);
+}
+
+/* ---- Speaking: Animated band ring ---- */
+.band-ring {
+  position: relative;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+}
+.band-ring::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 180deg,
+    #0d9488 0%,
+    #06b6d4 var(--band-pct, 0%),
+    rgb(226 232 240) var(--band-pct, 0%),
+    rgb(226 232 240) 100%
+  );
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 4px), #000 calc(100% - 4px));
+  mask: radial-gradient(farthest-side, transparent calc(100% - 4px), #000 calc(100% - 4px));
+  transition: --band-pct 0.8s ease;
+}
+.dark .band-ring::before {
+  background: conic-gradient(
+    from 180deg,
+    #14b8a6 0%,
+    #22d3ee var(--band-pct, 0%),
+    rgb(30 41 59) var(--band-pct, 0%),
+    rgb(30 41 59) 100%
+  );
+}
+
+/* ---- Speaking: Waveform visualizer container ---- */
+.waveform-wrap {
+  position: relative;
+  width: 100%;
+  height: 80px;
+  border-radius: 1rem;
+  overflow: hidden;
+  background: linear-gradient(135deg, rgb(240 253 250) 0%, rgb(224 242 254) 100%);
+}
+.dark .waveform-wrap {
+  background: linear-gradient(135deg, rgb(15 23 42) 0%, rgb(17 24 39) 100%);
+}
+.waveform-wrap canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* ---- Speaking: Recording glow pulse ---- */
+.recording-glow {
+  animation: rec-glow 2s ease-in-out infinite;
+}
+@keyframes rec-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgb(239 68 68 / 0.4); }
+  50%      { box-shadow: 0 0 0 16px rgb(239 68 68 / 0); }
+}
+
+/* ---- Speaking: Timer glow while recording ---- */
+.timer-recording {
+  background: linear-gradient(120deg, #ef4444, #f97316);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: timer-pulse 1.5s ease-in-out infinite;
+}
+@keyframes timer-pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.7; }
+}
+
+/* ---- Speaking: Glassmorphic prompt card ---- */
+.speaking-glass {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px) saturate(1.8);
+  -webkit-backdrop-filter: blur(20px) saturate(1.8);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 8px 32px rgb(15 23 42 / 0.08);
+}
+.dark .speaking-glass {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(51, 65, 85, 0.5);
+  box-shadow: 0 8px 32px rgb(0 0 0 / 0.3);
+}
+
+/* ---- Speaking: State transitions ---- */
+.speak-state {
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+.speak-state-exit {
+  opacity: 0;
+  transform: scale(0.95);
+  pointer-events: none;
+}
+
+/* ---- Speaking: Waveform bar animation for idle state ---- */
+.wave-bar {
+  display: inline-block;
+  width: 3px;
+  background: linear-gradient(180deg, #0d9488, #06b6d4);
+  border-radius: 2px;
+  animation: wave-idle 1.2s ease-in-out infinite alternate;
+}
+.wave-bar:nth-child(2) { animation-delay: 0.15s; }
+.wave-bar:nth-child(3) { animation-delay: 0.3s; }
+.wave-bar:nth-child(4) { animation-delay: 0.1s; }
+.wave-bar:nth-child(5) { animation-delay: 0.25s; }
+.wave-bar:nth-child(6) { animation-delay: 0.35s; }
+.wave-bar:nth-child(7) { animation-delay: 0.2s; }
+@keyframes wave-idle {
+  0%   { height: 8px; }
+  100% { height: 28px; }
+}
+
+/* ---- Speaking: Criteria card hover ---- */
+.criteria-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.criteria-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px -4px rgb(13 148 136 / 0.15);
+}
+
 /* Respect users who prefer less motion */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
   html { scroll-behavior: auto; }
 }
+
