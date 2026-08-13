@@ -12,10 +12,14 @@ This project is already configured for local development. If you use XAMPP
 
 ---
 
-## Step 1 — Unzip
+## Step 1 — Clone the repo
 
-Unzip `ielts-platform-full.zip` into your projects folder. You'll get one
-folder called `ielts-platform`. Everything lives inside it — don't move
+```bash
+git clone https://github.com/IshmamHussain/BandUp.git
+cd BandUp
+```
+
+Everything lives inside one folder — don't move
 `client`, `server`, or `database` out of it; they belong together.
 
 ## Step 2 — Create the database
@@ -65,7 +69,7 @@ IELTS Prep API running at http://localhost:5000 (development)
 
 Go to **http://localhost:5000** in your browser. Create an account, and
 you're in. The AI essay grading runs in a clearly-labelled demo mode until
-you add an Anthropic API key to `server/.env` (optional).
+you add a Gemini API key (`GEMINI_API_KEY`) to `server/.env` (optional).
 
 ---
 
