@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <link rel="icon" type="image/png" href="/favicon.png">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Create account · BandUp IELTS</title>
@@ -16,7 +17,7 @@
   <main class="min-h-screen grid place-items-center p-4 page-enter">
     <div class="w-full max-w-md">
       <a href="/" class="flex items-center justify-center gap-2.5 mb-8">
-        <span class="grid place-items-center w-10 h-10 rounded-xl bg-gradient-to-br from-brand-600 to-cyan-500 text-white font-display font-bold">B</span>
+        <img src="/favicon.png" alt="BandUp Logo" class="w-10 h-10 rounded-xl">
         <span class="font-display font-bold text-2xl">BandUp</span>
       </a>
 
@@ -53,6 +54,7 @@
           </div>
 
           <p id="form-error" class="hidden text-sm text-red-600 dark:text-red-400" role="alert"></p>
+          <p id="form-success" class="hidden text-sm font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-4 py-3 rounded-xl" role="alert"></p>
 
           <button id="submit-btn" type="submit"
             class="w-full py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 active:scale-[0.99] text-white font-semibold
@@ -74,6 +76,7 @@
 
     const form = document.getElementById('register-form');
     const errorEl = document.getElementById('form-error');
+    const successEl = document.getElementById('form-success');
     const submitBtn = document.getElementById('submit-btn');
     const password = document.getElementById('password');
 
@@ -95,15 +98,22 @@
     form.addEventListener('submit', async (event) => {
       event.preventDefault();
       errorEl.classList.add('hidden');
+      successEl.classList.add('hidden');
       submitBtn.disabled = true;
       submitBtn.textContent = 'Creating account…';
       try {
-        await api.register({
+        const res = await api.register({
           name: form.name.value.trim(),
           email: form.email.value.trim(),
           password: form.password.value,
         });
-        window.location.href = '/pages/dashboard.html';
+        
+        // Hide inputs and show success message
+        form.querySelectorAll('div').forEach(div => div.classList.add('hidden'));
+        submitBtn.classList.add('hidden');
+        successEl.textContent = res.message || 'Please check your email to verify your account.';
+        successEl.classList.remove('hidden');
+        
       } catch (err) {
         errorEl.textContent = err.message;
         errorEl.classList.remove('hidden');

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Speaking Module - IELTS Prep</title>
+  <meta name="description" content="Practice IELTS speaking, record your voice, and get AI-powered evaluation with detailed feedback.">
+  <script>if(localStorage.theme==='dark'||(!('theme' in localStorage)&&matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.classList.add('dark')</script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/js/tw-config.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/custom.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+</head>
+<body class="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 antialiased">
+  
+  <div class="md:pl-64 min-h-screen flex flex-col">
+    <header id="topbar"></header>
+    
+    <main class="flex-1 p-4 sm:p-6 max-w-5xl w-full mx-auto page-enter">
+      
+      <!-- Page Header -->
+      <header class="flex flex-wrap items-end justify-between gap-4 mb-6">
+        <div>
+          <h2 class="font-display font-bold text-2xl sm:text-3xl text-slate-900 dark:text-white tracking-tight">Speaking Module</h2>
+          <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Practice speaking, record your voice, and get AI-powered evaluation.</p>
+        </div>
+        
+        <div class="flex rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden text-sm font-semibold" role="tablist">
+          <button id="tab-practice" role="tab" aria-selected="true" class="px-4 py-2 bg-brand-600 text-white">Practice</button>
+          <button id="tab-history" role="tab" aria-selected="false" class="px-4 py-2 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition">History</button>
+          <button id="tab-progress" role="tab" aria-selected="false" class="px-4 py-2 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition">Progress</button>
+        </div>
+      </header>
+
+      <!-- Hero Stats Banner -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6" id="stats-banner">
+        <div class="card p-5 text-center group hover:border-brand-200 dark:hover:border-brand-800 transition-colors">
+          <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Total Tests</p>
+          <p class="mt-2 font-mono font-bold text-3xl" id="stat-total"><span class="skeleton inline-block w-12">&nbsp;</span></p>
+        </div>
+        <div class="card p-5 text-center group hover:border-brand-200 dark:hover:border-brand-800 transition-colors">
+          <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Average Band</p>
+          <p class="mt-2 font-mono font-bold text-3xl text-gradient" id="stat-avg"><span class="skeleton inline-block w-12">&nbsp;</span></p>
+        </div>
+        <div class="card p-5 text-center group hover:border-brand-200 dark:hover:border-brand-800 transition-colors">
+          <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Best Band</p>
+          <p class="mt-2 font-mono font-bold text-3xl text-gradient" id="stat-best"><span class="skeleton inline-block w-12">&nbsp;</span></p>
+        </div>
+      </div>
+
+      <!-- PRACTICE SECTION -->
+      <section id="practice-section" class="space-y-6 animate-fade-in">
+        <div class="card p-6 border-brand-200 dark:border-brand-900/30 bg-gradient-to-br from-white to-brand-50/50 dark:from-slate-800 dark:to-slate-800/80">
+          <div class="flex items-center justify-between mb-5">
+            <h3 class="text-lg font-semibold flex items-center gap-2">
+              <span class="w-9 h-9 rounded-lg bg-gradient-to-br from-brand-500 to-cyan-500 flex items-center justify-center">
+                <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path></svg>
+              </span>
+              Select a Topic
+            </h3>
+            <div class="flex items-center gap-1.5">
+              <span class="wave-bar" style="height:12px"></span>
+              <span class="wave-bar" style="height:18px"></span>
+              <span class="wave-bar" style="height:8px"></span>
+              <span class="wave-bar" style="height:22px"></span>
+              <span class="wave-bar" style="height:14px"></span>
+              <span class="wave-bar" style="height:10px"></span>
+              <span class="wave-bar" style="height:20px"></span>
+            </div>
+          </div>
+          <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3" id="topics-grid">
+            <!-- Topics injected here -->
+          </div>
+        </div>
+      </section>
+
+      <!-- HISTORY SECTION -->
+      <section id="history-section" class="hidden space-y-6 animate-fade-in">
+        <div class="grid md:grid-cols-3 gap-6 items-start">
+          <div class="md:col-span-1 space-y-4">
+            <h3 class="font-semibold text-slate-900 dark:text-white px-1">Past Submissions</h3>
+            <div id="history-list" class="space-y-2 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
+              <!-- History injected here -->
+            </div>
+          </div>
+          
+          <div class="md:col-span-2">
+            <div id="history-detail" class="hidden animate-fade-in">
+              <div class="card p-5 mb-4">
+                <h4 class="font-display font-semibold mb-2">Prompt</h4>
+                <p class="text-sm leading-relaxed text-slate-600 dark:text-slate-300 whitespace-pre-wrap prompt-text"></p>
+                <div class="mt-4">
+                  <audio id="history-audio" controls class="w-full h-10 rounded-lg bg-slate-100 dark:bg-slate-800"></audio>
+                </div>
+              </div>
+              <div class="eval-container"></div>
+            </div>
+            
+            <div id="history-empty" class="card p-12 text-center border-dashed border-2 bg-transparent shadow-none">
+              <div class="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg class="w-8 h-8 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/></svg>
+              </div>
+              <h3 class="text-lg font-medium text-slate-900 dark:text-white mb-1">No recorded tests yet</h3>
+              <p class="text-slate-500">Record a speaking test to see your evaluation history here.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PROGRESS SECTION -->
+      <section id="progress-section" class="hidden space-y-6 animate-fade-in">
+        <!-- Band score trend chart -->
+        <div class="card p-5">
+          <h3 class="font-display font-semibold mb-4">Band Score Trend</h3>
+          <div class="h-64"><canvas id="chart-band-trend"></canvas></div>
+        </div>
+
+        <!-- Criteria radar chart -->
+        <div class="card p-5">
+          <h3 class="font-display font-semibold mb-4">Average Criteria Breakdown</h3>
+          <div class="h-72 grid place-items-center"><canvas id="chart-criteria-radar"></canvas></div>
+        </div>
+
+        <!-- Empty state -->
+        <div id="progress-empty" class="hidden card p-8 text-center">
+          <div class="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg class="w-8 h-8 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+          </div>
+          <p class="font-medium text-sm">No speaking data yet</p>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Complete a speaking test to see your progress charts here.</p>
+        </div>
+      </section>
+
+    </main>
+  </div>
+  
+  <script type="module" src="../js/pages/speaking.js"></script>
+</body>
+</html>

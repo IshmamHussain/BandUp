@@ -4,7 +4,7 @@
   <link rel="icon" type="image/png" href="/favicon.png">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Reading · BandUp IELTS</title>
+  <title>Manage Vocabulary · Admin · BandUp</title>
   <script>if(localStorage.theme==='dark'||(!('theme' in localStorage)&&matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.classList.add('dark')</script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="/js/tw-config.js"></script>
@@ -13,26 +13,16 @@
   <link rel="stylesheet" href="/css/custom.css">
 </head>
 <body class="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 antialiased">
-
   <div class="md:pl-64 min-h-screen flex flex-col">
     <header id="topbar"></header>
-
     <main class="flex-1 p-4 sm:p-6 max-w-6xl w-full mx-auto page-enter">
       <div class="mb-6">
-        <h2 class="font-display font-bold text-2xl sm:text-3xl">Reading practice</h2>
-        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
-          Timed passages with instant scoring and an explanation for every answer.
-        </p>
+        <h2 class="font-display font-bold text-2xl sm:text-3xl">Manage Vocabulary</h2>
+        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Add, edit, or delete vocabulary words.</p>
       </div>
-
-      <div id="passage-list" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <div class="card p-5"><span class="skeleton block h-5 w-3/4 mb-3"></span><span class="skeleton block h-4 w-1/2 mb-6"></span><span class="skeleton block h-9 w-full"></span></div>
-        <div class="card p-5"><span class="skeleton block h-5 w-2/3 mb-3"></span><span class="skeleton block h-4 w-1/2 mb-6"></span><span class="skeleton block h-9 w-full"></span></div>
-        <div class="card p-5"><span class="skeleton block h-5 w-3/4 mb-3"></span><span class="skeleton block h-4 w-1/2 mb-6"></span><span class="skeleton block h-9 w-full"></span></div>
-      </div>
+      <div id="crud-container"></div>
     </main>
   </div>
-
-  <script type="module" src="/js/pages/reading.js"></script>
+  <script type="module" src="/js/pages/admin/vocabulary.js"></script>
 </body>
 </html>
