@@ -1,3 +1,5 @@
 node_modules/
 .env
 graphify-out/
+client/media/audio/submissions/*
+!client/media/audio/submissions/.gitkeep

@@ -5,7 +5,7 @@
 import mysql from 'mysql2/promise';
 import { env } from './env.js';
 
-export const pool = mysql.createPool({
+const poolConfig = {
   host: env.db.host,
   port: env.db.port,
   user: env.db.user,
@@ -14,7 +14,17 @@ export const pool = mysql.createPool({
   waitForConnections: true,
   connectionLimit: 10,
   namedPlaceholders: true,
-});
+};
+
+// Enable SSL if explicitly configured or when connecting to a remote/cloud database (Aiven, TiDB, Clever Cloud, etc.)
+if (
+  env.db.ssl ||
+  (process.env.DB_SSL !== 'false' && env.db.host && !env.db.host.includes('localhost') && !env.db.host.includes('127.0.0.1'))
+) {
+  poolConfig.ssl = { rejectUnauthorized: false };
+}
+
+export const pool = mysql.createPool(poolConfig);
 
 // Called once at startup so a bad DB config fails immediately.
 export async function verifyDatabaseConnection() {

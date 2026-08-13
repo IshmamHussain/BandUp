@@ -1,0 +1,16 @@
+{
+  "name": "bandup",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "BandUp - AI IELTS Preparation Platform",
+  "scripts": {
+    "start": "npm start --prefix server",
+    "build": "npm install --prefix server",
+    "dev": "npm run dev --prefix server",
+    "db:reset": "npm run db:reset --prefix server"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
