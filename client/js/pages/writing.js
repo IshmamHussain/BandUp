@@ -62,31 +62,41 @@ function setupTask(prefix, prompt, targetWords) {
     chartContainer.classList.remove('hidden');
     const config = JSON.parse(JSON.stringify(prompt.chart_data)); // deep clone
     
-    const resolveCallbacks = (obj) => {
-      if (!obj) return;
-      if (obj.ticks?.callback === 'PERCENT') obj.ticks.callback = (v) => v + '%';
-      if (obj.ticks?.callback === 'LITRES') obj.ticks.callback = (v) => v + 'L';
-    };
-    
-    resolveCallbacks(config.options?.scales?.y);
-    resolveCallbacks(config.options?.scales?.x);
+    if (config.type === 'image') {
+      el(`prompt-chart-${prefix}`).classList.add('hidden');
+      const imgEl = el(`prompt-image-${prefix}`);
+      imgEl.src = config.url;
+      imgEl.classList.remove('hidden');
+    } else {
+      el(`prompt-chart-${prefix}`).classList.remove('hidden');
+      el(`prompt-image-${prefix}`).classList.add('hidden');
+      
+      const resolveCallbacks = (obj) => {
+        if (!obj) return;
+        if (obj.ticks?.callback === 'PERCENT') obj.ticks.callback = (v) => v + '%';
+        if (obj.ticks?.callback === 'LITRES') obj.ticks.callback = (v) => v + 'L';
+      };
+      
+      resolveCallbacks(config.options?.scales?.y);
+      resolveCallbacks(config.options?.scales?.x);
 
-    const isDark = document.documentElement.classList.contains('dark');
-    const textColor = isDark ? '#94a3b8' : '#64748b';
-    const gridColor = isDark ? 'rgba(51,65,85,0.5)' : 'rgba(226,232,240,0.8)';
-    
-    if (config.options?.scales) {
-      Object.values(config.options.scales).forEach((scale) => {
-        if (scale.ticks) scale.ticks.color = textColor;
-        if (scale.grid) scale.grid.color = gridColor;
-        if (scale.angleLines) scale.angleLines.color = gridColor;
-        if (scale.pointLabels) scale.pointLabels.color = textColor;
-      });
+      const isDark = document.documentElement.classList.contains('dark');
+      const textColor = isDark ? '#94a3b8' : '#64748b';
+      const gridColor = isDark ? 'rgba(51,65,85,0.5)' : 'rgba(226,232,240,0.8)';
+      
+      if (config.options?.scales) {
+        Object.values(config.options.scales).forEach((scale) => {
+          if (scale.ticks) scale.ticks.color = textColor;
+          if (scale.grid) scale.grid.color = gridColor;
+          if (scale.angleLines) scale.angleLines.color = gridColor;
+          if (scale.pointLabels) scale.pointLabels.color = textColor;
+        });
+      }
+
+      const newChart = new Chart(el(`prompt-chart-${prefix}`), config);
+      if (prefix === 't1') promptChartT1 = newChart;
+      else promptChartT2 = newChart;
     }
-
-    const newChart = new Chart(el(`prompt-chart-${prefix}`), config);
-    if (prefix === 't1') promptChartT1 = newChart;
-    else promptChartT2 = newChart;
   } else {
     chartContainer.classList.add('hidden');
   }

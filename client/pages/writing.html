@@ -45,7 +45,10 @@
           <div class="card p-5 mb-4">
             <p id="prompt-text-t1" class="p-4 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-100 dark:border-slate-800 text-sm leading-relaxed"></p>
             <div id="prompt-chart-container-t1" class="hidden mt-4 p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700">
-              <div class="h-64 sm:h-72"><canvas id="prompt-chart-t1"></canvas></div>
+              <div class="h-64 sm:h-72 relative">
+                <canvas id="prompt-chart-t1"></canvas>
+                <img id="prompt-image-t1" class="hidden w-full h-full object-contain" alt="Task 1 Prompt Figure">
+              </div>
             </div>
           </div>
 
@@ -81,7 +84,10 @@
           <div class="card p-5 mb-4">
             <p id="prompt-text-t2" class="p-4 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-100 dark:border-slate-800 text-sm leading-relaxed"></p>
             <div id="prompt-chart-container-t2" class="hidden mt-4 p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700">
-              <div class="h-64 sm:h-72"><canvas id="prompt-chart-t2"></canvas></div>
+              <div class="h-64 sm:h-72 relative">
+                <canvas id="prompt-chart-t2"></canvas>
+                <img id="prompt-image-t2" class="hidden w-full h-full object-contain" alt="Task 2 Prompt Figure">
+              </div>
             </div>
           </div>
 
