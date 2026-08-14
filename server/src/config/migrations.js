@@ -73,7 +73,7 @@ const MIGRATIONS = [
         ['fill_blank', 'The speaker says their taste in food keeps ________.', null, 'changing', 'The speaker says: "My taste in food keeps changing."'],
         ['mcq', 'According to the speaker, what is NOT good for us?', '["Healthy food", "Fast food", "Home cooking"]', 'Fast food', 'The speaker says: "Fast food is not good for us."'],
         ['fill_blank', 'We need to focus more on ________ food.', null, 'healthy', 'The speaker says: "We need to focus more on healthy food."'],
-        ['mcq', "What does the speaker say is a very difficult question?", '["What is the healthiest food?", "What is the tastiest food in the world?", "What is the cheapest food?"]', 'What is the tastiest food in the world?', 'The speaker says: "What\\'s the tastiest food in the world? This is a very difficult question to answer."'],
+        ['mcq', "What does the speaker say is a very difficult question?", '["What is the healthiest food?", "What is the tastiest food in the world?", "What is the cheapest food?"]', 'What is the tastiest food in the world?', "The speaker says: \"What's the tastiest food in the world? This is a very difficult question to answer.\""],
         ['fill_blank', "It's great that countries have so many different ________.", null, 'dishes', "The speaker says: \"It's great that countries have so many different dishes.\""],
         ['fill_blank', 'Make sure the food you eat is good for ________.', null, 'you', 'The speaker says: "Make sure the food you eat is good for you."']
       ];
