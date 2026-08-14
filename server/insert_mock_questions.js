@@ -67,9 +67,9 @@ async function seed() {
     );
   }
 
-  // Also update the YouTube URL to a generic known-good IELTS listening test link, e.g., Cambridge 14 Test 1
-  // We'll use a reliable YouTube ID: xQJ80N6vWzE (Cambridge IELTS 14 Test 1) or similarly popular one.
-  await pool.execute("UPDATE listening_tests SET audio_url = 'https://www.youtube.com/embed/5F6mZ6h1N44', title = 'Official IELTS Listening Mock Test', transcript = 'Transcript available after test.' WHERE id = 1");
+  // Also update the audio URL to a generic known-good IELTS listening test link
+  // We'll use a reliable YouTube ID: xQJ80N6vWzE or similarly popular one.
+  await pool.execute("UPDATE listening_tests SET audio_url = 'https://www.youtube.com/embed/5F6mZ6h1N44', title = 'IELTS Listening Mock Test', transcript = 'Transcript available after test.' WHERE id = 1");
 
   console.log('Seed done!');
   process.exit(0);

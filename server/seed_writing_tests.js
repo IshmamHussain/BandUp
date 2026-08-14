@@ -5,7 +5,7 @@ async function seed() {
 
   const tests = [
     {
-      category: 'Cambridge Academic 15 - Test 1',
+      category: 'Academic 15 - Test 1',
       task1: {
         prompt: 'The chart below shows the results of a survey about people’s coffee and tea buying and drinking habits in five Australian cities. Summarise the information by selecting and reporting the main features, and make comparisons where relevant.',
         chart: {
@@ -26,7 +26,7 @@ async function seed() {
       }
     },
     {
-      category: 'Cambridge Academic 15 - Test 2',
+      category: 'Academic 15 - Test 2',
       task1: {
         prompt: 'The graph below shows the number of tourists visiting a particular Caribbean island between 2010 and 2017. Summarise the information by selecting and reporting the main features, and make comparisons where relevant.',
         chart: {
@@ -47,7 +47,7 @@ async function seed() {
       }
     },
     {
-      category: 'Cambridge Academic 14 - Test 1',
+      category: 'Academic 14 - Test 1',
       task1: {
         prompt: 'The charts below show the average percentages in typical meals of three types of nutrients, all of which may be unhealthy if eaten too much. Summarise the information by selecting and reporting the main features, and make comparisons where relevant.',
         chart: {
@@ -68,7 +68,7 @@ async function seed() {
       }
     },
     {
-      category: 'Cambridge Academic 14 - Test 2',
+      category: 'Academic 14 - Test 2',
       task1: {
         prompt: 'The chart below shows the value of one country’s exports in various categories during 2015 and 2016. The table shows the percentage change in each category of exports in 2016 compared with 2015. Summarise the information by selecting and reporting the main features, and make comparisons where relevant.',
         chart: {
@@ -88,7 +88,7 @@ async function seed() {
       }
     },
     {
-      category: 'Cambridge Academic 13 - Test 1',
+      category: 'Academic 13 - Test 1',
       task1: {
         prompt: 'The two maps below show road access to a city hospital in 2007 and in 2010. Summarise the information by selecting and reporting the main features, and make comparisons where relevant.',
         chart: null
@@ -98,7 +98,7 @@ async function seed() {
       }
     },
     {
-      category: 'Cambridge Academic 13 - Test 2',
+      category: 'Academic 13 - Test 2',
       task1: {
         prompt: 'The chart below shows the percentage of households in owned and rented accommodation in England and Wales between 1918 and 2011. Summarise the information by selecting and reporting the main features, and make comparisons where relevant.',
         chart: {
@@ -118,7 +118,7 @@ async function seed() {
       }
     },
     {
-      category: 'Cambridge Academic 12 - Test 1',
+      category: 'Academic 12 - Test 1',
       task1: {
         prompt: 'The bar chart below shows the percentage of Australian men and women in different age groups who did regular physical activity in 2010. Summarise the information by selecting and reporting the main features, and make comparisons where relevant.',
         chart: {
@@ -138,7 +138,7 @@ async function seed() {
       }
     },
     {
-      category: 'Cambridge Academic 12 - Test 2',
+      category: 'Academic 12 - Test 2',
       task1: {
         prompt: 'The chart below shows the results of a survey on the reasons why people travelled to work by bicycle or by car in a particular city. Summarise the information by selecting and reporting the main features, and make comparisons where relevant.',
         chart: null
@@ -148,7 +148,7 @@ async function seed() {
       }
     },
     {
-      category: 'Cambridge Academic 11 - Test 1',
+      category: 'Academic 11 - Test 1',
       task1: {
         prompt: 'The charts below show the percentage of water used for different purposes in six areas of the world. Summarise the information by selecting and reporting the main features, and make comparisons where relevant.',
         chart: null
@@ -158,7 +158,7 @@ async function seed() {
       }
     },
     {
-      category: 'Cambridge Academic 11 - Test 2',
+      category: 'Academic 11 - Test 2',
       task1: {
         prompt: 'The chart below shows the proportions of British students at one university in England who were able to speak other languages in addition to English, in 2000 and 2010. Summarise the information by selecting and reporting the main features, and make comparisons where relevant.',
         chart: {
