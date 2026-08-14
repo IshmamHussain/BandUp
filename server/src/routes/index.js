@@ -18,7 +18,6 @@ export const apiRouter = Router();
 apiRouter.post('/auth/register', auth.register);
 apiRouter.post('/auth/login', auth.login);
 apiRouter.post('/auth/logout', auth.logout);
-apiRouter.get('/auth/verify', auth.verifyEmail);
 
 // --- Auth (protected) ---
 apiRouter.get('/auth/me', requireAuth, auth.me);

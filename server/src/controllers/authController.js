@@ -1,12 +1,14 @@
 // Authentication controller: register, login, logout, current user.
-import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import crypto from 'crypto';
+import { createClient } from '@supabase/supabase-js';
 import { env } from '../config/env.js';
 import * as userModel from '../models/userModel.js';
-import * as emailService from '../services/emailService.js';
 import { ok, fail, asyncHandler } from '../utils/helpers.js';
 import { isNonEmptyString, isValidEmail, isValidPassword } from '../utils/validate.js';
+
+const supabase = process.env.SUPABASE_URL && process.env.SUPABASE_ANON_KEY
+  ? createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY)
+  : null;
 
 function setTokenCookie(res, user) {
   const token = jwt.sign(
@@ -43,18 +45,30 @@ export const register = asyncHandler(async (req, res) => {
     }
   }
 
-  const passwordHash = await bcrypt.hash(password, 12);
-  const userId = await userModel.createUser({
-    name: name.trim(),
+  if (!supabase) {
+    return fail(res, 'Supabase is not configured. Please add SUPABASE_URL and SUPABASE_ANON_KEY to Render environment variables.', 500);
+  }
+
+  // Register in Supabase
+  const { data: authData, error: authError } = await supabase.auth.signUp({
     email: email.toLowerCase(),
-    passwordHash,
+    password: password,
+    options: {
+      data: { name: name.trim() }
+    }
   });
 
-  const token = crypto.randomBytes(32).toString('hex');
-  await userModel.createVerificationToken(userId, token);
-  
-  // Send email asynchronously without blocking the response
-  emailService.sendVerificationEmail(email.toLowerCase(), name.trim(), token).catch(console.error);
+  if (authError) {
+    return fail(res, `Supabase Error: ${authError.message}`, 400);
+  }
+
+  // Create in MySQL
+  await userModel.createUser({
+    name: name.trim(),
+    email: email.toLowerCase(),
+    passwordHash: null,
+    supabaseId: authData.user?.id
+  });
 
   return ok(res, { message: 'Please check your email to verify your account.' }, 201);
 });
@@ -66,16 +80,30 @@ export const login = asyncHandler(async (req, res) => {
   }
 
   const user = await userModel.findByEmail(email.toLowerCase());
-  // Same error message whether the email or the password is wrong,
-  // so attackers cannot discover which emails are registered.
   const invalidMessage = 'Email or password is incorrect.';
   if (!user) return fail(res, invalidMessage, 401);
 
-  const passwordMatches = await bcrypt.compare(password, user.password_hash);
-  if (!passwordMatches) return fail(res, invalidMessage, 401);
+  if (!supabase) {
+    return fail(res, 'Supabase is not configured.', 500);
+  }
 
+  // Authenticate with Supabase
+  const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+    email: email.toLowerCase(),
+    password: password,
+  });
+
+  if (authError) {
+    if (authError.message.includes('Email not confirmed')) {
+      return fail(res, 'Please verify your email address before logging in. Check your inbox for the verification link.', 403);
+    }
+    return fail(res, invalidMessage, 401);
+  }
+
+  // If Supabase authentication succeeds, they are verified.
   if (!user.is_verified && user.role !== 'admin') {
-    return fail(res, 'Please verify your email address before logging in. Check your inbox for the verification link.', 403);
+    await userModel.markUserVerified(user.id);
+    user.is_verified = 1;
   }
 
   setTokenCookie(res, user);
@@ -110,18 +138,4 @@ export const updateGoals = asyncHandler(async (req, res) => {
   return ok(res, { message: 'Goals updated.' });
 });
 
-export const verifyEmail = asyncHandler(async (req, res) => {
-  const { token } = req.query;
-  
-  if (!token) {
-    return res.redirect('/pages/login.html?error=missing_token');
-  }
 
-  const success = await userModel.verifyUserEmail(token);
-  
-  if (success) {
-    res.redirect('/pages/login.html?verified=true');
-  } else {
-    res.redirect('/pages/login.html?error=invalid_token');
-  }
-});
