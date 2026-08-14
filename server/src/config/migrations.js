@@ -86,6 +86,25 @@ const MIGRATIONS = [
         );
       }
     }
+  },
+  {
+    id: 'supabase_auth_integration',
+    description: 'Add supabase_id to users, make password_hash nullable, drop email_verification_tokens',
+    async run(connection) {
+      // Add supabase_id column if it doesn't exist
+      try {
+        await connection.execute(`ALTER TABLE users ADD COLUMN supabase_id VARCHAR(36) UNIQUE DEFAULT NULL`);
+      } catch (err) {
+        // Ignore if column already exists (Error 1060: Duplicate column name)
+        if (err.errno !== 1060) throw err;
+      }
+
+      // Make password_hash nullable since Supabase stores the real password
+      await connection.execute(`ALTER TABLE users MODIFY COLUMN password_hash VARCHAR(255) NULL`);
+
+      // Drop the old email verification tokens table
+      await connection.execute(`DROP TABLE IF EXISTS email_verification_tokens`);
+    }
   }
 ];
 
