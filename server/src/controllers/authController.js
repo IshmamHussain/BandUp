@@ -90,7 +90,7 @@ export const login = asyncHandler(async (req, res) => {
   // Fallback for legacy admin
   if (user.role === 'admin' && !user.supabase_id) {
     const bcrypt = await import('bcryptjs');
-    const passwordMatches = await bcrypt.compare(password, user.password_hash);
+    const passwordMatches = await bcrypt.default.compare(password, user.password_hash);
     if (!passwordMatches) return fail(res, invalidMessage, 401);
     
     setTokenCookie(res, user);
