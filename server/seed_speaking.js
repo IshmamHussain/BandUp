@@ -8,7 +8,7 @@ async function seed() {
       host: env.db.host,
       user: env.db.user,
       password: env.db.password,
-      database: 'ielts_prep',
+      database: env.db.database,
       port: env.db.port
     });
 
