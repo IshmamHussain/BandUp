@@ -4,7 +4,7 @@ import { pool } from '../config/db.js';
 
 export async function findByEmail(email) {
   const [rows] = await pool.execute(
-    'SELECT id, name, email, password_hash, role, is_verified FROM users WHERE email = ?',
+    'SELECT id, name, email, password_hash, role, is_verified, supabase_id FROM users WHERE email = ?',
     [email]
   );
   return rows[0] || null;
@@ -12,7 +12,7 @@ export async function findByEmail(email) {
 
 export async function findById(id) {
   const [rows] = await pool.execute(
-    `SELECT u.id, u.name, u.email, u.role, u.target_band, u.exam_date,
+    `SELECT u.id, u.name, u.email, u.role, u.target_band, u.exam_date, u.supabase_id,
             p.current_band_estimate, p.study_streak, p.country, p.avatar_url
      FROM users u
      LEFT JOIN profiles p ON p.user_id = u.id

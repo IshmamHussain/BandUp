@@ -105,6 +105,13 @@ const MIGRATIONS = [
       // Drop the old email verification tokens table
       await connection.execute(`DROP TABLE IF EXISTS email_verification_tokens`);
     }
+  },
+  {
+    id: 'cleanup_legacy_students',
+    description: 'Delete student accounts that pre-date Supabase Auth so they can re-register',
+    async run(connection) {
+      await connection.execute(`DELETE FROM users WHERE role = 'student' AND supabase_id IS NULL`);
+    }
   }
 ];
 
