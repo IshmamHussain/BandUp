@@ -24,6 +24,20 @@ const MIGRATIONS = [
         `UPDATE writing_prompts SET category = REPLACE(category, 'Cambridge Academic', 'Academic') WHERE category LIKE 'Cambridge Academic%'`
       );
     }
+  },
+  {
+    id: 'fix_labels_v2_2024_08',
+    description: 'Rename Advertising title, fix Cookery Classes audio to food.mp3',
+    async run(connection) {
+      // Rename "Actual Spoken English: Advertising" → "Advertising"
+      await connection.execute(
+        `UPDATE listening_tests SET title = 'Advertising' WHERE title LIKE '%Advertising%'`
+      );
+      // cooking.mp3 doesn't exist on ListenAMinute — use food.mp3 instead
+      await connection.execute(
+        `UPDATE listening_tests SET audio_url = 'https://listenaminute.com/f/food.mp3' WHERE title LIKE '%Cookery%'`
+      );
+    }
   }
 ];
 

@@ -3,7 +3,7 @@ DELETE FROM questions WHERE module = 'listening';
 DELETE FROM listening_tests;
 
 INSERT INTO listening_tests (id, title, audio_url, transcript, difficulty, time_limit) VALUES 
-(1, 'Actual Spoken English: Advertising', 'https://listenaminute.com/a/advertising.mp3', 
+(1, 'Advertising', 'https://listenaminute.com/a/advertising.mp3', 
 'What is advertising? Is it telling the truth or is it making things look better than they really are? Or is it lying? Companies pay a lot of money for adverts. Some of the ads you see in glossy magazines look like art. The commercials on TV look like mini movies. Do they really change our behaviour? Do adverts make you buy things? I think some advertising is a form of lying. Is BMW really "The ultimate driving machine" like they say in their ads? British Airways used to say they were "The world''s favourite airline," but had to stop saying it because it wasn''t true. Personally, I get tired of watching ads on television. They always interrupt a good programme. I like ads in magazines. They''re usually quite interesting.', 'easy', 5);
 
 INSERT INTO questions (listening_test_id, module, question_type, question_text, options_json, correct_answer, explanation, position) VALUES
