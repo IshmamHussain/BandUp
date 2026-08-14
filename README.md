@@ -1,5 +1,7 @@
 # IELTS Prep Platform
 
+> **Note:** Since This is on the free Supabase plan, only 2 accounts can register per hour.
+
 AI-powered IELTS preparation platform. Node.js + Express + MySQL backend, HTML + Tailwind + vanilla JS frontend.
 
 ## Current status
