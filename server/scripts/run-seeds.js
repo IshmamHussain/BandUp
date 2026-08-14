@@ -34,6 +34,10 @@ async function run() {
     const listeningSql = await fs.readFile(path.join(__dirname, '../../database/seeds/listening-override.sql'), 'utf-8');
     await connection.query(listeningSql);
 
+    console.log('Running listening-cambridge.sql...');
+    const cambridgeSql = await fs.readFile(path.join(__dirname, '../../database/seeds/listening-cambridge.sql'), 'utf-8');
+    await connection.query(cambridgeSql);
+
     console.log('Database successfully reset and seeded!');
   } catch (err) {
     console.error('Error seeding database:', err);
