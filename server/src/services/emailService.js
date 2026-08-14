@@ -1,15 +1,21 @@
-import { Resend } from 'resend';
+import nodemailer from 'nodemailer';
 import { env } from '../config/env.js';
 
-let resendClient = null;
+let transporter = null;
 
-if (process.env.RESEND_API_KEY) {
-  resendClient = new Resend(process.env.RESEND_API_KEY);
+if (process.env.SMTP_EMAIL && process.env.SMTP_PASSWORD) {
+  transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.SMTP_EMAIL,
+      pass: process.env.SMTP_PASSWORD,
+    },
+  });
 }
 
 export async function sendVerificationEmail(email, name, token) {
-  if (!resendClient) {
-    console.warn('RESEND_API_KEY is not set. Simulating email verification.');
+  if (!transporter) {
+    console.warn('SMTP_EMAIL or SMTP_PASSWORD is not set. Simulating email verification.');
     console.log(`Verification link: ${env.clientOrigin}/api/auth/verify?token=${token}`);
     return;
   }
@@ -17,8 +23,8 @@ export async function sendVerificationEmail(email, name, token) {
   const verificationUrl = `${env.clientOrigin}/api/auth/verify?token=${token}`;
 
   try {
-    const data = await resendClient.emails.send({
-      from: 'BandUp AI <onboarding@resend.dev>',
+    const info = await transporter.sendMail({
+      from: `"BandUp AI" <${process.env.SMTP_EMAIL}>`,
       to: email,
       subject: 'Verify your BandUp AI account',
       html: `
@@ -39,7 +45,7 @@ export async function sendVerificationEmail(email, name, token) {
         </div>
       `,
     });
-    return data;
+    return info;
   } catch (error) {
     console.error('Error sending verification email:', error);
     throw new Error('Failed to send verification email. Please try again later.');
