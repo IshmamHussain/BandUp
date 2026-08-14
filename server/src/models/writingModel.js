@@ -44,7 +44,7 @@ export async function saveEvaluation(submissionId, bandOverall, evaluation) {
 export async function listSubmissions(userId) {
   const [rows] = await pool.execute(
     `SELECT ws.id, ws.task_type, ws.word_count, ws.status, ws.band_overall, ws.created_at,
-            wp.prompt_text
+            wp.prompt_text, wp.category
      FROM writing_submissions ws
      LEFT JOIN writing_prompts wp ON wp.id = ws.prompt_id
      WHERE ws.user_id = ?

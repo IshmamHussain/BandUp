@@ -387,7 +387,7 @@ async function loadHistory() {
       <span class="flex-1 min-w-0">
         <span class="block text-sm font-medium truncate submission-prompt"></span>
         <span class="block text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-          ${submission.task_type === 'task1' ? 'Task 1' : 'Task 2'} · ${submission.word_count} words ·
+          ${submission.task_type === 'task1' ? 'Task 1' : 'Task 2'}${submission.category ? ` · ${submission.category}` : ''} · ${submission.word_count} words ·
           ${new Date(submission.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
         </span>
       </span>
