@@ -87,6 +87,16 @@ export const login = asyncHandler(async (req, res) => {
     return fail(res, 'Supabase is not configured.', 500);
   }
 
+  // Fallback for legacy admin
+  if (user.role === 'admin' && !user.supabase_id) {
+    const bcrypt = await import('bcryptjs');
+    const passwordMatches = await bcrypt.compare(password, user.password_hash);
+    if (!passwordMatches) return fail(res, invalidMessage, 401);
+    
+    setTokenCookie(res, user);
+    return ok(res, { id: user.id, name: user.name, email: user.email, role: user.role });
+  }
+
   // Authenticate with Supabase
   const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
     email: email.toLowerCase(),

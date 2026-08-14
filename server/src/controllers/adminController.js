@@ -3,7 +3,12 @@
 import * as adminModel from '../models/adminModel.js';
 import { generateReadingQuestions } from '../services/aiService.js';
 import { ok, fail, asyncHandler } from '../utils/helpers.js';
-import { isPositiveInt, isNonEmptyString } from '../utils/validate.js';
+import { isNonEmptyString, isPositiveInt } from '../utils/validate.js';
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseAdmin = process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY
+  ? createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY)
+  : null;
 
 // ── Dashboard ────────────────────────────────────────────────────────
 export const getStats = asyncHandler(async (req, res) => {
@@ -265,6 +270,28 @@ export const updateStudent = asyncHandler(async (req, res) => {
 
 export const deleteStudent = asyncHandler(async (req, res) => {
   if (!isPositiveInt(req.params.id)) return fail(res, 'Invalid student ID.');
-  await adminModel.deleteStudent(Number(req.params.id));
+
+  const studentId = Number(req.params.id);
+  
+  // Find the student's supabase_id to delete them from Auth as well
+  const { findById } = await import('../models/userModel.js');
+  const student = await findById(studentId);
+  
+  if (!student) {
+    return fail(res, 'Student not found.', 404);
+  }
+
+  if (student.supabase_id) {
+    if (!supabaseAdmin) {
+      return fail(res, 'Cannot delete from Supabase. SUPABASE_SERVICE_ROLE_KEY is missing in Render.', 500);
+    }
+    const { error } = await supabaseAdmin.auth.admin.deleteUser(student.supabase_id);
+    if (error) {
+      console.error('Failed to delete user from Supabase:', error);
+      return fail(res, `Supabase delete error: ${error.message}`, 500);
+    }
+  }
+
+  await adminModel.deleteStudent(studentId);
   return ok(res, { message: 'Student deleted.' });
 });
