@@ -99,7 +99,7 @@ export async function evaluateEssay({ taskType, promptText, essayText }) {
   const userMessage = `Task type: ${taskType === 'task1' ? 'Writing Task 1' : 'Writing Task 2'}\nEssay question: ${promptText || 'Not provided'}\n\nStudent essay:\n"""\n${essayText}\n"""`;
   try {
     const genAI = new GoogleGenerativeAI(env.ai.apiKey);
-    const model = genAI.getGenerativeModel({ model: env.ai.model || "gemini-2.0-flash", systemInstruction: SYSTEM_PROMPT });
+    const model = genAI.getGenerativeModel({ model: env.ai.model || "gemini-flash-lite-latest", systemInstruction: SYSTEM_PROMPT });
     const result = await model.generateContent({ contents: [{ role: 'user', parts: [{ text: userMessage }] }], generationConfig: { responseMimeType: "application/json" } });
     
     const text = result.response.text();
@@ -120,8 +120,7 @@ export async function evaluateSpeaking({ promptText, audioFilePath, mimeType }) 
   try {
     const genAI = new GoogleGenerativeAI(env.ai.apiKey);
     const model = genAI.getGenerativeModel({ 
-      // Enforce an audio-capable model
-      model: "gemini-2.0-flash", 
+      model: env.ai.model || "gemini-1.5-flash", 
       systemInstruction: SPEAKING_SYSTEM_PROMPT 
     });
 
