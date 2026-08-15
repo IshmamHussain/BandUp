@@ -99,10 +99,13 @@ export async function evaluateEssay({ taskType, promptText, essayText }) {
   const userMessage = `Task type: ${taskType === 'task1' ? 'Writing Task 1' : 'Writing Task 2'}\nEssay question: ${promptText || 'Not provided'}\n\nStudent essay:\n"""\n${essayText}\n"""`;
   try {
     const genAI = new GoogleGenerativeAI(env.ai.apiKey);
-    const model = genAI.getGenerativeModel({ model: env.ai.model || "gemini-flash-lite-latest", systemInstruction: SYSTEM_PROMPT });
+    const model = genAI.getGenerativeModel({ model: env.ai.model || "gemini-2.0-flash", systemInstruction: SYSTEM_PROMPT });
     const result = await model.generateContent({ contents: [{ role: 'user', parts: [{ text: userMessage }] }], generationConfig: { responseMimeType: "application/json" } });
-    const clean = result.response.text().replace(/```json|```/g, '').trim();
-    return { evaluation: JSON.parse(clean), isMock: false };
+    
+    const text = result.response.text();
+    const match = text.match(/\{[\s\S]*\}/);
+    if (!match) throw new Error('No JSON object found in response.');
+    return { evaluation: JSON.parse(match[0]), isMock: false };
   } catch (error) {
     console.error("Gemini API Error:", error);
     throw new Error('The AI evaluator is temporarily unavailable.');
@@ -117,7 +120,8 @@ export async function evaluateSpeaking({ promptText, audioFilePath, mimeType }) 
   try {
     const genAI = new GoogleGenerativeAI(env.ai.apiKey);
     const model = genAI.getGenerativeModel({ 
-      model: env.ai.model || "gemini-flash-lite-latest", 
+      // Enforce an audio-capable model
+      model: "gemini-2.0-flash", 
       systemInstruction: SPEAKING_SYSTEM_PROMPT 
     });
 
@@ -134,10 +138,13 @@ export async function evaluateSpeaking({ promptText, audioFilePath, mimeType }) 
       generationConfig: { responseMimeType: "application/json" }
     });
 
-    const clean = result.response.text().replace(/```json|```/g, '').trim();
+    const text = result.response.text();
+    const match = text.match(/\{[\s\S]*\}/);
+    if (!match) throw new Error('The AI evaluator returned an unexpected response.');
+    
     let evaluation;
     try {
-      evaluation = JSON.parse(clean);
+      evaluation = JSON.parse(match[0]);
     } catch {
       throw new Error('The AI evaluator returned an unexpected response.');
     }
@@ -233,8 +240,10 @@ export async function generateReadingQuestions({ passageTitle, passageBody, coun
       contents: [{ role: 'user', parts: [{ text: userMessage }] }],
       generationConfig: { responseMimeType: 'application/json' },
     });
-    const clean = result.response.text().replace(/```json|```/g, '').trim();
-    const parsed = JSON.parse(clean);
+    const text = result.response.text();
+    const match = text.match(/\{[\s\S]*\}/);
+    if (!match) throw new Error('No JSON object found in response.');
+    const parsed = JSON.parse(match[0]);
     return { questions: parsed.questions || parsed, isMock: false };
   } catch (error) {
     console.error('Gemini Reading Questions Error:', error);
