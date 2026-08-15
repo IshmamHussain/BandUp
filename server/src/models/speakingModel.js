@@ -20,12 +20,7 @@ export async function updateSubmissionEvaluation(submissionId, bandOverall, eval
   );
 }
 
-export async function resetSubmissionEvaluation(submissionId) {
-  await pool.execute(
-    'UPDATE speaking_submissions SET status = \'submitted\', band_overall = NULL, evaluation_json = NULL WHERE id = ?',
-    [submissionId]
-  );
-}
+
 
 export async function getSubmission(submissionId, userId) {
   const [rows] = await pool.query(
