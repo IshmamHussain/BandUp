@@ -128,7 +128,7 @@ export async function evaluateSpeaking({ promptText, audioFilePath, mimeType }) 
     const audioPart = {
       inlineData: {
         data: audioData,
-        mimeType: mimeType || "audio/webm"
+        mimeType: (mimeType || "audio/webm").split(';')[0]
       }
     };
 

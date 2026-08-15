@@ -97,7 +97,7 @@ loadPrompts();
 
 // --- History ---
 let historyLoading = false;
-async function loadHistory() {
+async function loadHistory(skipOpen = false) {
   if (historyLoading) return;
   historyLoading = true;
   try {
@@ -134,7 +134,7 @@ async function loadHistory() {
     });
     
     // Open the first one
-    if (history.length > 0) openSubmission(history[0].id);
+    if (history.length > 0 && !skipOpen) openSubmission(history[0].id);
     
     historyLoading = false;
   } catch (err) {
@@ -170,29 +170,70 @@ async function deleteSubmission(id) {
   }
 }
 
+let currentViewedSubmissionId = null;
+
 async function openSubmission(id) {
   try {
+    currentViewedSubmissionId = id;
     const sub = await api.speakingSubmission(id);
+    
+    // Only update the view if we are still viewing this submission
+    if (currentViewedSubmissionId !== id) return;
+
     const detail = el('history-detail');
     detail.classList.remove('hidden');
     
-    detail.querySelector('.prompt-text').textContent = sub.prompt_text;
-    detail.querySelector('#history-audio').src = sub.audio_url;
+    // Only update audio/prompt if it's a new selection to avoid resetting the audio player
+    if (detail.querySelector('#history-audio').getAttribute('data-sub-id') !== id.toString()) {
+      detail.querySelector('.prompt-text').textContent = sub.prompt_text;
+      detail.querySelector('#history-audio').src = sub.audio_url;
+      detail.querySelector('#history-audio').setAttribute('data-sub-id', id);
+    }
+    
+    const deleteBtn = detail.querySelector('#btn-delete-history');
+    if (deleteBtn) {
+      deleteBtn.onclick = () => deleteSubmission(id);
+    }
     
     const evalContainer = detail.querySelector('.eval-container');
-    evalContainer.innerHTML = '';
     
     if (sub.status === 'evaluated' && sub.evaluation_json) {
+      evalContainer.innerHTML = '';
       renderSpeakingEvaluation(evalContainer, sub.evaluation_json, id);
     } else {
-      evalContainer.innerHTML = `
-        <div class="card p-5 flex items-center gap-3">
-          <div class="w-8 h-8 border-[3px] border-brand-200 dark:border-brand-900 border-t-brand-600 rounded-full animate-spin shrink-0"></div>
-          <div>
-            <p class="font-medium text-sm">Evaluation in progress</p>
-            <p class="text-xs text-slate-500 dark:text-slate-400">Your AI examiner is reviewing your response...</p>
-          </div>
-        </div>`;
+      // If it's already showing the pending state, don't overwrite to keep the progress bar animation smooth
+      if (!evalContainer.querySelector('.eval-pending')) {
+        evalContainer.innerHTML = `
+          <div class="eval-pending card p-8 border-brand-200 dark:border-brand-900/30 flex flex-col items-center text-center relative overflow-hidden">
+            <div class="absolute inset-0 bg-gradient-to-br from-brand-50 to-transparent dark:from-brand-950/20 opacity-50"></div>
+            <div class="relative z-10 flex flex-col items-center">
+              <div class="w-12 h-12 mb-5 border-[3px] border-brand-100 dark:border-brand-900 border-t-brand-600 rounded-full animate-spin"></div>
+              <h3 class="font-display font-semibold text-lg text-slate-800 dark:text-slate-100 mb-2">Analyzing your speech</h3>
+              <p class="text-sm text-slate-500 dark:text-slate-400 mb-6 max-w-sm">The AI examiner is transcribing your response and evaluating your fluency, vocabulary, and grammar...</p>
+              <div class="w-full max-w-xs bg-slate-100 dark:bg-slate-800/80 rounded-full h-1.5 overflow-hidden shadow-inner">
+                <div class="h-full bg-brand-500 rounded-full animate-progress" style="width: 0%"></div>
+              </div>
+            </div>
+          </div>`;
+          
+        // Start the fake progress bar animation
+        setTimeout(() => {
+          const bar = evalContainer.querySelector('.animate-progress');
+          if (bar) {
+            bar.style.transition = 'width 15s cubic-bezier(0.1, 0.7, 0.1, 1)';
+            bar.style.width = '95%';
+          }
+        }, 50);
+      }
+      
+      // Poll again in 3 seconds
+      setTimeout(() => {
+        if (currentViewedSubmissionId === id) {
+          openSubmission(id);
+          // Also reload history list to show the updated status icon there
+          loadHistory(true); 
+        }
+      }, 3000);
     }
   } catch (err) {
     toast(err.message, 'error');
