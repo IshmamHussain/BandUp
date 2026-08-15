@@ -29,15 +29,36 @@ function testCard(test) {
         ? `Best score: <span class="font-mono font-bold text-brand-600 dark:text-brand-400">${test.best_accuracy}%</span>`
         : 'Not attempted yet'}
     </div>
-    <a href="/pages/listening-test.html?id=${test.id}"
-       class="mt-auto text-center py-2.5 rounded-xl text-sm font-semibold transition
-       ${test.best_accuracy !== null
-         ? 'border border-brand-500/50 text-brand-600 dark:text-brand-400 hover:bg-brand-50 dark:hover:bg-brand-900/20'
-         : 'bg-brand-600 hover:bg-brand-700 text-white'}">
-      ${test.best_accuracy !== null ? 'Practise again' : 'Start test'}
-    </a>`;
+    <div class="mt-auto flex gap-2">
+      <a href="/pages/listening-test.html?id=${test.id}"
+         class="flex-1 text-center py-2.5 rounded-xl text-sm font-semibold transition
+         ${test.best_accuracy !== null
+           ? 'border border-brand-500/50 text-brand-600 dark:text-brand-400 hover:bg-brand-50 dark:hover:bg-brand-900/20'
+           : 'bg-brand-600 hover:bg-brand-700 text-white'}">
+        ${test.best_accuracy !== null ? 'Practise again' : 'Start test'}
+      </a>
+      ${test.best_accuracy !== null ? `
+      <button class="delete-btn px-3 rounded-xl border border-rose-500/50 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition" aria-label="Delete history" title="Delete history">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+      </button>` : ''}
+    </div>`;
 
   card.querySelector('h3').textContent = test.title;
+
+  const deleteBtn = card.querySelector('.delete-btn');
+  if (deleteBtn) {
+    deleteBtn.addEventListener('click', async () => {
+      if (!confirm('Are you sure you want to delete your attempts for this test?')) return;
+      try {
+        await api.deleteListeningAttempts(test.id);
+        toast('History deleted successfully', 'success');
+        window.location.reload();
+      } catch (err) {
+        toast(err.message, 'error');
+      }
+    });
+  }
+
   return card;
 }
 
