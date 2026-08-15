@@ -143,6 +143,33 @@ async function loadHistory() {
   }
 }
 
+async function retryEvaluation(id) {
+  try {
+    await api.retrySpeakingEvaluation(id);
+    toast('Re-evaluation started', 'success');
+    openSubmission(id);
+    loadHistory();
+  } catch (err) {
+    toast(err.message, 'error');
+  }
+}
+
+async function deleteSubmission(id) {
+  if (!confirm('Are you sure you want to delete this test?')) return;
+  try {
+    await api.deleteSpeakingSubmission(id);
+    toast('Deleted successfully', 'success');
+    el('history-detail').classList.add('hidden');
+    loadHistory();
+    loadStats();
+    if (!el('progress-section').classList.contains('hidden')) {
+      loadProgress();
+    }
+  } catch (err) {
+    toast(err.message, 'error');
+  }
+}
+
 async function openSubmission(id) {
   try {
     const sub = await api.speakingSubmission(id);
@@ -156,7 +183,7 @@ async function openSubmission(id) {
     evalContainer.innerHTML = '';
     
     if (sub.status === 'evaluated' && sub.evaluation_json) {
-      renderSpeakingEvaluation(evalContainer, sub.evaluation_json);
+      renderSpeakingEvaluation(evalContainer, sub.evaluation_json, id);
     } else {
       evalContainer.innerHTML = `
         <div class="card p-5 flex items-center gap-3">
@@ -172,12 +199,21 @@ async function openSubmission(id) {
   }
 }
 
-function renderSpeakingEvaluation(container, json) {
+function renderSpeakingEvaluation(container, json, submissionId) {
   if (json.error) {
-    container.innerHTML = `<div class="card p-4 border-red-200 dark:border-red-900/30 bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-400 text-sm flex items-center gap-2">
-      <svg class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
-      Failed to evaluate: ${json.error}
+    container.innerHTML = `<div class="card p-4 border-red-200 dark:border-red-900/30 bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-400 text-sm flex flex-col gap-3">
+      <div class="flex items-center gap-2">
+        <svg class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+        Failed to evaluate: ${json.error}
+      </div>
+      <div class="flex gap-2 mt-2">
+        <button id="btn-retry-${submissionId}" class="px-4 py-2 bg-brand-600 text-white rounded-lg text-sm font-medium hover:bg-brand-700 transition">Try Again</button>
+        <button id="btn-delete-${submissionId}" class="px-4 py-2 bg-white dark:bg-slate-800 text-red-600 border border-red-200 dark:border-red-900/30 rounded-lg text-sm font-medium hover:bg-red-50 dark:hover:bg-red-900/20 transition">Delete</button>
+      </div>
     </div>`;
+    
+    document.getElementById(`btn-retry-${submissionId}`).addEventListener('click', () => retryEvaluation(submissionId));
+    document.getElementById(`btn-delete-${submissionId}`).addEventListener('click', () => deleteSubmission(submissionId));
     return;
   }
   

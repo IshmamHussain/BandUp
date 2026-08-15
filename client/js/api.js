@@ -70,6 +70,8 @@ export const api = {
   speakingHistory: () => request('/speaking/history'),
   speakingSubmission: (id) => request(`/speaking/${id}`),
   speakingStats: () => request('/speaking/stats'),
+  retrySpeakingEvaluation: (id) => request(`/speaking/${id}/retry`, { method: 'POST' }),
+  deleteSpeakingSubmission: (id) => request(`/speaking/${id}`, { method: 'DELETE' }),
   submitSpeaking: async (formData) => {
     const res = await fetch('/api/speaking/submit', {
       method: 'POST',

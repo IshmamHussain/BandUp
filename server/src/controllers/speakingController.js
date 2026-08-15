@@ -1,8 +1,11 @@
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import * as speakingModel from '../models/speakingModel.js';
 import * as aiService from '../services/aiService.js';
 import { ok, fail, asyncHandler } from '../utils/helpers.js';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export const getPrompts = asyncHandler(async (req, res) => {
   const prompts = await speakingModel.getPrompts();
@@ -52,4 +55,21 @@ export const getSubmission = asyncHandler(async (req, res) => {
 export const getStats = asyncHandler(async (req, res) => {
   const stats = await speakingModel.getSpeakingStats(req.user.id);
   return ok(res, stats);
+});
+
+export const retryEvaluation = asyncHandler(async (req, res) => {
+  const submission = await speakingModel.getSubmission(req.params.id, req.user.id);
+  if (!submission) return fail(res, 404, 'Submission not found');
+  
+  await speakingModel.resetSubmissionEvaluation(submission.id);
+  
+  const audioFilePath = path.join(__dirname, '../../../client', submission.audio_url);
+  evaluateBackground(submission.id, audioFilePath, 'audio/webm', submission.prompt_text).catch(console.error);
+  
+  return ok(res, { message: 'Re-evaluation started' });
+});
+
+export const deleteSubmission = asyncHandler(async (req, res) => {
+  await speakingModel.deleteSubmission(req.params.id, req.user.id);
+  return ok(res, { message: 'Submission deleted' });
 });
