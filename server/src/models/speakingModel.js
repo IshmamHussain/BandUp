@@ -20,6 +20,13 @@ export async function updateSubmissionEvaluation(submissionId, bandOverall, eval
   );
 }
 
+export async function resetSubmissionEvaluation(submissionId) {
+  await pool.execute(
+    'UPDATE speaking_submissions SET status = "submitted", band_overall = NULL, evaluation_json = NULL WHERE id = ?',
+    [submissionId]
+  );
+}
+
 export async function getSubmission(submissionId, userId) {
   const [rows] = await pool.query(
     `SELECT s.*, p.prompt_text, p.part, p.category 
@@ -43,13 +50,13 @@ export async function getUserHistory(userId) {
 }
 
 export async function getSpeakingStats(userId) {
-  const [summary] = await pool.query(
-    'SELECT COUNT(*) as total, AVG(band_overall) as avg_band, MAX(band_overall) as best_band FROM speaking_submissions WHERE user_id = ? AND status = "evaluated"',
+  const [summary] = await pool.execute(
+    'SELECT COUNT(*) as total, AVG(band_overall) as avg_band, MAX(band_overall) as best_band FROM speaking_submissions WHERE user_id = ? AND status = \'evaluated\'',
     [userId]
   );
 
-  const [history] = await pool.query(
-    'SELECT band_overall, evaluation_json, created_at FROM speaking_submissions WHERE user_id = ? AND status = "evaluated" ORDER BY created_at ASC',
+  const [history] = await pool.execute(
+    'SELECT band_overall, evaluation_json, created_at FROM speaking_submissions WHERE user_id = ? AND status = \'evaluated\' ORDER BY created_at ASC',
     [userId]
   );
 
@@ -81,4 +88,8 @@ export async function getSpeakingStats(userId) {
     history: history.map(h => ({ band_overall: h.band_overall, created_at: h.created_at })),
     avg_criteria,
   };
+}
+
+export async function deleteSubmission(submissionId, userId) {
+  await pool.execute('DELETE FROM speaking_submissions WHERE id = ? AND user_id = ?', [submissionId, userId]);
 }
