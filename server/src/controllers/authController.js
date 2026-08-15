@@ -70,7 +70,7 @@ export const register = asyncHandler(async (req, res) => {
     supabaseId: authData.user?.id
   });
 
-  return ok(res, { message: 'Please check your email to verify your account.' }, 201);
+  return ok(res, { message: `Please check your email (${email.toLowerCase()}) to verify your account.` }, 201);
 });
 
 export const login = asyncHandler(async (req, res) => {
