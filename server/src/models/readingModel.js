@@ -92,3 +92,13 @@ export async function saveAttempts(userId, attempts) {
     [values]
   );
 }
+
+export async function deleteAttempts(userId, testId) {
+  await pool.execute(
+    `DELETE a FROM attempts a
+     JOIN questions q ON q.id = a.question_id
+     JOIN reading_passages rp ON rp.id = q.passage_id
+     WHERE rp.test_id = ? AND a.user_id = ?`,
+    [testId, userId]
+  );
+}

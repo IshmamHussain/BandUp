@@ -39,11 +39,13 @@ export const api = {
   readingTest: (id) => request(`/reading/tests/${id}`),
   submitReading: (id, body) => request(`/reading/tests/${id}/submit`, { method: 'POST', body }),
   toggleReadingBookmark: (id) => request(`/reading/tests/${id}/bookmark`, { method: 'POST' }),
+  deleteReadingAttempts: (id) => request(`/reading/tests/${id}/attempts`, { method: 'DELETE' }),
 
   // Listening
   listeningTests: () => request('/listening/tests'),
   listeningTest: (id) => request(`/listening/tests/${id}`),
   submitListening: (id, body) => request(`/listening/tests/${id}/submit`, { method: 'POST', body }),
+  deleteListeningAttempts: (id) => request(`/listening/tests/${id}/attempts`, { method: 'DELETE' }),
 
   // Vocabulary
   vocabulary: ({ category, bookmarked, bandLevel } = {}) => {
@@ -63,6 +65,7 @@ export const api = {
   submitEssay: (body) => request('/writing/submit', { method: 'POST', body }),
   submissions: () => request('/writing/submissions'),
   submission: (id) => request(`/writing/submissions/${id}`),
+  deleteWritingSubmission: (id) => request(`/writing/submissions/${id}`, { method: 'DELETE' }),
   writingStats: () => request('/writing/stats'),
 
   // Speaking

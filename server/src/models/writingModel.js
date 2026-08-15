@@ -87,3 +87,7 @@ export async function getWritingStats(userId) {
     evaluation_json: typeof row.evaluation_json === 'string' ? JSON.parse(row.evaluation_json) : row.evaluation_json,
   }));
 }
+
+export async function deleteSubmission(submissionId, userId) {
+  await pool.execute('DELETE FROM writing_submissions WHERE id = ? AND user_id = ?', [submissionId, userId]);
+}
