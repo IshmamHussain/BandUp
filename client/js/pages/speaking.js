@@ -278,12 +278,14 @@ async function loadProgress() {
     if (!stats.history || stats.history.length === 0) {
       el('progress-empty').classList.remove('hidden');
       el('chart-band-trend').parentElement.parentElement.classList.add('hidden');
-      el('chart-criteria-radar').parentElement.parentElement.parentElement.classList.add('hidden');
+      el('chart-criteria-radar').parentElement.parentElement.classList.add('hidden');
       progressLoading = false;
       return;
     }
 
     el('progress-empty').classList.add('hidden');
+    el('chart-band-trend').parentElement.parentElement.classList.remove('hidden');
+    el('chart-criteria-radar').parentElement.parentElement.classList.remove('hidden');
 
     const isDark = document.documentElement.classList.contains('dark');
     const gridColor = isDark ? 'rgba(148,163,184,0.1)' : 'rgba(100,116,139,0.1)';
@@ -361,7 +363,7 @@ async function loadProgress() {
         }
       });
     } else {
-      el('chart-criteria-radar').parentElement.parentElement.parentElement.classList.add('hidden');
+      el('chart-criteria-radar').parentElement.parentElement.classList.add('hidden');
     }
 
     progressLoading = false;
