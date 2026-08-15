@@ -233,7 +233,12 @@ el('btn-submit').addEventListener('click', async () => {
 
   try {
     const formData = new FormData();
-    formData.append('audio', audioBlob, 'recording.webm');
+    let ext = 'webm';
+    if (audioBlob.type.includes('mp4') || audioBlob.type.includes('m4a')) ext = 'mp4';
+    else if (audioBlob.type.includes('mp3')) ext = 'mp3';
+    else if (audioBlob.type.includes('wav')) ext = 'wav';
+    
+    formData.append('audio', audioBlob, `recording.${ext}`);
     formData.append('promptId', promptId);
     formData.append('durationSec', Math.floor((Date.now() - startTime) / 1000));
     formData.append('promptText', currentPromptText);
