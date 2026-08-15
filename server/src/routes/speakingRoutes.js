@@ -33,5 +33,7 @@ router.post('/submit', upload.single('audio'), speakingController.submitAudio);
 router.get('/history', speakingController.getHistory);
 router.get('/stats', speakingController.getStats);
 router.get('/:id', speakingController.getSubmission);
+router.post('/:id/retry', speakingController.retryEvaluation);
+router.delete('/:id', speakingController.deleteSubmission);
 
 export default router;
