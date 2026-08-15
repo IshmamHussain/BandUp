@@ -20,7 +20,11 @@ const storage = multer.diskStorage({
   },
   filename: function (req, file, cb) {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    const ext = file.mimetype === 'audio/mp3' ? '.mp3' : '.webm';
+    let ext = '.webm';
+    if (file.mimetype.includes('mp4') || file.mimetype.includes('m4a')) ext = '.mp4';
+    else if (file.mimetype.includes('mp3')) ext = '.mp3';
+    else if (file.mimetype.includes('wav')) ext = '.wav';
+    
     cb(null, file.fieldname + '-' + uniqueSuffix + ext);
   }
 });
