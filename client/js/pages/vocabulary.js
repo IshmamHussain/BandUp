@@ -172,7 +172,7 @@ function startQuiz() {
   function renderQuestion() {
     const word = pool[current];
     // 3 wrong meanings + the right one
-    const wrong = shuffle(words.filter((w) => w.id !== word.id)).slice(0, 3).map((w) => w.meaning);
+    const wrong = shuffle(allWords.filter((w) => w.id !== word.id)).slice(0, 3).map((w) => w.meaning);
     const options = shuffle([word.meaning, ...wrong]);
 
     const container = document.createElement('div');
@@ -245,14 +245,25 @@ const modeQuiz = el('mode-quiz');
 const ACTIVE = 'px-4 py-2 bg-brand-600 text-white';
 const INACTIVE = 'px-4 py-2 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition';
 
-function switchMode(quiz) {
+let allWords = [];
+
+async function switchMode(quiz) {
   el('cards-section').classList.toggle('hidden', quiz);
   el('quiz-section').classList.toggle('hidden', !quiz);
   modeCards.className = quiz ? INACTIVE : ACTIVE;
   modeQuiz.className = quiz ? ACTIVE : INACTIVE;
   modeCards.setAttribute('aria-selected', String(!quiz));
   modeQuiz.setAttribute('aria-selected', String(quiz));
-  if (quiz) startQuiz();
+  if (quiz) {
+    if (allWords.length === 0) {
+      try {
+        allWords = await api.vocabulary();
+      } catch (err) {
+        toast('Failed to load quiz options', 'error');
+      }
+    }
+    startQuiz();
+  }
 }
 modeCards.addEventListener('click', () => switchMode(false));
 modeQuiz.addEventListener('click', () => switchMode(true));
