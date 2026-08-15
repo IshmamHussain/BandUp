@@ -75,9 +75,9 @@ export async function getSpeakingStats(userId) {
     : null;
 
   return {
-    total_tests: summary[0].total || 0,
-    avg_band: summary[0].avg_band || null,
-    best_band: summary[0].best_band || null,
+    total_tests: Number(summary[0]?.total || 0),
+    avg_band: summary[0]?.avg_band ? Number(summary[0].avg_band) : null,
+    best_band: summary[0]?.best_band ? Number(summary[0].best_band) : null,
     history: history.map(h => ({ band_overall: h.band_overall, created_at: h.created_at })),
     avg_criteria,
   };

@@ -96,9 +96,10 @@ async function loadPrompts() {
 loadPrompts();
 
 // --- History ---
-let historyLoaded = false;
+let historyLoading = false;
 async function loadHistory() {
-  if (historyLoaded) return;
+  if (historyLoading) return;
+  historyLoading = true;
   try {
     const history = await api.speakingHistory();
     const listEl = el('history-list');
@@ -135,8 +136,9 @@ async function loadHistory() {
     // Open the first one
     if (history.length > 0) openSubmission(history[0].id);
     
-    historyLoaded = true;
+    historyLoading = false;
   } catch (err) {
+    historyLoading = false;
     toast(err.message, 'error');
   }
 }
@@ -263,12 +265,13 @@ function renderSpeakingEvaluation(container, json) {
 }
 
 // --- Progress Tab ---
-let progressLoaded = false;
+let progressLoading = false;
 let trendChart = null;
 let radarChart = null;
 
 async function loadProgress() {
-  if (progressLoaded) return;
+  if (progressLoading) return;
+  progressLoading = true;
   try {
     const stats = await api.speakingStats();
     
@@ -276,7 +279,7 @@ async function loadProgress() {
       el('progress-empty').classList.remove('hidden');
       el('chart-band-trend').parentElement.parentElement.classList.add('hidden');
       el('chart-criteria-radar').parentElement.parentElement.parentElement.classList.add('hidden');
-      progressLoaded = true;
+      progressLoading = false;
       return;
     }
 
@@ -290,6 +293,7 @@ async function loadProgress() {
     const labels = stats.history.map((h, i) => `Test ${i + 1}`);
     const bands = stats.history.map(h => h.band_overall);
 
+    if (trendChart) trendChart.destroy();
     trendChart = new Chart(el('chart-band-trend'), {
       type: 'line',
       data: {
@@ -325,6 +329,7 @@ async function loadProgress() {
       const criteriaKeys = ['fluency_and_coherence', 'lexical_resource', 'grammatical_range_accuracy', 'pronunciation'];
       const criteriaData = criteriaKeys.map(k => stats.avg_criteria[k] ?? 0);
 
+      if (radarChart) radarChart.destroy();
       radarChart = new Chart(el('chart-criteria-radar'), {
         type: 'radar',
         data: {
@@ -359,8 +364,9 @@ async function loadProgress() {
       el('chart-criteria-radar').parentElement.parentElement.parentElement.classList.add('hidden');
     }
 
-    progressLoaded = true;
+    progressLoading = false;
   } catch (err) {
+    progressLoading = false;
     toast(err.message, 'error');
   }
 }
