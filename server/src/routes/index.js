@@ -28,11 +28,13 @@ apiRouter.get('/reading/tests', requireAuth, reading.listTests);
 apiRouter.get('/reading/tests/:id', requireAuth, reading.getTest);
 apiRouter.post('/reading/tests/:id/submit', requireAuth, reading.submitAnswers);
 apiRouter.post('/reading/tests/:id/bookmark', requireAuth, reading.toggleBookmark);
+apiRouter.delete('/reading/tests/:id/attempts', requireAuth, reading.deleteAttempts);
 
 // --- Listening ---
 apiRouter.get('/listening/tests', requireAuth, listening.listTests);
 apiRouter.get('/listening/tests/:id', requireAuth, listening.getTest);
 apiRouter.post('/listening/tests/:id/submit', requireAuth, listening.submitAnswers);
+apiRouter.delete('/listening/tests/:id/attempts', requireAuth, listening.deleteAttempts);
 
 // --- Vocabulary ---
 apiRouter.get('/vocabulary', requireAuth, vocabulary.listWords);
@@ -45,6 +47,7 @@ apiRouter.get('/writing/prompts', requireAuth, writing.listPrompts);
 apiRouter.post('/writing/submit', requireAuth, writing.submitEssay);
 apiRouter.get('/writing/submissions', requireAuth, writing.listSubmissions);
 apiRouter.get('/writing/submissions/:id', requireAuth, writing.getSubmission);
+apiRouter.delete('/writing/submissions/:id', requireAuth, writing.deleteSubmission);
 apiRouter.get('/writing/stats', requireAuth, writing.getWritingStats);
 
 // --- Speaking ---

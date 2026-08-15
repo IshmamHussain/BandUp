@@ -409,12 +409,33 @@ async function openSubmission(id) {
   const detail = el('history-detail');
   detail.classList.remove('hidden');
   detail.innerHTML = `
-    <div class="card p-5 mb-4">
-      <h4 class="font-display font-semibold mb-2">Your essay</h4>
+    <div class="card p-5 mb-4 relative">
+      <div class="absolute top-4 right-4">
+        <button class="delete-btn p-2 rounded-xl text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition" aria-label="Delete submission" title="Delete submission">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+        </button>
+      </div>
+      <h4 class="font-display font-semibold mb-2 pr-12">Your essay</h4>
       <p class="text-sm leading-relaxed text-slate-600 dark:text-slate-300 whitespace-pre-wrap essay-text"></p>
     </div>
     <div class="eval-container"></div>`;
+    
   detail.querySelector('.essay-text').textContent = submission.essay_text;
+  
+  detail.querySelector('.delete-btn').addEventListener('click', async () => {
+    if (!confirm('Are you sure you want to delete this submission?')) return;
+    try {
+      await api.deleteWritingSubmission(submission.id);
+      toast('Submission deleted successfully', 'success');
+      detail.classList.add('hidden');
+      loadHistory();
+      // Invalidate progress chart
+      progressLoaded = false;
+    } catch (err) {
+      toast(err.message, 'error');
+    }
+  });
+
   if (submission.evaluation_json) {
     renderEvaluation(detail.querySelector('.eval-container'), submission.evaluation_json, { wordCount: submission.word_count });
   }

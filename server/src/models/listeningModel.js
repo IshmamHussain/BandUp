@@ -51,3 +51,12 @@ export async function testExists(testId) {
   const [rows] = await pool.execute('SELECT id FROM listening_tests WHERE id = ?', [testId]);
   return rows.length > 0;
 }
+
+export async function deleteAttempts(userId, testId) {
+  await pool.execute(
+    `DELETE a FROM attempts a
+     JOIN questions q ON q.id = a.question_id
+     WHERE q.listening_test_id = ? AND a.user_id = ?`,
+    [testId, userId]
+  );
+}

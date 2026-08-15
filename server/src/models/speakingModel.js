@@ -93,3 +93,7 @@ export async function getSpeakingStats(userId) {
 export async function deleteSubmission(submissionId, userId) {
   await pool.execute('DELETE FROM speaking_submissions WHERE id = ? AND user_id = ?', [submissionId, userId]);
 }
+
+export async function resetSubmissionEvaluation(submissionId) {
+  await pool.execute('UPDATE speaking_submissions SET status = \'pending\', evaluation_json = NULL, error = NULL WHERE id = ?', [submissionId]);
+}

@@ -80,3 +80,10 @@ export const submitAnswers = asyncHandler(async (req, res) => {
     results,
   });
 });
+
+export const deleteAttempts = asyncHandler(async (req, res) => {
+  if (!isPositiveInt(req.params.id)) return fail(res, 'Invalid test id.');
+  const testId = Number(req.params.id);
+  await readingModel.deleteAttempts(req.user.id, testId);
+  return ok(res, { message: 'Attempts deleted successfully.' });
+});
