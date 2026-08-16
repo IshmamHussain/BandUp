@@ -110,15 +110,6 @@ Auth uses a JWT in an HTTP-only cookie; the browser never handles tokens in JS.
 | CRUD | /api/admin/speaking/prompts | admin | Manage speaking prompts |
 | CRUD | /api/admin/students | admin | Manage student accounts |
 
-## Security decisions (know these for the viva)
-
-- **SQL injection:** every query uses `pool.execute()` prepared statements. No string concatenation of user input into SQL, anywhere.
-- **Password storage:** bcrypt, 12 rounds. Plain passwords never touch the database or logs.
-- **Sessions:** JWT in an `httpOnly`, `sameSite=strict` cookie. XSS cannot steal it; CSRF is blocked by SameSite.
-- **Answer keys:** correct answers and explanations are only sent to the client *after* submission; scoring happens on the server.
-- **Object ownership:** queries for user-owned rows (essays, attempts) always include `user_id` in the WHERE clause, so IDs cannot be guessed.
-- **Enumeration:** login returns the same error for wrong email and wrong password.
-- **Input:** all bodies validated; JSON body limited to 100kb; essay length capped.
 
 ## Git workflow
 
