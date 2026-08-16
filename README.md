@@ -45,7 +45,7 @@ BandUp/
     └── seeds/seed.sql       # Demo content (passages, questions, vocab, prompts, listening)
 ```
 
-## Setup (each team member)
+## Setup
 
 New here? Follow **SETUP.md** for a step-by-step walkthrough. Short version:
 
@@ -109,9 +109,3 @@ Auth uses a JWT in an HTTP-only cookie; the browser never handles tokens in JS.
 | CRUD | /api/admin/writing/prompts | admin | Manage writing prompts |
 | CRUD | /api/admin/speaking/prompts | admin | Manage speaking prompts |
 | CRUD | /api/admin/students | admin | Manage student accounts |
-
-
-## Git workflow
-
-- `main` is protected. Work on feature branches: `feature/reading-ui`, `fix/login-validation`.
-- Open a PR, one teammate reviews, then merge. No direct pushes to main.
