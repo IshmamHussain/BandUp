@@ -191,7 +191,7 @@ async function submit() {
   submitted = true;
   clearInterval(timerInterval);
   el('submit-btn').disabled = true;
-  el('submit-btn').textContent = 'Scoring?';
+  el('submit-btn').textContent = 'Scoring...';
 
   const allQuestions = test.passages.flatMap(p => p.questions);
   const payload = {

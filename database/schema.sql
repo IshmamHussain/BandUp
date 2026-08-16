@@ -197,7 +197,7 @@ CREATE TABLE daily_progress (
 CREATE TABLE bookmarks (
   id         INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   user_id    INT UNSIGNED NOT NULL,
-  item_type  ENUM('passage','vocabulary','writing_prompt') NOT NULL,
+  item_type  ENUM('passage','vocabulary','writing_prompt','reading_test') NOT NULL,
   item_id    INT UNSIGNED NOT NULL,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   UNIQUE KEY uq_bookmark (user_id, item_type, item_id),
