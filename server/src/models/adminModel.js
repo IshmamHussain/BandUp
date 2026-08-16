@@ -4,12 +4,15 @@ import { pool } from '../config/db.js';
 
 // ── Dashboard stats ──────────────────────────────────────────────────
 export async function getStats() {
-  const [[{ passages }]] = await pool.execute('SELECT COUNT(*) AS passages FROM reading_passages');
-  const [[{ tests }]] = await pool.execute('SELECT COUNT(*) AS tests FROM listening_tests');
-  const [[{ words }]] = await pool.execute('SELECT COUNT(*) AS words FROM vocabulary');
-  const [[{ prompts }]] = await pool.execute('SELECT COUNT(*) AS prompts FROM writing_prompts');
-  const [[{ users }]] = await pool.execute("SELECT COUNT(*) AS users FROM users WHERE role = 'student'");
-  return { passages, tests, words, prompts, users };
+  const [[row]] = await pool.execute(
+    `SELECT
+       (SELECT COUNT(*) FROM reading_passages) AS passages,
+       (SELECT COUNT(*) FROM listening_tests)  AS tests,
+       (SELECT COUNT(*) FROM vocabulary)       AS words,
+       (SELECT COUNT(*) FROM writing_prompts)  AS prompts,
+       (SELECT COUNT(*) FROM users WHERE role = 'student') AS users`
+  );
+  return row;
 }
 
 // ── Reading passages ─────────────────────────────────────────────────

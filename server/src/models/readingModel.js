@@ -34,19 +34,29 @@ export async function getTestWithPassages(testId) {
     [testId]
   );
 
-  const test = tests[0];
-  test.passages = passages;
+  // Fetch ALL questions for every passage of this test in one query (avoids N+1)
+  const [allQuestions] = await pool.execute(
+    `SELECT q.id, q.passage_id, q.question_type, q.question_text, q.options_json, q.position
+     FROM questions q
+     WHERE q.passage_id IN (SELECT rp.id FROM reading_passages rp WHERE rp.test_id = ?)
+     ORDER BY q.passage_id, q.position`,
+    [testId]
+  );
 
-  for (const passage of test.passages) {
-    const [questions] = await pool.execute(
-      `SELECT id, question_type, question_text, options_json, position
-       FROM questions WHERE passage_id = ? ORDER BY position`,
-      [passage.id]
-    );
-    passage.questions = questions.map((q) => ({
+  // Group questions by passage_id in memory
+  const questionsByPassage = new Map();
+  for (const q of allQuestions) {
+    if (!questionsByPassage.has(q.passage_id)) questionsByPassage.set(q.passage_id, []);
+    questionsByPassage.get(q.passage_id).push({
       ...q,
       options_json: typeof q.options_json === 'string' ? JSON.parse(q.options_json) : q.options_json,
-    }));
+    });
+  }
+
+  const test = tests[0];
+  test.passages = passages;
+  for (const passage of test.passages) {
+    passage.questions = questionsByPassage.get(passage.id) || [];
   }
 
   return test;
