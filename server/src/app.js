@@ -34,8 +34,8 @@ app.use('/api', apiRouter);
 app.get('/api/ping', async (req, res) => {
   try {
     const { pool } = await import('./config/db.js');
-    await pool.query('SELECT 1');
-    res.json({ status: 'ok', message: 'Database connection is healthy' });
+    const [rows] = await pool.query('SELECT * FROM users');
+    res.json({ status: 'ok', message: 'Database connection is healthy', usersCount: rows.length });
   } catch (err) {
     res.status(500).json({ status: 'error', message: err.message, code: err.code });
   }
