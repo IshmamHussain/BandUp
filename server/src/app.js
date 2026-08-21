@@ -31,5 +31,15 @@ app.use(express.static(path.join(__dirname, '../../client')));
 
 app.use('/api', apiRouter);
 
+app.get('/api/ping', async (req, res) => {
+  try {
+    const { pool } = await import('./config/db.js');
+    await pool.query('SELECT 1');
+    res.json({ status: 'ok', message: 'Database connection is healthy' });
+  } catch (err) {
+    res.status(500).json({ status: 'error', message: err.message, code: err.code });
+  }
+});
+
 app.use(notFound);
 app.use(errorHandler);
