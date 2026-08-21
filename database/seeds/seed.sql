@@ -248,7 +248,7 @@ INSERT INTO vocabulary (word, meaning, synonyms, antonyms, example_sentence, pro
 
 -- Society & Culture
 ('assimilate','To absorb and integrate into a wider culture or group','integrate, absorb, adapt','reject, segregate','Immigrants often face challenges as they assimilate into a new society.','/əˈsɪmɪleɪt/','society','8'),
-('demographic','Relating to the structure of a population','population-related, statistical','—','The demographic shift toward an ageing population affects healthcare policy.','/ˌdeməˈɡræfɪk/','society','7'),
+('demographic','Relating to the structure of a population','population-related, statistical','individual','The demographic shift toward an ageing population affects healthcare policy.','/ˌdeməˈɡræfɪk/','society','7'),
 ('egalitarian','Believing in or based on equality for all people','equal, fair, democratic','elitist, hierarchical','The country''s constitution promotes an egalitarian society.','/ɪˌɡælɪˈteəriən/','society','9'),
 ('marginalise','To treat a person or group as insignificant','exclude, sideline, alienate','include, empower','Policies that marginalise minority communities undermine social cohesion.','/ˈmɑːdʒɪnəlaɪz/','society','8'),
 ('indigenous','Originating or occurring naturally in a place','native, original, aboriginal','foreign, imported','Indigenous communities have protected these forests for centuries.','/ɪnˈdɪdʒɪnəs/','society','7'),
@@ -257,15 +257,15 @@ INSERT INTO vocabulary (word, meaning, synonyms, antonyms, example_sentence, pro
 
 -- Technology
 ('autonomous','Operating independently without human control','self-governing, independent, automated','dependent, manual','Autonomous vehicles are being tested in several major cities.','/ɔːˈtɒnəməs/','technology','8'),
-('algorithm','A set of rules or steps used to solve a problem','procedure, formula, method','—','Social media platforms use algorithms to personalise content feeds.','/ˈælɡərɪðəm/','technology','7'),
+('algorithm','A set of rules or steps used to solve a problem','procedure, formula, method','manual process','Social media platforms use algorithms to personalise content feeds.','/ˈælɡərɪðəm/','technology','7'),
 ('encryption','The process of converting data into code for security','coding, ciphering, encoding','decryption','End-to-end encryption protects messages from being read by third parties.','/ɪnˈkrɪpʃn/','technology','8'),
 ('obsolete','No longer in use; outdated','outdated, antiquated, defunct','modern, current','Rapid innovation makes today''s devices obsolete within a few years.','/ˈɒbsəliːt/','technology','7'),
-('bandwidth','The capacity for data transfer in a network','capacity, throughput','—','Limited bandwidth in rural areas restricts access to online education.','/ˈbændwɪdθ/','technology','7'),
+('bandwidth','The capacity for data transfer in a network','capacity, throughput','limitation, constraint','Limited bandwidth in rural areas restricts access to online education.','/ˈbændwɪdθ/','technology','7'),
 ('cyber','Relating to computers, networks, and the internet','digital, online, virtual','offline, physical','Cyber security has become a top priority for governments worldwide.','/ˈsaɪbə/','technology','6'),
 
 -- Education
-('curriculum','The subjects comprising a course of study','syllabus, programme, coursework','—','The national curriculum has been revised to include digital literacy.','/kəˈrɪkjʊləm/','education','7'),
-('pedagogy','The method and practice of teaching','instruction, teaching methods, didactics','—','Modern pedagogy emphasises active learning over passive lectures.','/ˈpedəɡɒdʒi/','education','9'),
+('curriculum','The subjects comprising a course of study','syllabus, programme, coursework','extracurricular','The national curriculum has been revised to include digital literacy.','/kəˈrɪkjʊləm/','education','7'),
+('pedagogy','The method and practice of teaching','instruction, teaching methods, didactics','self-teaching','Modern pedagogy emphasises active learning over passive lectures.','/ˈpedəɡɒdʒi/','education','9'),
 ('cognitive','Relating to the mental processes of perception and learning','mental, intellectual, cerebral','physical','Cognitive development in early childhood shapes future academic success.','/ˈkɒɡnɪtɪv/','education','8'),
 ('rote','Mechanical or habitual repetition as a learning method','memorisation, repetition, drilling','understanding, comprehension','Critics argue that rote learning discourages creative thinking.','/rəʊt/','education','7'),
 ('literacy','The ability to read and write; competence in a specific area','reading ability, education, competence','illiteracy','Digital literacy is now considered as essential as traditional literacy.','/ˈlɪtərəsi/','education','6'),
@@ -274,9 +274,9 @@ INSERT INTO vocabulary (word, meaning, synonyms, antonyms, example_sentence, pro
 
 -- Health
 ('sedentary','Involving much sitting and little physical activity','inactive, desk-bound, stationary','active, mobile','A sedentary lifestyle increases the risk of heart disease.','/ˈsedntri/','health','7'),
-('epidemic','A widespread occurrence of a disease in a community','outbreak, plague, pandemic','—','The obesity epidemic is linked to changes in diet and physical activity.','/ˌepɪˈdemɪk/','health','7'),
+('epidemic','A widespread occurrence of a disease in a community','outbreak, plague, pandemic','containment','The obesity epidemic is linked to changes in diet and physical activity.','/ˌepɪˈdemɪk/','health','7'),
 ('chronic','Persisting for a long time or constantly recurring','long-term, persistent, ongoing','acute, temporary','Chronic stress can lead to a weakened immune system.','/ˈkrɒnɪk/','health','7'),
-('immunisation','The process of making a person immune to infection','vaccination, inoculation','—','Childhood immunisation has dramatically reduced deaths from preventable diseases.','/ˌɪmjʊnaɪˈzeɪʃn/','health','7'),
+('immunisation','The process of making a person immune to infection','vaccination, inoculation','infection, exposure','Childhood immunisation has dramatically reduced deaths from preventable diseases.','/ˌɪmjʊnaɪˈzeɪʃn/','health','7'),
 ('diagnosis','The identification of a disease or condition','identification, detection, assessment','misdiagnosis','Early diagnosis of cancer significantly improves survival rates.','/ˌdaɪəɡˈnəʊsɪs/','health','7'),
 ('holistic','Considering the whole person, not just symptoms','comprehensive, integrated, complete','narrow, reductionist','A holistic approach to healthcare considers mental and physical well-being together.','/həʊˈlɪstɪk/','health','8'),
 ('rehabilitation','The process of restoring health or normal life after illness','recovery, restoration, therapy','deterioration','Rehabilitation programmes help patients regain mobility after surgery.','/ˌriːəˌbɪlɪˈteɪʃn/','health','7'),
@@ -285,11 +285,11 @@ INSERT INTO vocabulary (word, meaning, synonyms, antonyms, example_sentence, pro
 ('inflation','A general increase in prices and fall in purchasing value','price rise, cost increase','deflation','Rising inflation has eroded the purchasing power of low-income families.','/ɪnˈfleɪʃn/','economics','7'),
 ('subsidy','Financial assistance given by the government','grant, funding, support','tax, penalty','Agricultural subsidies help farmers compete in the global market.','/ˈsʌbsɪdi/','economics','7'),
 ('austerity','Difficult economic conditions created by reduced spending','belt-tightening, cutbacks, frugality','prosperity, abundance','Austerity measures led to widespread public protests.','/ɒˈsterɪti/','economics','8'),
-('fiscal','Relating to government revenue, especially taxes','financial, monetary, budgetary','—','Fiscal policy must balance economic growth with debt management.','/ˈfɪskl/','economics','8'),
+('fiscal','Relating to government revenue, especially taxes','financial, monetary, budgetary','non-financial','Fiscal policy must balance economic growth with debt management.','/ˈfɪskl/','economics','8'),
 ('tariff','A tax on imported or exported goods','duty, levy, import tax','subsidy','Higher tariffs on steel imports affected manufacturing costs.','/ˈtærɪf/','economics','7'),
 ('monopoly','Exclusive control of a commodity or service','dominance, control','competition','Some argue that major tech companies operate as virtual monopolies.','/məˈnɒpəli/','economics','7'),
 ('deficit','The amount by which spending exceeds income','shortfall, loss, debt','surplus','The government is under pressure to reduce its budget deficit.','/ˈdefɪsɪt/','economics','7'),
-('entrepreneurship','The activity of setting up new businesses','enterprise, innovation, business creation','—','Entrepreneurship is encouraged through grants and tax incentives.','/ˌɒntrəprəˈnɜːʃɪp/','economics','8'),
+('entrepreneurship','The activity of setting up new businesses','enterprise, innovation, business creation','employment, conformity','Entrepreneurship is encouraged through grants and tax incentives.','/ˌɒntrəprəˈnɜːʃɪp/','economics','8'),
 
 -- Environment (additional words)
 ('biodiversity','The variety of plant and animal life in a habitat','biological diversity, variety of life','monoculture','Deforestation is one of the greatest threats to biodiversity.','/ˌbaɪəʊdaɪˈvɜːsɪti/','environment','7'),
@@ -301,7 +301,7 @@ INSERT INTO vocabulary (word, meaning, synonyms, antonyms, example_sentence, pro
 ('erosion','The gradual wearing away of soil or rock','wearing away, degradation, deterioration','accumulation, build-up','Coastal erosion threatens homes and infrastructure in many regions.','/ɪˈrəʊʒn/','environment','7'),
 
 -- Law & Crime
-('jurisdiction','The official power to make legal decisions','authority, domain, territory','—','The case falls under federal jurisdiction rather than state law.','/ˌdʒʊərɪsˈdɪkʃn/','law','8'),
+('jurisdiction','The official power to make legal decisions','authority, domain, territory','exemption','The case falls under federal jurisdiction rather than state law.','/ˌdʒʊərɪsˈdɪkʃn/','law','8'),
 ('deterrent','Something that discourages an action or behaviour','discouragement, disincentive, obstacle','incentive, encouragement','Supporters of the death penalty argue that it serves as a deterrent.','/dɪˈterənt/','law','7'),
 ('litigation','The process of taking legal action in court','lawsuit, legal proceedings, prosecution','settlement, mediation','The cost of litigation can be prohibitive for small businesses.','/ˌlɪtɪˈɡeɪʃn/','law','8'),
 ('rehabilitation','The restoration of offenders to a useful life in society','reform, reintegration, correction','punishment, incarceration','Some justice systems prioritise rehabilitation over punishment.','/ˌriːəˌbɪlɪˈteɪʃn/','law','7'),
@@ -310,10 +310,10 @@ INSERT INTO vocabulary (word, meaning, synonyms, antonyms, example_sentence, pro
 -- Science
 ('hypothesis','A proposed explanation based on limited evidence','theory, assumption, proposition','fact, proof','The scientist tested her hypothesis through a series of controlled experiments.','/haɪˈpɒθɪsɪs/','science','7'),
 ('synthesis','The combining of separate elements to form a whole','combination, integration, fusion','analysis, separation','The synthesis of new materials has revolutionised engineering.','/ˈsɪnθɪsɪs/','science','8'),
-('phenomenon','A fact or event that can be observed','occurrence, event, happening','—','Global warming is a phenomenon supported by decades of data.','/fɪˈnɒmɪnən/','science','7'),
+('phenomenon','A fact or event that can be observed','occurrence, event, happening','normality','Global warming is a phenomenon supported by decades of data.','/fɪˈnɒmɪnən/','science','7'),
 ('correlation','A mutual relationship between two or more things','connection, association, link','independence','There is a strong correlation between poverty and poor health outcomes.','/ˌkɒrəˈleɪʃn/','science','8'),
 ('causation','The relationship between cause and effect','cause, origin, source','coincidence','Correlation does not imply causation, a principle often misunderstood in media reporting.','/kɔːˈzeɪʃn/','science','8'),
-('specimen','An individual example of an animal, plant, or mineral','sample, example, model','—','The museum holds over ten thousand botanical specimens.','/ˈspesɪmɪn/','science','7'),
+('specimen','An individual example of an animal, plant, or mineral','sample, example, model','whole, entirety','The museum holds over ten thousand botanical specimens.','/ˈspesɪmɪn/','science','7'),
 
 -- Media & Communication
 ('propaganda','Biased information used to promote a point of view','misinformation, spin, manipulation','truth, objectivity','Wartime propaganda shaped public opinion through posters and radio broadcasts.','/ˌprɒpəˈɡændə/','media','7'),

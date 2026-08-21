@@ -86,7 +86,6 @@ function renderCard() {
   if (!word) return;
   flip(false);
   el('word').textContent = word.word;
-  el('pronunciation').textContent = word.pronunciation || '';
   el('back-word').textContent = word.word;
   el('meaning').textContent = word.meaning;
   el('example').textContent = word.example_sentence ? `"${word.example_sentence}"` : '';
