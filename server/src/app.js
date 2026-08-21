@@ -31,17 +31,5 @@ app.use(express.static(path.join(__dirname, '../../client')));
 
 app.use('/api', apiRouter);
 
-app.get('/api/admin/force-db-reset', async (req, res) => {
-  try {
-    const { exec } = await import('node:child_process');
-    exec('node scripts/run-seeds.js', (err, stdout, stderr) => {
-      if (err) return res.send(`<pre>Error: ${err.message}\n\n${stderr}</pre>`);
-      res.send(`<h1>Database Reset Successful!</h1><pre>${stdout}</pre><p><a href="/">Go back to app</a></p>`);
-    });
-  } catch(e) {
-    res.send(e.toString());
-  }
-});
-
 app.use(notFound);
 app.use(errorHandler);
