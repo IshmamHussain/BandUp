@@ -40,15 +40,18 @@ async function run() {
     await connection.query(schemaSql);
 
     console.log('Running seed.sql...');
-    const seedSql = await fs.readFile(path.join(__dirname, '../../database/seeds/seed.sql'), 'utf-8');
+    let seedSql = await fs.readFile(path.join(__dirname, '../../database/seeds/seed.sql'), 'utf-8');
+    seedSql = seedSql.replace(/USE ielts_prep;/gi, '');
     await connection.query(seedSql);
 
     console.log('Running listening-override.sql...');
-    const listeningSql = await fs.readFile(path.join(__dirname, '../../database/seeds/listening-override.sql'), 'utf-8');
+    let listeningSql = await fs.readFile(path.join(__dirname, '../../database/seeds/listening-override.sql'), 'utf-8');
+    listeningSql = listeningSql.replace(/USE ielts_prep;/gi, '');
     await connection.query(listeningSql);
 
     console.log('Running listening-cambridge.sql...');
-    const cambridgeSql = await fs.readFile(path.join(__dirname, '../../database/seeds/listening-cambridge.sql'), 'utf-8');
+    let cambridgeSql = await fs.readFile(path.join(__dirname, '../../database/seeds/listening-cambridge.sql'), 'utf-8');
+    cambridgeSql = cambridgeSql.replace(/USE ielts_prep;/gi, '');
     await connection.query(cambridgeSql);
 
     console.log('Database successfully reset and seeded!');
