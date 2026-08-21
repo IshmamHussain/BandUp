@@ -24,13 +24,19 @@ async function run() {
   const connection = await mysql.createConnection(connectionConfig);
 
   try {
-    console.log('Dropping and recreating database...');
-    await connection.query(`DROP DATABASE IF EXISTS \`${env.db.database}\`;`);
-    await connection.query(`CREATE DATABASE \`${env.db.database}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;`);
+    console.log('Dropping all tables safely...');
+    await connection.query('SET FOREIGN_KEY_CHECKS = 0;');
+    const [tables] = await connection.query(`SELECT table_name FROM information_schema.tables WHERE table_schema = '${env.db.database}'`);
+    for (const row of tables) {
+      const tName = row.table_name || row.TABLE_NAME;
+      await connection.query(`DROP TABLE IF EXISTS \`${env.db.database}\`.\`${tName}\``);
+    }
+    await connection.query('SET FOREIGN_KEY_CHECKS = 1;');
     await connection.query(`USE \`${env.db.database}\`;`);
 
     console.log('Running schema.sql...');
-    const schemaSql = await fs.readFile(path.join(__dirname, '../../database/schema.sql'), 'utf-8');
+    let schemaSql = await fs.readFile(path.join(__dirname, '../../database/schema.sql'), 'utf-8');
+    schemaSql = schemaSql.replace(/CREATE DATABASE IF NOT EXISTS ielts_prep;/gi, '').replace(/USE ielts_prep;/gi, '');
     await connection.query(schemaSql);
 
     console.log('Running seed.sql...');
