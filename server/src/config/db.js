@@ -14,6 +14,7 @@ const poolConfig = {
   waitForConnections: true,
   connectionLimit: 10,
   namedPlaceholders: true,
+  charset: 'utf8mb4',
 };
 
 // Enable SSL if explicitly configured or when connecting to a remote/cloud database (Aiven, TiDB, Clever Cloud, etc.)
