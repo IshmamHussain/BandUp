@@ -8,14 +8,20 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 async function run() {
   console.log('Connecting to database...');
-  // We connect without a database first so we can drop and recreate it
-  const connection = await mysql.createConnection({
+  const connectionConfig = {
     host: env.db.host,
+    port: env.db.port,
     user: env.db.user,
     password: env.db.password,
     multipleStatements: true,
     charset: 'utf8mb4',
-  });
+  };
+
+  if (env.db.ssl || (process.env.DB_SSL !== 'false' && env.db.host && !env.db.host.includes('localhost') && !env.db.host.includes('127.0.0.1'))) {
+    connectionConfig.ssl = { rejectUnauthorized: false };
+  }
+
+  const connection = await mysql.createConnection(connectionConfig);
 
   try {
     console.log('Dropping and recreating database...');
