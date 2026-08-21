@@ -7,7 +7,8 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
-    "db:reset": "node scripts/run-seeds.js"
+    "db:reset": "node scripts/run-seeds.js",
+    "db:fix-vocab": "node scripts/fix-vocab-mojibake.js"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",

@@ -14,6 +14,7 @@ async function run() {
     user: env.db.user,
     password: env.db.password,
     multipleStatements: true,
+    charset: 'utf8mb4',
   });
 
   try {
