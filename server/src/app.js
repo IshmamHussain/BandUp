@@ -34,10 +34,21 @@ app.use('/api', apiRouter);
 app.get('/api/ping', async (req, res) => {
   try {
     const { pool } = await import('./config/db.js');
-    const [rows] = await pool.query('SELECT * FROM users');
-    res.json({ status: 'ok', message: 'Database connection is healthy', usersCount: rows.length });
+    const [rows] = await pool.query('SELECT * FROM users WHERE email = ?', ['admin@bandup.com']);
+    const user = rows[0];
+    if (!user) return res.json({ error: 'Admin not found' });
+    
+    let errorStack = 'None';
+    try {
+      const bcrypt = await import('bcryptjs');
+      const passwordMatches = await bcrypt.default.compare('Admin@123', user.password_hash);
+    } catch(e) {
+      errorStack = e.stack;
+    }
+    
+    res.json({ status: 'ok', userRole: user.role, supabaseId: user.supabase_id, errorStack });
   } catch (err) {
-    res.status(500).json({ status: 'error', message: err.message, code: err.code });
+    res.status(500).json({ status: 'error', message: err.message, stack: err.stack });
   }
 });
 
@@ -45,8 +56,7 @@ app.get('/api/admin/force-db-reset', async (req, res) => {
   try {
     const { exec } = await import('node:child_process');
     exec('node scripts/run-seeds.js', (err, stdout, stderr) => {
-      if (err) return res.send(`<pre>Error: ${err.message}\n\n${stderr}</pre>`);
-      res.send(`<h1>Database Reset Successful!</h1><pre>${stdout}</pre><p><a href="/">Go back to app</a></p>`);
+      res.send(`<h1>Database Reset Output</h1><pre>STDOUT:\n${stdout}\n\nSTDERR:\n${stderr}</pre><p><a href="/">Go back to app</a></p>`);
     });
   } catch(e) {
     res.send(e.toString());
