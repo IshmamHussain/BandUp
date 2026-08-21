@@ -38,7 +38,7 @@ async function fix() {
     await connection.query(vocabInsert);
     
     console.log('Repairing existing vocabulary table...');
-    await connection.query(`
+    const [result] = await connection.query(`
       UPDATE vocabulary v
       JOIN temp_vocab t ON v.word = t.word
       SET v.pronunciation = t.pronunciation,
@@ -48,7 +48,12 @@ async function fix() {
           v.example_sentence = t.example_sentence
     `);
     
-    console.log('Success! The pronunciation and antonym mojibake has been fixed.');
+    console.log('Update result:', result.info);
+    if (result.affectedRows === 0) {
+      console.log('WARNING: No rows were updated! This means the words in the database did not match the seed data.');
+    } else {
+      console.log('Success! The pronunciation and antonym mojibake has been fixed.');
+    }
   } catch (err) {
     console.error('Failed to fix mojibake:', err);
   } finally {

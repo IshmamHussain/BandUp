@@ -90,8 +90,8 @@ function renderCard() {
   el('back-word').textContent = word.word;
   el('meaning').textContent = word.meaning;
   el('example').textContent = word.example_sentence ? `"${word.example_sentence}"` : '';
-  el('synonyms').textContent = word.synonyms || 'None';
-  el('antonyms').textContent = word.antonyms || 'None';
+  el('synonyms').textContent = (!word.synonyms || word.synonyms === '—' || word.synonyms.includes('ÔÇö')) ? 'None' : word.synonyms;
+  el('antonyms').textContent = (!word.antonyms || word.antonyms === '—' || word.antonyms.includes('ÔÇö')) ? 'None' : word.antonyms;
   el('bookmark-btn').innerHTML = starIcon(Boolean(Number(word.bookmarked)));
   el('card-position').textContent = `${index + 1} of ${words.length}`;
   el('card-status').textContent = STATUS_LABELS[word.status] || word.status;
