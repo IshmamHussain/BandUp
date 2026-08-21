@@ -36,7 +36,7 @@ let promptChartT2 = null;
 function populateTest() {
   const selectedTest = testSelect.value;
   const testPrompts = prompts.filter((p) => (p.category || 'General') === selectedTest);
-  
+
   currentTask1 = testPrompts.find(p => p.task_type === 'task1');
   currentTask2 = testPrompts.find(p => p.task_type === 'task2');
 
@@ -52,7 +52,7 @@ function setupTask(prefix, prompt, targetWords) {
   // Chart setup
   const chartContainer = el(`prompt-chart-container-${prefix}`);
   let chartInstance = prefix === 't1' ? promptChartT1 : promptChartT2;
-  
+
   if (chartInstance) {
     chartInstance.destroy();
     chartInstance = null;
@@ -61,7 +61,7 @@ function setupTask(prefix, prompt, targetWords) {
   if (prompt.chart_data) {
     chartContainer.classList.remove('hidden');
     const config = JSON.parse(JSON.stringify(prompt.chart_data)); // deep clone
-    
+
     if (config.type === 'image') {
       el(`prompt-chart-${prefix}`).classList.add('hidden');
       const imgEl = el(`prompt-image-${prefix}`);
@@ -70,20 +70,20 @@ function setupTask(prefix, prompt, targetWords) {
     } else {
       el(`prompt-chart-${prefix}`).classList.remove('hidden');
       el(`prompt-image-${prefix}`).classList.add('hidden');
-      
+
       const resolveCallbacks = (obj) => {
         if (!obj) return;
         if (obj.ticks?.callback === 'PERCENT') obj.ticks.callback = (v) => v + '%';
         if (obj.ticks?.callback === 'LITRES') obj.ticks.callback = (v) => v + 'L';
       };
-      
+
       resolveCallbacks(config.options?.scales?.y);
       resolveCallbacks(config.options?.scales?.x);
 
       const isDark = document.documentElement.classList.contains('dark');
       const textColor = isDark ? '#94a3b8' : '#64748b';
       const gridColor = isDark ? 'rgba(51,65,85,0.5)' : 'rgba(226,232,240,0.8)';
-      
+
       if (config.options?.scales) {
         Object.values(config.options.scales).forEach((scale) => {
           if (scale.ticks) scale.ticks.color = textColor;
@@ -104,12 +104,12 @@ function setupTask(prefix, prompt, targetWords) {
   // Restore essay box text and reset counters
   const savedText = savedEssays[prompt.id] || '';
   el(`essay-${prefix}`).value = savedText;
-  
+
   const count = savedText.trim() ? savedText.trim().split(/\s+/).length : 0;
   el(`word-count-${prefix}`).textContent = count;
   el(`word-progress-${prefix}`).style.width = `${Math.min(100, (100 * count) / targetWords)}%`;
   el(`elapsed-${prefix}`).textContent = '00:00';
-  
+
   // Hide evaluation panel if open
   el(`evaluation-${prefix}`).classList.add('hidden');
 }
@@ -154,7 +154,7 @@ async function evaluateTask(prefix, prompt, text) {
   el(`evaluating-${prefix}`).classList.remove('hidden');
   el(`evaluation-${prefix}`).classList.add('hidden');
   el(`evaluation-${prefix}`).innerHTML = '';
-  
+
   try {
     const result = await api.submitEssay({
       promptId: prompt.id,
@@ -167,11 +167,11 @@ async function evaluateTask(prefix, prompt, text) {
       wordCount: text.split(/\s+/).length,
       hideOverall: true
     });
-    
+
     el(`evaluating-${prefix}`).classList.add('hidden');
     el(`evaluation-${prefix}`).classList.remove('hidden');
     progressLoaded = false;
-    
+
     return result.evaluation.band_overall;
   } catch (err) {
     el(`evaluating-${prefix}`).classList.add('hidden');
@@ -200,17 +200,17 @@ el('submit-btn-both').addEventListener('click', async () => {
       el(`evaluating-t1`).scrollIntoView({ behavior: 'smooth', block: 'center' });
       scoreT1 = await evaluateTask('t1', currentTask1, textT1);
     }
-    
+
     if (textT2.length >= 20 && currentTask2) {
       el(`evaluating-t2`).scrollIntoView({ behavior: 'smooth', block: 'center' });
       scoreT2 = await evaluateTask('t2', currentTask2, textT2);
     }
-    
+
     if (scoreT1 !== null && scoreT2 !== null) {
       // Calculate overall test score: Task 2 is worth twice as much as Task 1
       const rawScore = (scoreT1 + (scoreT2 * 2)) / 3;
       const finalScore = Math.round(rawScore * 2) / 2; // round to nearest 0.5
-      
+
       const overallEl = el('overall-test-score');
       overallEl.innerHTML = `
         <h2 class="font-display font-extrabold text-4xl sm:text-5xl mb-3">${finalScore.toFixed(1)}</h2>
@@ -222,7 +222,7 @@ el('submit-btn-both').addEventListener('click', async () => {
     } else {
       el('overall-test-score').classList.add('hidden');
     }
-    
+
     toast('Evaluation complete for submitted tasks!', 'success');
   } catch (e) {
     console.error(e);
@@ -443,7 +443,7 @@ async function loadHistory() {
         </span>
         <svg class="w-4 h-4 text-slate-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>`;
       row.querySelector('.submission-prompt').textContent = sub.prompt_text || 'Free writing';
-      row.addEventListener('click', () => openSubmission(sub.id));
+      row.addEventListener('click', () => openSubmission(sub.id, row));
       container.appendChild(row);
     } else {
       // Paired test block with accordion
@@ -486,7 +486,7 @@ async function loadHistory() {
         taskRow.querySelector('.task-prompt-text').textContent = sub.prompt_text || 'Free writing';
         taskRow.addEventListener('click', (e) => {
           e.stopPropagation();
-          openSubmission(sub.id);
+          openSubmission(sub.id, taskRow);
         });
         innerPanel.appendChild(taskRow);
       });
@@ -505,7 +505,17 @@ async function loadHistory() {
   });
 }
 
-async function openSubmission(id) {
+async function openSubmission(id, afterElement) {
+  // 1. If an inline detail is already open, check if it's the same one
+  const existing = document.querySelector('.inline-submission-detail');
+  const isSameSubmission = existing && existing.dataset.submissionId === String(id);
+  
+  // Remove any currently open detail regardless
+  if (existing) existing.remove();
+
+  // 2. If it was the same one, we just close it and stop here (Toggle feature)
+  if (isSameSubmission) return;
+
   let submission;
   try {
     submission = await api.submission(id);
@@ -513,10 +523,16 @@ async function openSubmission(id) {
     toast(err.message, 'error');
     return;
   }
-  const detail = el('history-detail');
-  detail.classList.remove('hidden');
+
+  // 3. Make sure the legacy bottom panel is hidden
+  el('history-detail').classList.add('hidden');
+
+  // 4. Create the new inline detail element
+  const detail = document.createElement('div');
+  detail.className = 'inline-submission-detail mt-2';
+  detail.dataset.submissionId = String(id);
   detail.innerHTML = `
-    <div class="card p-5 mb-4 relative">
+    <div class="card p-5 mb-2 relative">
       <div class="absolute top-4 right-4">
         <button class="delete-btn p-2 rounded-xl text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition" aria-label="Delete submission" title="Delete submission">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
@@ -525,7 +541,7 @@ async function openSubmission(id) {
       <h4 class="font-display font-semibold mb-2 pr-12">Your essay</h4>
       <p class="text-sm leading-relaxed text-slate-600 dark:text-slate-300 whitespace-pre-wrap essay-text"></p>
     </div>
-    <div class="eval-container"></div>`;
+    <div class="eval-container mb-4"></div>`;
     
   detail.querySelector('.essay-text').textContent = submission.essay_text;
   
@@ -534,9 +550,8 @@ async function openSubmission(id) {
     try {
       await api.deleteWritingSubmission(submission.id);
       toast('Submission deleted successfully', 'success');
-      detail.classList.add('hidden');
+      detail.remove();
       loadHistory();
-      // Invalidate progress chart
       progressLoaded = false;
     } catch (err) {
       toast(err.message, 'error');
@@ -546,6 +561,20 @@ async function openSubmission(id) {
   if (submission.evaluation_json) {
     renderEvaluation(detail.querySelector('.eval-container'), submission.evaluation_json, { wordCount: submission.word_count });
   }
+
+  // 5. Insert it directly underneath the element that was clicked
+  if (afterElement) {
+    // If it's inside an accordion, place it below the accordion container
+    const accordionGroup = afterElement.closest('.history-test-group');
+    if (accordionGroup) {
+      accordionGroup.after(detail);
+    } else {
+      afterElement.after(detail);
+    }
+  } else {
+    el('history-list').appendChild(detail);
+  }
+
   detail.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
