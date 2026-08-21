@@ -376,25 +376,142 @@ async function loadHistory() {
     return;
   }
 
+  // Group submissions into test blocks (same category, submitted within 30 min of each other)
+  const testGroups = [];
+  const used = new Set();
+
+  for (let i = 0; i < submissions.length; i++) {
+    if (used.has(i)) continue;
+    const sub = submissions[i];
+    const group = { category: sub.category, submissions: [sub], date: new Date(sub.created_at) };
+    used.add(i);
+
+    // Find the matching task for this test (same category, different task_type, within 30 min)
+    for (let j = 0; j < submissions.length; j++) {
+      if (used.has(j)) continue;
+      const other = submissions[j];
+      if (other.category === sub.category && other.task_type !== sub.task_type) {
+        const timeDiff = Math.abs(new Date(sub.created_at) - new Date(other.created_at));
+        if (timeDiff < 30 * 60 * 1000) { // 30 minutes
+          group.submissions.push(other);
+          used.add(j);
+          break;
+        }
+      }
+    }
+    testGroups.push(group);
+  }
+
   listEl.innerHTML = '';
-  submissions.forEach((submission) => {
-    const row = document.createElement('button');
-    row.className = 'card w-full p-4 flex items-center gap-4 text-left hover:border-brand-400 dark:hover:border-brand-600 transition';
-    row.innerHTML = `
-      <span class="grid place-items-center w-12 h-12 rounded-xl bg-brand-50 dark:bg-brand-900/30 font-mono font-bold text-brand-700 dark:text-brand-300">
-        ${submission.band_overall ? Number(submission.band_overall).toFixed(1) : '…'}
-      </span>
-      <span class="flex-1 min-w-0">
-        <span class="block text-sm font-medium truncate submission-prompt"></span>
-        <span class="block text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-          ${submission.task_type === 'task1' ? 'Task 1' : 'Task 2'}${submission.category ? ` · ${submission.category}` : ''} · ${submission.word_count} words ·
-          ${new Date(submission.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+  testGroups.forEach((group, groupIdx) => {
+    const task1 = group.submissions.find(s => s.task_type === 'task1');
+    const task2 = group.submissions.find(s => s.task_type === 'task2');
+    const hasBoth = task1 && task2;
+
+    // Calculate combined score: Task 2 is worth twice as much as Task 1
+    let combinedScore = null;
+    if (hasBoth && task1.band_overall && task2.band_overall) {
+      const raw = (Number(task1.band_overall) + Number(task2.band_overall) * 2) / 3;
+      combinedScore = Math.round(raw * 2) / 2;
+    } else if (task1?.band_overall && !task2) {
+      combinedScore = Number(task1.band_overall);
+    } else if (task2?.band_overall && !task1) {
+      combinedScore = Number(task2.band_overall);
+    }
+
+    const displayScore = combinedScore !== null ? combinedScore.toFixed(1) : '…';
+    const dateStr = new Date(group.submissions[0].created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+    const isOnlyOneTask = group.submissions.length === 1;
+
+    const container = document.createElement('div');
+    container.className = 'history-test-group';
+
+    // If only one task submission (no pair), render a simple row like before
+    if (isOnlyOneTask) {
+      const sub = group.submissions[0];
+      const row = document.createElement('button');
+      row.className = 'card w-full p-4 flex items-center gap-4 text-left hover:border-brand-400 dark:hover:border-brand-600 transition';
+      row.innerHTML = `
+        <span class="grid place-items-center w-12 h-12 rounded-xl bg-brand-50 dark:bg-brand-900/30 font-mono font-bold text-brand-700 dark:text-brand-300">
+          ${sub.band_overall ? Number(sub.band_overall).toFixed(1) : '…'}
         </span>
-      </span>
-      <svg class="w-4 h-4 text-slate-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>`;
-    row.querySelector('.submission-prompt').textContent = submission.prompt_text || 'Free writing';
-    row.addEventListener('click', () => openSubmission(submission.id));
-    listEl.appendChild(row);
+        <span class="flex-1 min-w-0">
+          <span class="block text-sm font-medium truncate submission-prompt"></span>
+          <span class="block text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+            ${sub.task_type === 'task1' ? 'Task 1' : 'Task 2'}${sub.category ? ` · ${sub.category}` : ''} · ${sub.word_count} words · ${dateStr}
+          </span>
+        </span>
+        <svg class="w-4 h-4 text-slate-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>`;
+      row.querySelector('.submission-prompt').textContent = sub.prompt_text || 'Free writing';
+      row.addEventListener('click', () => openSubmission(sub.id));
+      container.appendChild(row);
+    } else {
+      // Paired test block with accordion
+      const header = document.createElement('button');
+      header.className = 'card w-full p-4 flex items-center gap-4 text-left hover:border-brand-400 dark:hover:border-brand-600 transition';
+      header.innerHTML = `
+        <span class="grid place-items-center w-12 h-12 rounded-xl bg-gradient-to-br from-brand-500 to-cyan-500 font-mono font-bold text-white text-lg shadow-md">
+          ${displayScore}
+        </span>
+        <span class="flex-1 min-w-0">
+          <span class="block text-sm font-bold">${group.category || 'Writing Test'}</span>
+          <span class="block text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+            Task 1 & 2 · ${dateStr}${hasBoth && task1.band_overall && task2.band_overall ? ` · T1: ${Number(task1.band_overall).toFixed(1)} · T2: ${Number(task2.band_overall).toFixed(1)}` : ''}
+          </span>
+        </span>
+        <svg class="w-5 h-5 text-slate-400 shrink-0 transition-transform duration-300 accordion-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>`;
+
+      const expandPanel = document.createElement('div');
+      expandPanel.className = 'accordion-panel';
+      expandPanel.style.maxHeight = '0';
+      expandPanel.style.overflow = 'hidden';
+      expandPanel.style.transition = 'max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1)';
+
+      const innerPanel = document.createElement('div');
+      innerPanel.className = 'pl-4 pr-2 pb-2 pt-1 space-y-2';
+
+      // Render task rows inside the accordion
+      const sortedSubs = [task1, task2].filter(Boolean);
+      sortedSubs.forEach(sub => {
+        const taskRow = document.createElement('button');
+        taskRow.className = 'w-full p-3.5 flex items-center gap-3 text-left rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 hover:border-brand-400 dark:hover:border-brand-600 transition';
+        taskRow.innerHTML = `
+          <span class="grid place-items-center w-10 h-10 rounded-lg bg-brand-50 dark:bg-brand-900/30 font-mono font-bold text-sm text-brand-700 dark:text-brand-300">
+            ${sub.band_overall ? Number(sub.band_overall).toFixed(1) : '…'}
+          </span>
+          <span class="flex-1 min-w-0">
+            <span class="block text-sm font-medium truncate task-prompt-text"></span>
+            <span class="block text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+              ${sub.task_type === 'task1' ? 'Task 1' : 'Task 2'} · ${sub.word_count} words
+            </span>
+          </span>
+          <svg class="w-4 h-4 text-slate-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>`;
+        taskRow.querySelector('.task-prompt-text').textContent = sub.prompt_text || 'Free writing';
+        taskRow.addEventListener('click', (e) => {
+          e.stopPropagation();
+          openSubmission(sub.id);
+        });
+        innerPanel.appendChild(taskRow);
+      });
+
+      expandPanel.appendChild(innerPanel);
+
+      let isOpen = false;
+      header.addEventListener('click', () => {
+        isOpen = !isOpen;
+        header.querySelector('.accordion-chevron').style.transform = isOpen ? 'rotate(180deg)' : '';
+        if (isOpen) {
+          expandPanel.style.maxHeight = expandPanel.scrollHeight + 'px';
+        } else {
+          expandPanel.style.maxHeight = '0';
+        }
+      });
+
+      container.appendChild(header);
+      container.appendChild(expandPanel);
+    }
+
+    listEl.appendChild(container);
   });
 }
 
