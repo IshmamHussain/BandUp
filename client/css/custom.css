@@ -53,6 +53,25 @@ body { font-family: 'Inter', system-ui, sans-serif; }
   box-shadow: 0 1px 2px rgb(0 0 0 / 0.4);
 }
 
+/* ---- History accordion ---- */
+.accordion-panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.accordion-panel > div {
+  overflow: hidden;
+}
+.accordion-open .accordion-panel {
+  grid-template-rows: 1fr;
+}
+.accordion-chevron {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.accordion-open .accordion-chevron {
+  transform: rotate(180deg);
+}
+
 /* ---- Skeleton shimmer ---- */
 .skeleton {
   position: relative;

@@ -463,9 +463,6 @@ async function loadHistory() {
 
       const expandPanel = document.createElement('div');
       expandPanel.className = 'accordion-panel';
-      expandPanel.style.maxHeight = '0';
-      expandPanel.style.overflow = 'hidden';
-      expandPanel.style.transition = 'max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1)';
 
       const innerPanel = document.createElement('div');
       innerPanel.className = 'pl-4 pr-2 pb-2 pt-1 space-y-2';
@@ -497,16 +494,7 @@ async function loadHistory() {
       expandPanel.appendChild(innerPanel);
 
       header.addEventListener('click', () => {
-        const isOpen = container.classList.toggle('accordion-open');
-        header.querySelector('.accordion-chevron').style.transform = isOpen ? 'rotate(180deg)' : '';
-        if (isOpen) {
-          expandPanel.style.maxHeight = expandPanel.scrollHeight + 'px';
-        } else {
-          // Force reflow so browser recognises the current maxHeight before transitioning to 0
-          expandPanel.style.maxHeight = expandPanel.scrollHeight + 'px';
-          expandPanel.offsetHeight; // reflow
-          expandPanel.style.maxHeight = '0px';
-        }
+        container.classList.toggle('accordion-open');
       });
 
       container.appendChild(header);
