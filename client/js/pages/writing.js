@@ -424,13 +424,13 @@ async function loadHistory() {
     const isOnlyOneTask = group.submissions.length === 1;
 
     const container = document.createElement('div');
-    container.className = 'history-test-group';
+    container.className = 'history-test-group card relative mb-4 overflow-hidden group transition-all duration-300';
 
     // If only one task submission (no pair), render a simple row like before
     if (isOnlyOneTask) {
       const sub = group.submissions[0];
       const row = document.createElement('button');
-      row.className = 'card w-full p-4 flex items-center gap-4 text-left hover:border-brand-400 dark:hover:border-brand-600 transition';
+      row.className = 'w-full p-4 flex items-center gap-4 text-left hover:bg-slate-50 dark:hover:bg-slate-900/50 transition z-10 relative';
       row.innerHTML = `
         <span class="grid place-items-center w-12 h-12 rounded-xl bg-brand-50 dark:bg-brand-900/30 font-mono font-bold text-brand-700 dark:text-brand-300">
           ${sub.band_overall ? Number(sub.band_overall).toFixed(1) : '…'}
@@ -448,7 +448,7 @@ async function loadHistory() {
     } else {
       // Paired test block with accordion
       const header = document.createElement('button');
-      header.className = 'card w-full p-4 flex items-center gap-4 text-left hover:border-brand-400 dark:hover:border-brand-600 transition';
+      header.className = 'w-full p-4 flex items-center gap-4 text-left hover:bg-slate-50 dark:hover:bg-slate-900/50 transition z-10 relative';
       header.innerHTML = `
         <span class="grid place-items-center w-12 h-12 rounded-xl bg-gradient-to-br from-brand-500 to-cyan-500 font-mono font-bold text-white text-lg shadow-md">
           ${displayScore}
@@ -462,16 +462,16 @@ async function loadHistory() {
         <svg class="w-5 h-5 text-slate-400 shrink-0 transition-transform duration-300 accordion-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>`;
 
       const expandPanel = document.createElement('div');
-      expandPanel.className = 'accordion-panel';
+      expandPanel.className = 'accordion-panel bg-slate-50/50 dark:bg-slate-900/20 border-t border-slate-100 dark:border-slate-800 relative z-10';
 
       const innerPanel = document.createElement('div');
-      innerPanel.className = 'pl-4 pr-2 pb-2 pt-1 space-y-2';
+      innerPanel.className = 'p-3 space-y-2';
 
       // Render task rows inside the accordion
       const sortedSubs = [task1, task2].filter(Boolean);
       sortedSubs.forEach(sub => {
         const taskRow = document.createElement('button');
-        taskRow.className = 'w-full p-3.5 flex items-center gap-3 text-left rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 hover:border-brand-400 dark:hover:border-brand-600 transition';
+        taskRow.className = 'w-full p-3 flex items-center gap-3 text-left rounded-xl border border-transparent hover:border-brand-200 dark:hover:border-brand-800 hover:bg-white dark:hover:bg-slate-800 transition';
         taskRow.innerHTML = `
           <span class="grid place-items-center w-10 h-10 rounded-lg bg-brand-50 dark:bg-brand-900/30 font-mono font-bold text-sm text-brand-700 dark:text-brand-300">
             ${sub.band_overall ? Number(sub.band_overall).toFixed(1) : '…'}
