@@ -39,6 +39,11 @@ async function run() {
     schemaSql = schemaSql.replace(/CREATE DATABASE IF NOT EXISTS ielts_prep;/gi, '').replace(/USE ielts_prep;/gi, '');
     await connection.query(schemaSql);
 
+    console.log('Running schema_speaking.sql...');
+    let schemaSpeakingSql = await fs.readFile(path.join(__dirname, '../../database/schema_speaking.sql'), 'utf-8');
+    schemaSpeakingSql = schemaSpeakingSql.replace(/USE ielts_prep;/gi, '');
+    await connection.query(schemaSpeakingSql);
+
     console.log('Running seed.sql...');
     let seedSql = await fs.readFile(path.join(__dirname, '../../database/seeds/seed.sql'), 'utf-8');
     seedSql = seedSql.replace(/USE ielts_prep;/gi, '');
@@ -53,6 +58,22 @@ async function run() {
     let cambridgeSql = await fs.readFile(path.join(__dirname, '../../database/seeds/listening-cambridge.sql'), 'utf-8');
     cambridgeSql = cambridgeSql.replace(/USE ielts_prep;/gi, '');
     await connection.query(cambridgeSql);
+
+    console.log('Running fix_orphan_passages.sql...');
+    let fixOrphanSql = await fs.readFile(path.join(__dirname, '../../database/fix_orphan_passages.sql'), 'utf-8');
+    
+    // We need to split the statements because DELIMITER is a client-only command, 
+    // it won't work directly via mysql2 query if it contains DELIMITER $$
+    // Actually, since we're using mysql2 multipleStatements: true, we can just execute the CREATE PROCEDURE 
+    // without DELIMITER. Let's just run it cleanly.
+    
+    // It's safer to just run mysql CLI for this file, or execute it without DELIMITER:
+    // Let's modify fixOrphanSql to remove DELIMITER and $$
+    fixOrphanSql = fixOrphanSql.replace(/DELIMITER \$\$/g, '')
+                               .replace(/DELIMITER ;/g, '')
+                               .replace(/\$\$/g, ';');
+    
+    await connection.query(fixOrphanSql);
 
     console.log('Database successfully reset and seeded!');
   } catch (err) {

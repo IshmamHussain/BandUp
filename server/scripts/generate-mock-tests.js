@@ -33,10 +33,18 @@ async function generateMockTests() {
 
     for (let i = 1; i <= 20; i++) {
       const pData = readingPassages[i % 2];
+      
+      const [testResult] = await connection.execute(
+        `INSERT INTO reading_tests (title, difficulty, time_limit)
+         VALUES (?, 'medium', 20)`,
+        [`Reading Test ${i}: ${pData.title}`]
+      );
+      const newTestId = testResult.insertId;
+
       const [passageResult] = await connection.execute(
-        `INSERT INTO reading_passages (title, body, passage_type, difficulty, time_limit)
-         VALUES (?, ?, 'academic', 'medium', 20)`,
-        [`Reading Test ${i}: ${pData.title}`, pData.body]
+        `INSERT INTO reading_passages (test_id, title, body, passage_type, difficulty, time_limit)
+         VALUES (?, ?, ?, 'academic', 'medium', 20)`,
+        [newTestId, `Reading Test ${i}: ${pData.title}`, pData.body]
       );
       const passageId = passageResult.insertId;
 
