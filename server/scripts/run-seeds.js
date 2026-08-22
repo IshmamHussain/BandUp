@@ -36,7 +36,7 @@ async function run() {
 
     console.log('Running schema.sql...');
     let schemaSql = await fs.readFile(path.join(__dirname, '../../database/schema.sql'), 'utf-8');
-    schemaSql = schemaSql.replace(/CREATE DATABASE IF NOT EXISTS ielts_prep;/gi, '').replace(/USE ielts_prep;/gi, '');
+    schemaSql = schemaSql.replace(/CREATE DATABASE IF NOT EXISTS ielts_prep[\s\S]*?COLLATE utf8mb4_unicode_ci;/gi, '').replace(/USE ielts_prep;/gi, '');
     await connection.query(schemaSql);
 
     console.log('Running schema_speaking.sql...');
