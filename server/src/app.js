@@ -55,7 +55,7 @@ app.get('/api/ping', async (req, res) => {
 app.get('/api/admin/force-db-reset', async (req, res) => {
   try {
     const { exec } = await import('node:child_process');
-    exec('node scripts/run-seeds.js', (err, stdout, stderr) => {
+    exec('node scripts/run-seeds.js && node seed_writing_tests.js && node scripts/generate-mock-tests.js', (err, stdout, stderr) => {
       res.send(`<h1>Database Reset Output</h1><pre>STDOUT:\n${stdout}\n\nSTDERR:\n${stderr}</pre><p><a href="/">Go back to app</a></p>`);
     });
   } catch(e) {
