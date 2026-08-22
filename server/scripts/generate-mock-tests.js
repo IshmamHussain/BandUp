@@ -1,14 +1,8 @@
-import mysql from 'mysql2/promise';
-import { env } from '../src/config/env.js';
+import { pool } from '../src/config/db.js';
 
 async function generateMockTests() {
   console.log('Connecting to database...');
-  const connection = await mysql.createConnection({
-    host: env.db.host,
-    user: env.db.user,
-    password: env.db.password,
-    database: env.db.database,
-  });
+  const connection = pool;
 
   try {
     console.log('Generating 20 Reading Tests...');
@@ -178,11 +172,10 @@ async function generateMockTests() {
     }
 
     console.log('Successfully generated and inserted 20 tests for Reading, Listening, and Writing.');
-
+    process.exit(0);
   } catch (err) {
-    console.error('Error generating tests:', err);
-  } finally {
-    await connection.end();
+    console.error('Error generating mock tests:', err);
+    process.exit(1);
   }
 }
 
