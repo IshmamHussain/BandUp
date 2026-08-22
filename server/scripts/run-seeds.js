@@ -59,21 +59,7 @@ async function run() {
     cambridgeSql = cambridgeSql.replace(/USE ielts_prep;/gi, '');
     await connection.query(cambridgeSql);
 
-    console.log('Running fix_orphan_passages.sql...');
-    let fixOrphanSql = await fs.readFile(path.join(__dirname, '../../database/fix_orphan_passages.sql'), 'utf-8');
-    
-    // We need to split the statements because DELIMITER is a client-only command, 
-    // it won't work directly via mysql2 query if it contains DELIMITER $$
-    // Actually, since we're using mysql2 multipleStatements: true, we can just execute the CREATE PROCEDURE 
-    // without DELIMITER. Let's just run it cleanly.
-    
-    // It's safer to just run mysql CLI for this file, or execute it without DELIMITER:
-    // Let's modify fixOrphanSql to remove DELIMITER and $$
-    fixOrphanSql = fixOrphanSql.replace(/DELIMITER \$\$/g, '')
-                               .replace(/DELIMITER ;/g, '')
-                               .replace(/\$\$/g, ';');
-    
-    await connection.query(fixOrphanSql);
+
 
     console.log('Database successfully reset and seeded!');
   } catch (err) {
