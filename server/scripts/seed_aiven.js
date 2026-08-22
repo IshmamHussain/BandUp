@@ -37,6 +37,12 @@ async function run() {
     await connection.query(schemaSql);
     console.log('Schema created successfully on Aiven!');
 
+    console.log('Running schema_speaking.sql...');
+    let schemaSpeakingSql = await fs.readFile(path.join(__dirname, '../../database/schema_speaking.sql'), 'utf-8');
+    schemaSpeakingSql = schemaSpeakingSql.replace(/USE ielts_prep;/i, '');
+    await connection.query(schemaSpeakingSql);
+    console.log('Speaking schema created successfully!');
+
     console.log('Running seed.sql...');
     const seedSql = await fs.readFile(path.join(__dirname, '../../database/seeds/seed.sql'), 'utf-8');
     await connection.query(seedSql);
