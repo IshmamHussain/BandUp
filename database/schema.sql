@@ -16,7 +16,8 @@ CREATE TABLE users (
   id            INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   name          VARCHAR(100)  NOT NULL,
   email         VARCHAR(255)  NOT NULL UNIQUE,
-  password_hash VARCHAR(255)  NOT NULL,
+  password_hash VARCHAR(255)  NULL,
+  supabase_id   VARCHAR(36)   UNIQUE DEFAULT NULL,
   role          ENUM('student','admin') NOT NULL DEFAULT 'student',
   target_band   DECIMAL(2,1)  NULL,          -- e.g. 7.5
   exam_date     DATE          NULL,
@@ -26,14 +27,6 @@ CREATE TABLE users (
                               ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
-CREATE TABLE email_verification_tokens (
-  id         INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  user_id    INT UNSIGNED NOT NULL,
-  token      VARCHAR(255) NOT NULL UNIQUE,
-  expires_at TIMESTAMP    NOT NULL,
-  created_at TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  CONSTRAINT fk_token_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-) ENGINE=InnoDB;
 
 CREATE TABLE profiles (
   user_id               INT UNSIGNED PRIMARY KEY,
