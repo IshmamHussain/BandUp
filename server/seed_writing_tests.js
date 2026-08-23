@@ -90,8 +90,20 @@ async function seed() {
     {
       category: 'Academic 13 - Test 1',
       task1: {
-        prompt: 'The two maps below show road access to a city hospital in 2007 and in 2010. Summarise the information by selecting and reporting the main features, and make comparisons where relevant.',
-        chart: null
+        prompt: 'The chart below shows the number of men and women in further education in Britain in three periods and whether they were studying full-time or part-time. Summarise the information by selecting and reporting the main features, and make comparisons where relevant.',
+        chart: {
+          type: 'bar',
+          data: {
+            labels: ['1970/71', '1980/81', '1990/91'],
+            datasets: [
+              { label: 'Males - Full-time', data: [100, 800, 900], backgroundColor: '#2563eb' },
+              { label: 'Males - Part-time', data: [1000, 850, 950], backgroundColor: '#60a5fa' },
+              { label: 'Females - Full-time', data: [50, 700, 1100], backgroundColor: '#db2777' },
+              { label: 'Females - Part-time', data: [750, 800, 1050], backgroundColor: '#f472b6' }
+            ]
+          },
+          options: { responsive: true, scales: { y: { title: { display: true, text: 'Thousands' } } } }
+        }
       },
       task2: {
         prompt: 'Living in a country where you have to speak a foreign language can cause serious social problems, as well as practical problems. To what extent do you agree or disagree with this statement?'
@@ -141,7 +153,17 @@ async function seed() {
       category: 'Academic 12 - Test 2',
       task1: {
         prompt: 'The chart below shows the results of a survey on the reasons why people travelled to work by bicycle or by car in a particular city. Summarise the information by selecting and reporting the main features, and make comparisons where relevant.',
-        chart: null
+        chart: {
+          type: 'bar',
+          data: {
+            labels: ['Health / Fitness', 'Less Pollution', 'No parking problems', 'No costs', 'Faster', 'Comfortable', 'Distance to work', 'Carry things'],
+            datasets: [
+              { label: 'Bicycle (%)', data: [30, 30, 30, 10, 0, 0, 0, 0], backgroundColor: '#10b981' },
+              { label: 'Car (%)', data: [0, 0, 0, 0, 30, 40, 20, 10], backgroundColor: '#f43f5e' }
+            ]
+          },
+          options: { responsive: true, scales: { y: { max: 50, title: { display: true, text: 'Percentage (%)' } } } }
+        }
       },
       task2: {
         prompt: 'In a number of countries, some people think it is necessary to spend large sums of money on constructing new railway lines for very fast trains between cities. Others believe the money should be spent on improving existing public transport. Discuss both these views and give your own opinion.'
@@ -151,7 +173,18 @@ async function seed() {
       category: 'Academic 11 - Test 1',
       task1: {
         prompt: 'The charts below show the percentage of water used for different purposes in six areas of the world. Summarise the information by selecting and reporting the main features, and make comparisons where relevant.',
-        chart: null
+        chart: {
+          type: 'bar',
+          data: {
+            labels: ['North America', 'South America', 'Europe', 'Africa', 'Central Asia', 'South East Asia'],
+            datasets: [
+              { label: 'Agricultural Use', data: [39, 71, 32, 84, 88, 81], backgroundColor: '#22c55e' },
+              { label: 'Industrial Use', data: [48, 10, 53, 7, 5, 12], backgroundColor: '#64748b' },
+              { label: 'Domestic Use', data: [13, 19, 15, 9, 7, 7], backgroundColor: '#3b82f6' }
+            ]
+          },
+          options: { responsive: true, scales: { x: { stacked: true }, y: { stacked: true, max: 100, title: { display: true, text: 'Percentage (%)' } } } }
+        }
       },
       task2: {
         prompt: 'Governments should spend money on railways rather than roads. To what extent do you agree or disagree with this statement?'

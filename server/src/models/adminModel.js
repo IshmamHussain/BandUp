@@ -18,7 +18,7 @@ export async function getStats() {
 // ── Reading passages ─────────────────────────────────────────────────
 export async function listPassages() {
   const [rows] = await pool.execute(
-    `SELECT rp.id, rp.title, rp.passage_type, rp.difficulty, rp.time_limit, rp.created_at,
+    `SELECT rp.*,
             COUNT(q.id) AS question_count
      FROM reading_passages rp
      LEFT JOIN questions q ON q.passage_id = rp.id
@@ -142,7 +142,7 @@ export async function bulkCreateQuestions(passageId, questions) {
 // ── Listening tests ──────────────────────────────────────────────────
 export async function listTests() {
   const [rows] = await pool.execute(
-    `SELECT lt.id, lt.title, lt.audio_url, lt.difficulty, lt.time_limit, lt.created_at,
+    `SELECT lt.*,
             COUNT(q.id) AS question_count
      FROM listening_tests lt
      LEFT JOIN questions q ON q.listening_test_id = lt.id
@@ -296,12 +296,12 @@ export async function listStudents() {
 
 export async function updateStudent(id, { name, targetBand }) {
   await pool.execute(
-    'UPDATE users SET name = ?, target_band = ? WHERE id = ? AND role = "student"',
+    "UPDATE users SET name = ?, target_band = ? WHERE id = ? AND role = 'student'",
     [name, targetBand || null, id]
   );
 }
 
 export async function deleteStudent(id) {
   // Only delete students to avoid accidentally deleting admins
-  await pool.execute('DELETE FROM users WHERE id = ? AND role = "student"', [id]);
+  await pool.execute("DELETE FROM users WHERE id = ? AND role = 'student'", [id]);
 }
