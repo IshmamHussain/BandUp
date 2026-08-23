@@ -12,23 +12,19 @@ async function cleanMockData() {
     );
     console.log(`Deleted ${writingResult.affectedRows} writing prompts.`);
 
-    // 2. Delete duplicate reading tests (keep only Reading Test 1 and 2 if they are unique, or delete those with title > 2)
-    console.log('Cleaning up duplicate reading tests...');
+    // 2. Delete the low-quality 2-question reading tests
+    console.log('Cleaning up 2-question reading tests...');
     const [readingResult] = await connection.execute(
-      `DELETE FROM reading_tests WHERE title LIKE 'Reading Test %' AND id NOT IN (
-         SELECT MIN(id) FROM (SELECT * FROM reading_tests) as rt WHERE title LIKE 'Reading Test %' GROUP BY title
-       )`
+      `DELETE FROM reading_tests WHERE title LIKE 'Reading Test %'`
     );
-    console.log(`Deleted ${readingResult.affectedRows} duplicate reading tests.`);
+    console.log(`Deleted ${readingResult.affectedRows} reading tests.`);
 
-    // 3. Delete duplicate listening tests
-    console.log('Cleaning up duplicate listening tests...');
+    // 3. Delete the low-quality 2-question listening tests
+    console.log('Cleaning up 2-question listening tests...');
     const [listeningResult] = await connection.execute(
-      `DELETE FROM listening_tests WHERE title LIKE 'Listening Test %' AND id NOT IN (
-         SELECT MIN(id) FROM (SELECT * FROM listening_tests) as lt WHERE title LIKE 'Listening Test %' GROUP BY title
-       )`
+      `DELETE FROM listening_tests WHERE title LIKE 'Listening Test %'`
     );
-    console.log(`Deleted ${listeningResult.affectedRows} duplicate listening tests.`);
+    console.log(`Deleted ${listeningResult.affectedRows} listening tests.`);
 
     console.log('Cleanup complete!');
     process.exit(0);
