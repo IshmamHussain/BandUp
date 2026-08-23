@@ -14,20 +14,23 @@ let audioCtx;
 let analyser;
 let animFrameId;
 
-const promptId = new URLSearchParams(window.location.search).get('promptId');
+const testId = new URLSearchParams(window.location.search).get('testId');
 let currentPromptText = '';
 
 async function init() {
   try {
-    const prompts = await api.speakingPrompts();
-    const prompt = prompts.find(p => p.id == promptId);
-    if (!prompt) {
-      toast('Prompt not found', 'error');
+    const tests = await api.speakingPrompts();
+    const test = tests.find(p => p.id == testId);
+    if (!test) {
+      toast('Test not found', 'error');
       return;
     }
-    el('part-badge').textContent = prompt.category ? `${prompt.category} – ${prompt.part}` : prompt.part;
-    el('prompt-text').textContent = prompt.prompt_text;
-    currentPromptText = prompt.prompt_text;
+    el('test-title').textContent = test.title;
+    el('prompt-part1').textContent = test.part1_prompt;
+    el('prompt-part2').textContent = test.part2_prompt;
+    el('prompt-part3').textContent = test.part3_prompt;
+    
+    currentPromptText = `Part 1:\n${test.part1_prompt}\n\nPart 2:\n${test.part2_prompt}\n\nPart 3:\n${test.part3_prompt}`;
   } catch (err) {
     toast(err.message, 'error');
   }
@@ -250,7 +253,7 @@ el('btn-submit').addEventListener('click', async () => {
     else if (audioBlob.type.includes('wav')) ext = 'wav';
     
     formData.append('audio', audioBlob, `recording.${ext}`);
-    formData.append('promptId', promptId);
+    formData.append('testId', testId);
     formData.append('durationSec', Math.floor((Date.now() - startTime) / 1000));
     formData.append('promptText', currentPromptText);
     formData.append('mimeType', audioBlob.type);
