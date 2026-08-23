@@ -1,14 +1,14 @@
 import { pool } from '../config/db.js';
 
 export async function getPrompts() {
-  const [rows] = await pool.query('SELECT * FROM speaking_prompts ORDER BY category, part');
+  const [rows] = await pool.query('SELECT * FROM speaking_tests ORDER BY id');
   return rows;
 }
 
-export async function createSubmission(userId, promptId, audioUrl, durationSec) {
+export async function createSubmission(userId, testId, audioUrl, durationSec) {
   const [result] = await pool.execute(
-    'INSERT INTO speaking_submissions (user_id, prompt_id, audio_url, duration_sec, status) VALUES (?, ?, ?, ?, ?)',
-    [userId, promptId, audioUrl, durationSec, 'submitted']
+    'INSERT INTO speaking_submissions (user_id, test_id, audio_url, duration_sec, status) VALUES (?, ?, ?, ?, ?)',
+    [userId, testId, audioUrl, durationSec, 'submitted']
   );
   return result.insertId;
 }
@@ -29,9 +29,9 @@ export async function resetSubmissionEvaluation(submissionId) {
 
 export async function getSubmission(submissionId, userId) {
   const [rows] = await pool.query(
-    `SELECT s.*, p.prompt_text, p.part, p.category 
+    `SELECT s.*, p.title as prompt_text, p.category, p.part1_prompt, p.part2_prompt, p.part3_prompt 
      FROM speaking_submissions s 
-     LEFT JOIN speaking_prompts p ON s.prompt_id = p.id 
+     LEFT JOIN speaking_tests p ON s.test_id = p.id 
      WHERE s.id = ? AND s.user_id = ?`,
     [submissionId, userId]
   );
@@ -40,9 +40,9 @@ export async function getSubmission(submissionId, userId) {
 
 export async function getUserHistory(userId) {
   const [rows] = await pool.query(
-    `SELECT s.id, s.band_overall, s.created_at, s.status, s.duration_sec, p.prompt_text, p.part 
+    `SELECT s.id, s.band_overall, s.created_at, s.status, s.duration_sec, p.title as prompt_text 
      FROM speaking_submissions s
-     LEFT JOIN speaking_prompts p ON s.prompt_id = p.id
+     LEFT JOIN speaking_tests p ON s.test_id = p.id
      WHERE s.user_id = ? ORDER BY s.created_at DESC`,
     [userId]
   );

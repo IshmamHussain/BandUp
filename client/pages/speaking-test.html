@@ -39,10 +39,30 @@
     <div class="max-w-3xl mx-auto space-y-10">
       
       <!-- Prompt Card (Glassmorphic) -->
-      <div class="speaking-glass rounded-2xl p-6 md:p-8 text-center space-y-4 page-enter">
-        <span class="inline-block px-3 py-1 bg-brand-100 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 rounded-full text-xs font-semibold tracking-wide uppercase" id="part-badge">Part 2</span>
-        <h2 class="text-xl md:text-2xl lg:text-3xl font-medium leading-relaxed text-slate-800 dark:text-slate-100" id="prompt-text">Loading prompt...</h2>
-        <p class="text-xs text-slate-400 dark:text-slate-500 max-w-md mx-auto">Read the prompt carefully. When ready, press the microphone button to start recording your response.</p>
+      <div class="speaking-glass rounded-2xl p-6 md:p-8 space-y-6 page-enter" id="prompts-container">
+        
+        <div class="text-center mb-6">
+          <span class="inline-block px-3 py-1 bg-brand-100 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 rounded-full text-xs font-semibold tracking-wide uppercase mb-3">Full Mock Test</span>
+          <p class="text-sm text-slate-500 dark:text-slate-400 max-w-lg mx-auto">Read the prompts for all 3 parts below. When you are ready, press the microphone button to start recording. You should speak continuously, answering Part 1, Part 2, and Part 3 in one single recording.</p>
+        </div>
+
+        <div class="space-y-6 text-left">
+          <div class="border-l-2 border-brand-400 pl-4">
+            <h3 class="text-sm font-semibold uppercase text-brand-600 dark:text-brand-400 mb-2">Part 1 (4-5 minutes)</h3>
+            <p class="text-slate-800 dark:text-slate-200 whitespace-pre-wrap leading-relaxed text-sm sm:text-base" id="prompt-part1">Loading Part 1...</p>
+          </div>
+          
+          <div class="border-l-2 border-orange-400 pl-4">
+            <h3 class="text-sm font-semibold uppercase text-orange-600 dark:text-orange-400 mb-2">Part 2 (3-4 minutes)</h3>
+            <p class="text-slate-800 dark:text-slate-200 whitespace-pre-wrap leading-relaxed text-sm sm:text-base" id="prompt-part2">Loading Part 2...</p>
+          </div>
+          
+          <div class="border-l-2 border-purple-400 pl-4">
+            <h3 class="text-sm font-semibold uppercase text-purple-600 dark:text-purple-400 mb-2">Part 3 (4-5 minutes)</h3>
+            <p class="text-slate-800 dark:text-slate-200 whitespace-pre-wrap leading-relaxed text-sm sm:text-base" id="prompt-part3">Loading Part 3...</p>
+          </div>
+        </div>
+
       </div>
 
       <!-- Recording Area -->

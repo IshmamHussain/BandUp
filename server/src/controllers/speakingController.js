@@ -14,14 +14,14 @@ export const getPrompts = asyncHandler(async (req, res) => {
 
 export const submitAudio = asyncHandler(async (req, res) => {
   const userId = req.user.id;
-  const { promptId, durationSec, mimeType, promptText } = req.body;
+  const { testId, durationSec, mimeType, promptText } = req.body;
   
   if (!req.file) {
     return fail(res, 400, 'No audio file uploaded.');
   }
 
   const audioUrl = `/media/audio/submissions/${req.file.filename}`;
-  const submissionId = await speakingModel.createSubmission(userId, promptId, audioUrl, durationSec || 0);
+  const submissionId = await speakingModel.createSubmission(userId, testId, audioUrl, durationSec || 0);
 
   // Run AI Evaluation in the background
   evaluateBackground(submissionId, req.file.path, mimeType, promptText).catch(console.error);
@@ -64,7 +64,11 @@ export const retryEvaluation = asyncHandler(async (req, res) => {
   await speakingModel.resetSubmissionEvaluation(submission.id);
   
   const audioFilePath = path.join(__dirname, '../../../client', submission.audio_url);
-  evaluateBackground(submission.id, audioFilePath, 'audio/webm', submission.prompt_text).catch(console.error);
+  const combinedPrompt = submission.part1_prompt 
+    ? `Part 1:\n${submission.part1_prompt}\n\nPart 2:\n${submission.part2_prompt}\n\nPart 3:\n${submission.part3_prompt}`
+    : submission.prompt_text;
+    
+  evaluateBackground(submission.id, audioFilePath, 'audio/webm', combinedPrompt).catch(console.error);
   
   return ok(res, { message: 'Re-evaluation started' });
 });
