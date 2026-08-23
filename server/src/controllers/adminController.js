@@ -283,24 +283,28 @@ export const listSpeakingPrompts = asyncHandler(async (req, res) => {
 });
 
 export const createSpeakingPrompt = asyncHandler(async (req, res) => {
-  const part = req.body.part;
-  const promptText = req.body.prompt_text || req.body.promptText;
+  const title = req.body.title;
   const category = req.body.category;
-  if (!['part1', 'part2', 'part3'].includes(part)) return fail(res, 'Invalid speaking part.');
-  if (!isNonEmptyString(promptText, 5000)) return fail(res, 'Prompt text is required.');
-  const id = await adminModel.createSpeakingPrompt({ part, promptText, category });
+  const part1Prompt = req.body.part1_prompt || req.body.part1Prompt;
+  const part2Prompt = req.body.part2_prompt || req.body.part2Prompt;
+  const part3Prompt = req.body.part3_prompt || req.body.part3Prompt;
+  if (!isNonEmptyString(title)) return fail(res, 'Title is required.');
+  if (!isNonEmptyString(part1Prompt)) return fail(res, 'Part 1 prompt is required.');
+  const id = await adminModel.createSpeakingPrompt({ title, category, part1Prompt, part2Prompt, part3Prompt });
   return ok(res, { id }, 201);
 });
 
 export const updateSpeakingPrompt = asyncHandler(async (req, res) => {
   if (!isPositiveInt(req.params.id)) return fail(res, 'Invalid prompt ID.');
-  const part = req.body.part;
-  const promptText = req.body.prompt_text || req.body.promptText;
+  const title = req.body.title;
   const category = req.body.category;
-  if (!['part1', 'part2', 'part3'].includes(part)) return fail(res, 'Invalid speaking part.');
-  if (!isNonEmptyString(promptText, 5000)) return fail(res, 'Prompt text is required.');
-  await adminModel.updateSpeakingPrompt(Number(req.params.id), { part, promptText, category });
-  return ok(res, { message: 'Speaking prompt updated.' });
+  const part1Prompt = req.body.part1_prompt || req.body.part1Prompt;
+  const part2Prompt = req.body.part2_prompt || req.body.part2Prompt;
+  const part3Prompt = req.body.part3_prompt || req.body.part3Prompt;
+  if (!isNonEmptyString(title)) return fail(res, 'Title is required.');
+  if (!isNonEmptyString(part1Prompt)) return fail(res, 'Part 1 prompt is required.');
+  await adminModel.updateSpeakingPrompt(Number(req.params.id), { title, category, part1Prompt, part2Prompt, part3Prompt });
+  return ok(res, { message: 'Speaking test updated.' });
 });
 
 export const deleteSpeakingPrompt = asyncHandler(async (req, res) => {

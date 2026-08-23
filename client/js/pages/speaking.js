@@ -61,12 +61,12 @@ const CATEGORY_ICONS = {
 
 async function loadPrompts() {
   try {
-    const prompts = await api.speakingPrompts();
+    const tests = await api.speakingPrompts(); // Actually tests now
     const grid = el('topics-grid');
     grid.innerHTML = '';
     
-    prompts.forEach((prompt, index) => {
-      const category = prompt.category || 'General';
+    tests.forEach((test, index) => {
+      const category = test.category || 'General';
       const icon = CATEGORY_ICONS[category] || '🎯';
       const card = document.createElement('div');
       card.className = 'card topic-card p-5 border border-slate-200 dark:border-slate-800 hover:border-brand-300 dark:hover:border-brand-700 group cursor-pointer flex flex-col h-full stagger-card';
@@ -75,16 +75,17 @@ async function loadPrompts() {
         <div class="mb-3 flex items-center gap-2">
           <span class="text-lg">${icon}</span>
           <span class="inline-block px-2 py-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded text-xs font-medium">${category}</span>
-          <span class="inline-block px-2 py-1 bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 rounded text-xs font-medium uppercase ml-auto">${prompt.part}</span>
+          <span class="inline-block px-2 py-1 bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 rounded text-xs font-medium uppercase ml-auto">FULL TEST</span>
         </div>
-        <p class="text-sm text-slate-700 dark:text-slate-300 line-clamp-3 mb-4 flex-1 leading-relaxed">${prompt.prompt_text}</p>
+        <h4 class="font-semibold text-slate-900 dark:text-white mb-2">${test.title}</h4>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mb-4 flex-1">Contains Part 1, Part 2, and Part 3</p>
         <button class="w-full py-2.5 bg-slate-100 dark:bg-slate-800 group-hover:bg-brand-600 group-hover:text-white dark:group-hover:bg-brand-600 text-slate-700 dark:text-slate-200 rounded-lg text-sm font-medium transition-colors mt-auto flex items-center justify-center gap-2">
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/></svg>
-          Start Test
+          Start Full Test
         </button>
       `;
       card.addEventListener('click', () => {
-        window.location.href = `speaking-test.html?promptId=${prompt.id}`;
+        window.location.href = `speaking-test.html?testId=${test.id}`;
       });
       grid.appendChild(card);
     });
@@ -124,7 +125,7 @@ async function loadHistory(skipOpen = false) {
         <span class="flex-1 min-w-0">
           <span class="block text-sm font-medium truncate">${sub.prompt_text || 'Speaking Test'}</span>
           <span class="block text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            ${sub.part} • ${sub.duration_sec}s • ${new Date(sub.created_at).toLocaleDateString()}
+            Full Test • ${sub.duration_sec}s • ${new Date(sub.created_at).toLocaleDateString()}
           </span>
         </span>
         <svg class="w-4 h-4 text-slate-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>

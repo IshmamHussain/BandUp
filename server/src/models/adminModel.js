@@ -246,39 +246,39 @@ export async function deletePrompt(id) {
   await pool.execute('DELETE FROM writing_prompts WHERE id = ?', [id]);
 }
 
-// ── Speaking prompts ─────────────────────────────────────────────────
+// ── Speaking tests ─────────────────────────────────────────────────
 export async function listSpeakingPrompts() {
   const [rows] = await pool.execute(
-    `SELECT sp.*, COUNT(ss.id) AS submission_count
-     FROM speaking_prompts sp
-     LEFT JOIN speaking_submissions ss ON ss.prompt_id = sp.id
-     GROUP BY sp.id ORDER BY sp.id DESC`
+    `SELECT st.*, COUNT(ss.id) AS submission_count
+     FROM speaking_tests st
+     LEFT JOIN speaking_submissions ss ON ss.test_id = st.id
+     GROUP BY st.id ORDER BY st.id DESC`
   );
   return rows;
 }
 
 export async function getSpeakingPrompt(id) {
-  const [rows] = await pool.execute('SELECT * FROM speaking_prompts WHERE id = ?', [id]);
+  const [rows] = await pool.execute('SELECT * FROM speaking_tests WHERE id = ?', [id]);
   return rows[0] || null;
 }
 
-export async function createSpeakingPrompt({ part, promptText, category }) {
+export async function createSpeakingPrompt({ title, category, part1Prompt, part2Prompt, part3Prompt }) {
   const [result] = await pool.execute(
-    'INSERT INTO speaking_prompts (part, prompt_text, category) VALUES (?, ?, ?)',
-    [part, promptText, category || null]
+    'INSERT INTO speaking_tests (title, category, part1_prompt, part2_prompt, part3_prompt) VALUES (?, ?, ?, ?, ?)',
+    [title, category || null, part1Prompt || '', part2Prompt || '', part3Prompt || '']
   );
   return result.insertId;
 }
 
-export async function updateSpeakingPrompt(id, { part, promptText, category }) {
+export async function updateSpeakingPrompt(id, { title, category, part1Prompt, part2Prompt, part3Prompt }) {
   await pool.execute(
-    'UPDATE speaking_prompts SET part = ?, prompt_text = ?, category = ? WHERE id = ?',
-    [part, promptText, category || null, id]
+    'UPDATE speaking_tests SET title = ?, category = ?, part1_prompt = ?, part2_prompt = ?, part3_prompt = ? WHERE id = ?',
+    [title, category || null, part1Prompt, part2Prompt, part3Prompt, id]
   );
 }
 
 export async function deleteSpeakingPrompt(id) {
-  await pool.execute('DELETE FROM speaking_prompts WHERE id = ?', [id]);
+  await pool.execute('DELETE FROM speaking_tests WHERE id = ?', [id]);
 }
 
 // ── Students ─────────────────────────────────────────────────────────
