@@ -15,8 +15,12 @@ async function runFixes() {
     console.log('Running seed_speaking.js...');
     execSync('node seed_speaking.js', { stdio: 'inherit' });
 
-    console.log('Updating Listening Test 3 to correct Crime audio/transcript...');
+    console.log('Cleaning up bad mock tests (2-question ones generated previously)...');
     const connection = pool;
+    await connection.execute(`DELETE FROM reading_tests WHERE title LIKE 'Reading Test %'`);
+    await connection.execute(`DELETE FROM listening_tests WHERE title LIKE 'Listening Test %'`);
+
+    console.log('Updating Listening Test 3 to correct Crime audio/transcript...');
     
     // We only update Test 3 and its questions. Test 2 remains intact so users don't lose attempts.
     await connection.execute(`
