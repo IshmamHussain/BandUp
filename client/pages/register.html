@@ -74,6 +74,11 @@
   <script type="module">
     import { api } from '/js/api.js';
 
+    // Clear any active session when visiting the registration page
+    // This prevents issues where a user logs in as one account (like admin)
+    // and then registers, but the browser keeps the old session cookie.
+    api.logout().catch(() => {});
+
     const form = document.getElementById('register-form');
     const errorEl = document.getElementById('form-error');
     const successEl = document.getElementById('form-success');

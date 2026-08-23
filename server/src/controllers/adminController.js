@@ -23,19 +23,27 @@ export const listPassages = asyncHandler(async (req, res) => {
 });
 
 export const createPassage = asyncHandler(async (req, res) => {
-  const { title, body, passageType, difficulty, timeLimit } = req.body || {};
+  const title = req.body.title;
+  const bodyText = req.body.body;
+  const passageType = req.body.passage_type || req.body.passageType;
+  const difficulty = req.body.difficulty;
+  const timeLimit = req.body.time_limit || req.body.timeLimit;
   if (!isNonEmptyString(title)) return fail(res, 'Title is required.');
-  if (!isNonEmptyString(body, 100000)) return fail(res, 'Passage body is required.');
-  const id = await adminModel.createPassage({ title, body, passageType, difficulty, timeLimit });
+  if (!isNonEmptyString(bodyText, 100000)) return fail(res, 'Passage body is required.');
+  const id = await adminModel.createPassage({ title, body: bodyText, passageType, difficulty, timeLimit });
   return ok(res, { id }, 201);
 });
 
 export const updatePassage = asyncHandler(async (req, res) => {
   if (!isPositiveInt(req.params.id)) return fail(res, 'Invalid passage ID.');
-  const { title, body, passageType, difficulty, timeLimit } = req.body || {};
+  const title = req.body.title;
+  const bodyText = req.body.body;
+  const passageType = req.body.passage_type || req.body.passageType;
+  const difficulty = req.body.difficulty;
+  const timeLimit = req.body.time_limit || req.body.timeLimit;
   if (!isNonEmptyString(title)) return fail(res, 'Title is required.');
-  if (!isNonEmptyString(body, 100000)) return fail(res, 'Passage body is required.');
-  await adminModel.updatePassage(Number(req.params.id), { title, body, passageType, difficulty, timeLimit });
+  if (!isNonEmptyString(bodyText, 100000)) return fail(res, 'Passage body is required.');
+  await adminModel.updatePassage(Number(req.params.id), { title, body: bodyText, passageType, difficulty, timeLimit });
   return ok(res, { message: 'Passage updated.' });
 });
 
@@ -99,7 +107,12 @@ export const listTestQuestions = asyncHandler(async (req, res) => {
 
 export const createPassageQuestion = asyncHandler(async (req, res) => {
   if (!isPositiveInt(req.params.id)) return fail(res, 'Invalid passage ID.');
-  const { questionType, questionText, optionsJson, correctAnswer, explanation, position } = req.body || {};
+  const questionType = req.body.question_type || req.body.questionType;
+  const questionText = req.body.question_text || req.body.questionText;
+  const optionsJson = req.body.options_json || req.body.optionsJson;
+  const correctAnswer = req.body.correct_answer || req.body.correctAnswer;
+  const explanation = req.body.explanation;
+  const position = req.body.position;
   if (!isNonEmptyString(questionText, 5000)) return fail(res, 'Question text is required.');
   if (!isNonEmptyString(correctAnswer)) return fail(res, 'Correct answer is required.');
   const id = await adminModel.createQuestion({
@@ -111,7 +124,12 @@ export const createPassageQuestion = asyncHandler(async (req, res) => {
 
 export const createTestQuestion = asyncHandler(async (req, res) => {
   if (!isPositiveInt(req.params.id)) return fail(res, 'Invalid test ID.');
-  const { questionType, questionText, optionsJson, correctAnswer, explanation, position } = req.body || {};
+  const questionType = req.body.question_type || req.body.questionType;
+  const questionText = req.body.question_text || req.body.questionText;
+  const optionsJson = req.body.options_json || req.body.optionsJson;
+  const correctAnswer = req.body.correct_answer || req.body.correctAnswer;
+  const explanation = req.body.explanation;
+  const position = req.body.position;
   if (!isNonEmptyString(questionText, 5000)) return fail(res, 'Question text is required.');
   if (!isNonEmptyString(correctAnswer)) return fail(res, 'Correct answer is required.');
   const id = await adminModel.createQuestion({
@@ -123,7 +141,12 @@ export const createTestQuestion = asyncHandler(async (req, res) => {
 
 export const updateQuestion = asyncHandler(async (req, res) => {
   if (!isPositiveInt(req.params.id)) return fail(res, 'Invalid question ID.');
-  const { questionType, questionText, optionsJson, correctAnswer, explanation, position } = req.body || {};
+  const questionType = req.body.question_type || req.body.questionType;
+  const questionText = req.body.question_text || req.body.questionText;
+  const optionsJson = req.body.options_json || req.body.optionsJson;
+  const correctAnswer = req.body.correct_answer || req.body.correctAnswer;
+  const explanation = req.body.explanation;
+  const position = req.body.position;
   if (!isNonEmptyString(questionText, 5000)) return fail(res, 'Question text is required.');
   if (!isNonEmptyString(correctAnswer)) return fail(res, 'Correct answer is required.');
   await adminModel.updateQuestion(Number(req.params.id), {
@@ -145,7 +168,11 @@ export const listTests = asyncHandler(async (req, res) => {
 });
 
 export const createTest = asyncHandler(async (req, res) => {
-  const { title, audioUrl, transcript, difficulty, timeLimit } = req.body || {};
+  const title = req.body.title;
+  const audioUrl = req.body.audio_url || req.body.audioUrl;
+  const transcript = req.body.transcript;
+  const difficulty = req.body.difficulty;
+  const timeLimit = req.body.time_limit || req.body.timeLimit;
   if (!isNonEmptyString(title)) return fail(res, 'Title is required.');
   if (!isNonEmptyString(audioUrl, 500)) return fail(res, 'Audio URL is required.');
   const id = await adminModel.createTest({ title, audioUrl, transcript, difficulty, timeLimit });
@@ -154,7 +181,11 @@ export const createTest = asyncHandler(async (req, res) => {
 
 export const updateTest = asyncHandler(async (req, res) => {
   if (!isPositiveInt(req.params.id)) return fail(res, 'Invalid test ID.');
-  const { title, audioUrl, transcript, difficulty, timeLimit } = req.body || {};
+  const title = req.body.title;
+  const audioUrl = req.body.audio_url || req.body.audioUrl;
+  const transcript = req.body.transcript;
+  const difficulty = req.body.difficulty;
+  const timeLimit = req.body.time_limit || req.body.timeLimit;
   if (!isNonEmptyString(title)) return fail(res, 'Title is required.');
   if (!isNonEmptyString(audioUrl, 500)) return fail(res, 'Audio URL is required.');
   await adminModel.updateTest(Number(req.params.id), { title, audioUrl, transcript, difficulty, timeLimit });
@@ -174,7 +205,14 @@ export const listVocabulary = asyncHandler(async (req, res) => {
 });
 
 export const createWord = asyncHandler(async (req, res) => {
-  const { word, meaning, synonyms, antonyms, exampleSentence, pronunciation, category, bandLevel } = req.body || {};
+  const word = req.body.word;
+  const meaning = req.body.meaning;
+  const synonyms = req.body.synonyms;
+  const antonyms = req.body.antonyms;
+  const exampleSentence = req.body.example_sentence || req.body.exampleSentence;
+  const pronunciation = req.body.pronunciation;
+  const category = req.body.category;
+  const bandLevel = req.body.band_level || req.body.bandLevel;
   if (!isNonEmptyString(word, 100)) return fail(res, 'Word is required.');
   if (!isNonEmptyString(meaning, 5000)) return fail(res, 'Meaning is required.');
   const id = await adminModel.createWord({ word, meaning, synonyms, antonyms, exampleSentence, pronunciation, category, bandLevel });
@@ -183,7 +221,14 @@ export const createWord = asyncHandler(async (req, res) => {
 
 export const updateWord = asyncHandler(async (req, res) => {
   if (!isPositiveInt(req.params.id)) return fail(res, 'Invalid word ID.');
-  const { word, meaning, synonyms, antonyms, exampleSentence, pronunciation, category, bandLevel } = req.body || {};
+  const word = req.body.word;
+  const meaning = req.body.meaning;
+  const synonyms = req.body.synonyms;
+  const antonyms = req.body.antonyms;
+  const exampleSentence = req.body.example_sentence || req.body.exampleSentence;
+  const pronunciation = req.body.pronunciation;
+  const category = req.body.category;
+  const bandLevel = req.body.band_level || req.body.bandLevel;
   if (!isNonEmptyString(word, 100)) return fail(res, 'Word is required.');
   if (!isNonEmptyString(meaning, 5000)) return fail(res, 'Meaning is required.');
   await adminModel.updateWord(Number(req.params.id), { word, meaning, synonyms, antonyms, exampleSentence, pronunciation, category, bandLevel });
@@ -203,7 +248,10 @@ export const listPrompts = asyncHandler(async (req, res) => {
 });
 
 export const createPrompt = asyncHandler(async (req, res) => {
-  const { taskType, promptText, category, chartData } = req.body || {};
+  const taskType = req.body.task_type || req.body.taskType;
+  const promptText = req.body.prompt_text || req.body.promptText;
+  const category = req.body.category;
+  const chartData = req.body.chart_data || req.body.chartData;
   if (!['task1', 'task2'].includes(taskType)) return fail(res, 'Task type must be task1 or task2.');
   if (!isNonEmptyString(promptText, 10000)) return fail(res, 'Prompt text is required.');
   const id = await adminModel.createPrompt({ taskType, promptText, category, chartData });
@@ -212,7 +260,10 @@ export const createPrompt = asyncHandler(async (req, res) => {
 
 export const updatePrompt = asyncHandler(async (req, res) => {
   if (!isPositiveInt(req.params.id)) return fail(res, 'Invalid prompt ID.');
-  const { taskType, promptText, category, chartData } = req.body || {};
+  const taskType = req.body.task_type || req.body.taskType;
+  const promptText = req.body.prompt_text || req.body.promptText;
+  const category = req.body.category;
+  const chartData = req.body.chart_data || req.body.chartData;
   if (!['task1', 'task2'].includes(taskType)) return fail(res, 'Task type must be task1 or task2.');
   if (!isNonEmptyString(promptText, 10000)) return fail(res, 'Prompt text is required.');
   await adminModel.updatePrompt(Number(req.params.id), { taskType, promptText, category, chartData });
@@ -232,18 +283,22 @@ export const listSpeakingPrompts = asyncHandler(async (req, res) => {
 });
 
 export const createSpeakingPrompt = asyncHandler(async (req, res) => {
-  const { part, promptText, category } = req.body || {};
-  if (!['part1', 'part2', 'part3'].includes(part)) return fail(res, 'Part must be part1, part2, or part3.');
-  if (!isNonEmptyString(promptText, 10000)) return fail(res, 'Prompt text is required.');
+  const part = req.body.part;
+  const promptText = req.body.prompt_text || req.body.promptText;
+  const category = req.body.category;
+  if (!['part1', 'part2', 'part3'].includes(part)) return fail(res, 'Invalid speaking part.');
+  if (!isNonEmptyString(promptText, 5000)) return fail(res, 'Prompt text is required.');
   const id = await adminModel.createSpeakingPrompt({ part, promptText, category });
   return ok(res, { id }, 201);
 });
 
 export const updateSpeakingPrompt = asyncHandler(async (req, res) => {
   if (!isPositiveInt(req.params.id)) return fail(res, 'Invalid prompt ID.');
-  const { part, promptText, category } = req.body || {};
-  if (!['part1', 'part2', 'part3'].includes(part)) return fail(res, 'Part must be part1, part2, or part3.');
-  if (!isNonEmptyString(promptText, 10000)) return fail(res, 'Prompt text is required.');
+  const part = req.body.part;
+  const promptText = req.body.prompt_text || req.body.promptText;
+  const category = req.body.category;
+  if (!['part1', 'part2', 'part3'].includes(part)) return fail(res, 'Invalid speaking part.');
+  if (!isNonEmptyString(promptText, 5000)) return fail(res, 'Prompt text is required.');
   await adminModel.updateSpeakingPrompt(Number(req.params.id), { part, promptText, category });
   return ok(res, { message: 'Speaking prompt updated.' });
 });
@@ -262,7 +317,8 @@ export const listStudents = asyncHandler(async (req, res) => {
 
 export const updateStudent = asyncHandler(async (req, res) => {
   if (!isPositiveInt(req.params.id)) return fail(res, 'Invalid student ID.');
-  const { name, targetBand } = req.body || {};
+  const name = req.body.name;
+  const targetBand = req.body.target_band || req.body.targetBand;
   if (!isNonEmptyString(name, 100)) return fail(res, 'Name is required and must be under 100 characters.');
   await adminModel.updateStudent(Number(req.params.id), { name, targetBand });
   return ok(res, { message: 'Student updated.' });
