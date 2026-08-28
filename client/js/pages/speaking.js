@@ -6,6 +6,8 @@ const user = await initShell({ active: 'speaking', title: 'Speaking' });
 
 const el = (id) => document.getElementById(id);
 
+let historyLoading = false;
+
 // --- Tabs (3-tab system: Practice / History / Progress) ---
 const tabPractice = el('tab-practice');
 const tabHistory = el('tab-history');
@@ -97,7 +99,6 @@ async function loadPrompts() {
 loadPrompts();
 
 // --- History ---
-let historyLoading = false;
 async function loadHistory(skipOpen = false) {
   if (historyLoading) return;
   historyLoading = true;
