@@ -2,6 +2,8 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import * as speakingModel from '../models/speakingModel.js';
+import * as progressModel from '../models/progressModel.js';
+import * as userModel from '../models/userModel.js';
 import * as aiService from '../services/aiService.js';
 import { ok, fail, asyncHandler } from '../utils/helpers.js';
 
@@ -24,15 +26,19 @@ export const submitAudio = asyncHandler(async (req, res) => {
   const submissionId = await speakingModel.createSubmission(userId, testId, audioUrl, durationSec || 0);
 
   // Run AI Evaluation in the background
-  evaluateBackground(submissionId, req.file.path, mimeType, promptText).catch(console.error);
+  evaluateBackground(userId, submissionId, req.file.path, mimeType, promptText, durationSec || 0).catch(console.error);
 
   return ok(res, { message: 'Audio submitted successfully. Evaluating...', submissionId });
 });
 
-async function evaluateBackground(submissionId, audioFilePath, mimeType, promptText) {
+async function evaluateBackground(userId, submissionId, audioFilePath, mimeType, promptText, durationSec) {
   try {
     const { evaluation } = await aiService.evaluateSpeaking({ promptText, audioFilePath, mimeType });
     await speakingModel.updateSubmissionEvaluation(submissionId, evaluation.band_overall, evaluation);
+    const minutes = Math.max(1, Math.round((durationSec || 0) / 60));
+    await progressModel.recordActivity(userId, 'speaking', { minutes, attempted: 1, correct: 1 });
+    await userModel.touchStreak(userId);
+    await userModel.updateBandEstimate(userId, evaluation.band_overall);
   } catch (error) {
     console.error('Failed to evaluate speaking submission:', error);
     await speakingModel.updateSubmissionEvaluation(submissionId, null, { error: error.message });
@@ -68,7 +74,7 @@ export const retryEvaluation = asyncHandler(async (req, res) => {
     ? `Part 1:\n${submission.part1_prompt}\n\nPart 2:\n${submission.part2_prompt}\n\nPart 3:\n${submission.part3_prompt}`
     : submission.prompt_text;
     
-  evaluateBackground(submission.id, audioFilePath, 'audio/webm', combinedPrompt).catch(console.error);
+  evaluateBackground(req.user.id, submission.id, audioFilePath, 'audio/webm', combinedPrompt, submission.duration_sec).catch(console.error);
   
   return ok(res, { message: 'Re-evaluation started' });
 });
