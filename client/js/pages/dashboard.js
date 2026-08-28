@@ -87,7 +87,7 @@ if (modules.length === 0) {
   el('chart-modules').classList.add('hidden');
   el('modules-empty').classList.remove('hidden');
 } else {
-  const palette = { reading: '#0d9488', vocabulary: '#06b6d4', writing: '#f59e0b', listening: '#6366f1', grammar: '#ec4899' };
+  const palette = { reading: '#0d9488', vocabulary: '#06b6d4', writing: '#f59e0b', listening: '#6366f1', grammar: '#ec4899', speaking: '#8b5cf6' };
   new Chart(el('chart-modules'), {
     type: 'doughnut',
     data: {
@@ -125,6 +125,7 @@ if (data.recentActivity.length === 0) {
   const icons = {
     reading: { bg: 'bg-brand-50 dark:bg-brand-900/30 text-brand-600 dark:text-brand-400', path: '<path d="M12 6.5C10 4.8 7.5 4 4 4v14c3.5 0 6 .8 8 2.5 2-1.7 4.5-2.5 8-2.5V4c-3.5 0-6 .8-8 2.5z"/>' },
     writing: { bg: 'bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400', path: '<path d="M17 3a2.8 2.8 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/>' },
+    speaking: { bg: 'bg-violet-50 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400', path: '<path d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/>' },
   };
   activityList.innerHTML = data.recentActivity.map((item) => {
     const icon = icons[item.type] || icons.reading;
