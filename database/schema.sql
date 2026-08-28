@@ -178,7 +178,7 @@ CREATE TABLE writing_submissions (
 -- so dashboard charts are a simple SELECT instead of heavy aggregation.
 CREATE TABLE daily_progress (
   user_id             INT UNSIGNED NOT NULL,
-  module              ENUM('reading','listening','writing','vocabulary','grammar') NOT NULL,
+  module              ENUM('reading','listening','writing','vocabulary','grammar','speaking') NOT NULL,
   progress_date       DATE NOT NULL,
   minutes_studied     SMALLINT UNSIGNED NOT NULL DEFAULT 0,
   questions_attempted SMALLINT UNSIGNED NOT NULL DEFAULT 0,
