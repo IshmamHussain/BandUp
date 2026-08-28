@@ -43,7 +43,7 @@ export async function moduleAccuracy(userId) {
 }
 
 export async function recentActivity(userId, limit = 8) {
-  // Recent reading attempts and writing submissions merged into one feed.
+  // Recent reading attempts, writing, and speaking submissions merged into one feed.
   const [rows] = await pool.execute(
     `(SELECT 'reading' AS type, rp.title AS label, a.created_at
       FROM attempts a
@@ -56,9 +56,15 @@ export async function recentActivity(userId, limit = 8) {
              CONCAT('Essay - ', ws.task_type) AS label, ws.created_at
       FROM writing_submissions ws
       WHERE ws.user_id = ?)
+     UNION ALL
+     (SELECT 'speaking' AS type,
+             COALESCE(st.title, 'Speaking Test') AS label, ss.created_at
+      FROM speaking_submissions ss
+      LEFT JOIN speaking_tests st ON ss.test_id = st.id
+      WHERE ss.user_id = ?)
      ORDER BY created_at DESC
      LIMIT ${Number(limit)}`,
-    [userId, userId]
+    [userId, userId, userId]
   );
   return rows;
 }
