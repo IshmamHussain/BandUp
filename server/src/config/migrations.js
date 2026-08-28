@@ -112,6 +112,13 @@ const MIGRATIONS = [
     async run(connection) {
       await connection.execute(`DELETE FROM users WHERE role = 'student' AND supabase_id IS NULL`);
     }
+  },
+  {
+    id: 'add_speaking_to_daily_progress',
+    description: 'Add speaking module to daily_progress enum',
+    async run(connection) {
+      await connection.execute(`ALTER TABLE daily_progress MODIFY COLUMN module ENUM('reading','listening','writing','vocabulary','grammar','speaking') NOT NULL`);
+    }
   }
 ];
 
