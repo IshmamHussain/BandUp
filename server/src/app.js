@@ -8,9 +8,14 @@ import { fileURLToPath } from 'node:url';
 import { apiRouter } from './routes/index.js';
 import { notFound, errorHandler } from './middleware/errorHandler.js';
 
+import compression from 'compression';
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export const app = express();
+
+// Compress all JSON responses
+app.use(compression());
 
 // Body size limit protects against oversized payloads.
 app.use(express.json({ limit: '100kb' }));

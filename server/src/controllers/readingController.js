@@ -66,12 +66,14 @@ export const submitAnswers = asyncHandler(async (req, res) => {
 
   const correctCount = results.filter((r) => r.isCorrect).length;
   const minutes = Math.min(Math.max(Number(minutesSpent) || 0, 0), 180); // clamp to sane range
-  await progressModel.recordActivity(req.user.id, 'reading', {
-    minutes,
-    attempted: results.length,
-    correct: correctCount,
-  });
-  await userModel.touchStreak(req.user.id);
+  await Promise.all([
+    progressModel.recordActivity(req.user.id, 'reading', {
+      minutes,
+      attempted: results.length,
+      correct: correctCount,
+    }),
+    userModel.touchStreak(req.user.id)
+  ]);
 
   return ok(res, {
     total: results.length,

@@ -34,11 +34,13 @@ export const submitAudio = asyncHandler(async (req, res) => {
 async function evaluateBackground(userId, submissionId, audioFilePath, mimeType, promptText, durationSec) {
   try {
     const { evaluation } = await aiService.evaluateSpeaking({ promptText, audioFilePath, mimeType });
-    await speakingModel.updateSubmissionEvaluation(submissionId, evaluation.band_overall, evaluation);
     const minutes = Math.max(1, Math.round((durationSec || 0) / 60));
-    await progressModel.recordActivity(userId, 'speaking', { minutes, attempted: 1, correct: 1 });
-    await userModel.touchStreak(userId);
-    await userModel.updateBandEstimate(userId, evaluation.band_overall);
+    await Promise.all([
+      speakingModel.updateSubmissionEvaluation(submissionId, evaluation.band_overall, evaluation),
+      progressModel.recordActivity(userId, 'speaking', { minutes, attempted: 1, correct: 1 }),
+      userModel.touchStreak(userId),
+      userModel.updateBandEstimate(userId, evaluation.band_overall)
+    ]);
   } catch (error) {
     console.error('Failed to evaluate speaking submission:', error);
     await speakingModel.updateSubmissionEvaluation(submissionId, null, { error: error.message });

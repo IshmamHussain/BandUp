@@ -24,7 +24,7 @@ export async function listWords(userId, { category, bookmarkedOnly, bandLevel })
     where.push('uv.bookmarked = 1');
   }
   if (where.length) sql += ' WHERE ' + where.join(' AND ');
-  sql += ' ORDER BY RAND()';
+  sql += ' ORDER BY v.word';
 
   const [rows] = await pool.execute(sql, params);
   return rows;

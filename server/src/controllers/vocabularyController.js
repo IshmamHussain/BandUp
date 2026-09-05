@@ -35,8 +35,10 @@ export const setStatus = asyncHandler(async (req, res) => {
 
   // Marking a word as learning/mastered counts as study activity.
   if (status !== 'new') {
-    await progressModel.recordActivity(req.user.id, 'vocabulary', { attempted: 1, correct: status === 'mastered' ? 1 : 0 });
-    await userModel.touchStreak(req.user.id);
+    await Promise.all([
+      progressModel.recordActivity(req.user.id, 'vocabulary', { attempted: 1, correct: status === 'mastered' ? 1 : 0 }),
+      userModel.touchStreak(req.user.id)
+    ]);
   }
   return ok(res, { vocabId, status });
 });

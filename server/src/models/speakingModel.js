@@ -1,7 +1,7 @@
 import { pool } from '../config/db.js';
 
 export async function getPrompts() {
-  const [rows] = await pool.query('SELECT * FROM speaking_tests ORDER BY id');
+  const [rows] = await pool.query('SELECT id, title, category FROM speaking_tests ORDER BY id');
   return rows;
 }
 

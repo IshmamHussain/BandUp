@@ -4,14 +4,14 @@ import { api } from '../api.js';
 import { toast } from '../toast.js';
 import { renderGauge } from '../gauge.js';
 
-const user = await initShell({ active: 'dashboard', title: 'Dashboard' });
-
 const el = (id) => document.getElementById(id);
 
-// ---------- Load everything with one API call ----------
-let data;
+let user, data;
 try {
-  data = await api.dashboard();
+  [user, data] = await Promise.all([
+    initShell({ active: 'dashboard', title: 'Dashboard' }),
+    api.dashboard()
+  ]);
 } catch (err) {
   toast(err.message, 'error');
   throw err;
