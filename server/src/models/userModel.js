@@ -73,6 +73,20 @@ export async function updateBandEstimate(userId, band) {
   );
 }
 
+export async function recalculateBandEstimate(userId) {
+  // Find the most recent test score across both writing and speaking
+  const [rows] = await pool.execute(`
+    SELECT band_overall, created_at FROM writing_submissions WHERE user_id = ? AND band_overall IS NOT NULL
+    UNION ALL
+    SELECT band_overall, created_at FROM speaking_submissions WHERE user_id = ? AND band_overall IS NOT NULL
+    ORDER BY created_at DESC LIMIT 1
+  `, [userId, userId]);
+
+  const latestBand = rows.length > 0 ? rows[0].band_overall : null;
+  await updateBandEstimate(userId, latestBand);
+  return latestBand;
+}
+
 export async function markUserVerified(userId) {
   await pool.execute('UPDATE users SET is_verified = TRUE WHERE id = ?', [userId]);
 }

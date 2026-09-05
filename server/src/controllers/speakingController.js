@@ -83,5 +83,6 @@ export const retryEvaluation = asyncHandler(async (req, res) => {
 
 export const deleteSubmission = asyncHandler(async (req, res) => {
   await speakingModel.deleteSubmission(req.params.id, req.user.id);
+  await userModel.recalculateBandEstimate(req.user.id);
   return ok(res, { message: 'Submission deleted' });
 });
