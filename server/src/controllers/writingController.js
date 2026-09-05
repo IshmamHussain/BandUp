@@ -116,5 +116,6 @@ export const getWritingStats = asyncHandler(async (req, res) => {
 export const deleteSubmission = asyncHandler(async (req, res) => {
   if (!isPositiveInt(req.params.id)) return fail(res, 'Invalid submission id.');
   await writingModel.deleteSubmission(Number(req.params.id), req.user.id);
+  await userModel.recalculateBandEstimate(req.user.id);
   return ok(res, { message: 'Submission deleted successfully.' });
 });
