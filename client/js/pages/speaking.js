@@ -2,7 +2,7 @@ import { initShell } from '../shell.js';
 import { api } from '../api.js';
 import { toast } from '../toast.js';
 
-const user = await initShell({ active: 'speaking', title: 'Speaking' });
+const initPromise = initShell({ active: 'speaking', title: 'Speaking' });
 
 const el = (id) => document.getElementById(id);
 
@@ -158,18 +158,19 @@ async function retryEvaluation(id) {
 
 async function deleteSubmission(id) {
   if (!confirm('Are you sure you want to delete this test?')) return;
-  try {
-    await api.deleteSpeakingSubmission(id);
-    toast('Deleted successfully', 'success');
-    el('history-detail').classList.add('hidden');
+  
+  el('history-detail').classList.add('hidden');
+  
+  api.deleteSpeakingSubmission(id).then(() => {
     loadHistory();
     loadStats();
     if (!el('progress-section').classList.contains('hidden')) {
       loadProgress();
     }
-  } catch (err) {
-    toast(err.message, 'error');
-  }
+  }).catch(err => {
+    el('history-detail').classList.remove('hidden');
+    toast('Failed to delete: ' + err.message, 'error');
+  });
 }
 
 let currentViewedSubmissionId = null;

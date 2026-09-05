@@ -1,4 +1,5 @@
 import * as listeningModel from '../models/listeningModel.js';
+import * as readingModel from '../models/readingModel.js';
 import * as progressModel from '../models/progressModel.js';
 import * as userModel from '../models/userModel.js';
 import { ok, fail, asyncHandler } from '../utils/helpers.js';
@@ -53,17 +54,18 @@ export const submitAnswers = asyncHandler(async (req, res) => {
   if (results.length === 0) return fail(res, 'Submitted answers did not match any questions in this test.');
 
   // Import readingModel to reuse saveAttempts which writes to the common attempts table
-  const { saveAttempts } = await import('../models/readingModel.js');
-  await saveAttempts(req.user.id, attemptRows);
+  await readingModel.saveAttempts(req.user.id, attemptRows);
 
   const correctCount = results.filter((r) => r.isCorrect).length;
   const minutes = Math.min(Math.max(Number(minutesSpent) || 0, 0), 180);
-  await progressModel.recordActivity(req.user.id, 'listening', {
-    minutes,
-    attempted: results.length,
-    correct: correctCount,
-  });
-  await userModel.touchStreak(req.user.id);
+  await Promise.all([
+    progressModel.recordActivity(req.user.id, 'listening', {
+      minutes,
+      attempted: results.length,
+      correct: correctCount,
+    }),
+    userModel.touchStreak(req.user.id)
+  ]);
 
   return ok(res, {
     total: results.length,
