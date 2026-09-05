@@ -4,20 +4,21 @@ import { api } from '../api.js';
 import { toast } from '../toast.js';
 import { renderGauge } from '../gauge.js';
 
-const user = await initShell({ active: 'writing', title: 'Writing' });
-
 const el = (id) => document.getElementById(id);
 let TARGET_WORDS = 250;
-const CACHE_KEY = `ielts_saved_essays_${user.id}`;
-let savedEssays = JSON.parse(localStorage.getItem(CACHE_KEY) || '{}'); // Cache to store text when switching tasks
 
-// ---------- Prompts ----------
-let prompts = [];
+let user, prompts = [];
 try {
-  prompts = await api.writingPrompts();
+  [user, prompts] = await Promise.all([
+    initShell({ active: 'writing', title: 'Writing' }),
+    api.writingPrompts()
+  ]);
 } catch (err) {
   toast(err.message, 'error');
 }
+
+const CACHE_KEY = `ielts_saved_essays_${user?.id}`;
+let savedEssays = JSON.parse(localStorage.getItem(CACHE_KEY) || '{}'); // Cache to store text when switching tasks
 
 const tests = [...new Set(prompts.map((p) => p.category || 'General'))];
 const testSelect = el('test-select');
@@ -545,17 +546,21 @@ async function openSubmission(id, afterElement) {
     
   detail.querySelector('.essay-text').textContent = submission.essay_text;
   
-  detail.querySelector('.delete-btn').addEventListener('click', async () => {
+  detail.querySelector('.delete-btn').addEventListener('click', () => {
     if (!confirm('Are you sure you want to delete this submission?')) return;
-    try {
-      await api.deleteWritingSubmission(submission.id);
-      toast('Submission deleted successfully', 'success');
-      detail.remove();
-      loadHistory();
+    
+    detail.style.display = 'none';
+    if (afterElement) afterElement.style.display = 'none';
+    
+    api.deleteWritingSubmission(submission.id).then(() => {
       progressLoaded = false;
-    } catch (err) {
-      toast(err.message, 'error');
-    }
+      loadHistory();
+      toast('Submission deleted successfully', 'success');
+    }).catch(err => {
+      detail.style.display = '';
+      if (afterElement) afterElement.style.display = '';
+      toast('Failed to delete: ' + err.message, 'error');
+    });
   });
 
   if (submission.evaluation_json) {

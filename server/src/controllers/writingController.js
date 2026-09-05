@@ -50,10 +50,12 @@ export const submitEssay = asyncHandler(async (req, res) => {
     essayText: essayText.trim(),
   });
 
-  await writingModel.saveEvaluation(submissionId, evaluation.band_overall, evaluation);
-  await progressModel.recordActivity(req.user.id, 'writing', { minutes: Math.min(40, Math.round(wordCount / 10)), attempted: 1, correct: 1 });
-  await userModel.touchStreak(req.user.id);
-  await userModel.updateBandEstimate(req.user.id, evaluation.band_overall);
+  await Promise.all([
+    writingModel.saveEvaluation(submissionId, evaluation.band_overall, evaluation),
+    progressModel.recordActivity(req.user.id, 'writing', { minutes: Math.min(40, Math.round(wordCount / 10)), attempted: 1, correct: 1 }),
+    userModel.touchStreak(req.user.id),
+    userModel.updateBandEstimate(req.user.id, evaluation.band_overall)
+  ]);
 
   return ok(res, { submissionId, wordCount, isMock, evaluation }, 201);
 });

@@ -3,7 +3,7 @@ import { initShell } from '../shell.js';
 import { api } from '../api.js';
 import { toast } from '../toast.js';
 
-await initShell({ active: 'vocabulary', title: 'Vocabulary' });
+const initPromise = initShell({ active: 'vocabulary', title: 'Vocabulary' });
 
 const el = (id) => document.getElementById(id);
 
@@ -106,25 +106,35 @@ el('next-btn').addEventListener('click', () => move(1));
 
 el('bookmark-btn').addEventListener('click', async () => {
   const word = words[index];
+  const oldBookmarked = Boolean(Number(word.bookmarked));
+  const newBookmarked = !oldBookmarked;
+  
+  word.bookmarked = newBookmarked ? 1 : 0;
+  el('bookmark-btn').innerHTML = starIcon(newBookmarked);
+
   try {
-    const { bookmarked } = await api.toggleVocabBookmark(word.id);
-    word.bookmarked = bookmarked ? 1 : 0;
-    el('bookmark-btn').innerHTML = starIcon(bookmarked);
-    toast(bookmarked ? `"${word.word}" bookmarked` : 'Bookmark removed', 'success');
+    await api.toggleVocabBookmark(word.id);
+    toast(newBookmarked ? `"${word.word}" bookmarked` : 'Bookmark removed', 'success');
   } catch (err) {
-    toast(err.message, 'error');
+    word.bookmarked = oldBookmarked ? 1 : 0;
+    el('bookmark-btn').innerHTML = starIcon(oldBookmarked);
+    toast('Failed to bookmark: ' + err.message, 'error');
   }
 });
 
 async function setStatus(status) {
   const word = words[index];
+  const oldStatus = word.status;
+  
+  word.status = status;
+  toast(status === 'mastered' ? `"${word.word}" mastered 🎉` : `Keep revising "${word.word}"`, 'success');
+  move(1);
+  
   try {
     await api.setVocabStatus(word.id, status);
-    word.status = status;
-    toast(status === 'mastered' ? `"${word.word}" mastered 🎉` : `Keep revising "${word.word}"`, 'success');
-    move(1);
   } catch (err) {
-    toast(err.message, 'error');
+    word.status = oldStatus;
+    toast('Failed to update status: ' + err.message, 'error');
   }
 }
 el('status-learning').addEventListener('click', () => setStatus('learning'));
@@ -269,6 +279,10 @@ modeQuiz.addEventListener('click', () => switchMode(true));
 
 // ---------- Init ----------
 try {
-  categories = await api.vocabCategories();
+  const [cats] = await Promise.all([
+    api.vocabCategories().catch(() => []),
+    initPromise
+  ]);
+  categories = cats;
 } catch { /* filters just won't show categories */ }
 await loadWords();
