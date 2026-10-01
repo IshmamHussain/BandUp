@@ -451,12 +451,16 @@ async function loadHistory() {
       row.querySelector('.delete-test-btn').addEventListener('click', async (e) => {
         e.stopPropagation();
         if (!confirm('Are you sure you want to delete this submission?')) return;
+        
+        // Optimistic hide
+        row.style.display = 'none';
+        
         try {
           await api.deleteWritingSubmission(sub.id);
           progressLoaded = false;
-          loadHistory();
           toast('Submission deleted successfully', 'success');
         } catch (err) {
+          row.style.display = '';
           toast('Failed to delete: ' + err.message, 'error');
         }
       });
@@ -485,12 +489,16 @@ async function loadHistory() {
       header.querySelector('.delete-test-btn').addEventListener('click', async (e) => {
         e.stopPropagation();
         if (!confirm('Are you sure you want to delete this entire test (both Task 1 and Task 2)?')) return;
+        
+        // Optimistic hide
+        container.style.display = 'none';
+        
         try {
           await Promise.all(group.submissions.map(s => api.deleteWritingSubmission(s.id)));
           progressLoaded = false;
-          loadHistory();
           toast('Entire test deleted successfully', 'success');
         } catch (err) {
+          container.style.display = '';
           toast('Failed to delete test: ' + err.message, 'error');
         }
       });

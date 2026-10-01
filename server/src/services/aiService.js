@@ -1,4 +1,5 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { HttpError } from '../utils/helpers.js';
 import { env } from '../config/env.js';
 import fs from 'fs';
 
@@ -108,7 +109,7 @@ export async function evaluateEssay({ taskType, promptText, essayText }) {
     return { evaluation: JSON.parse(match[0]), isMock: false };
   } catch (error) {
     console.error("Gemini API Error:", error);
-    throw new Error('The AI evaluator is temporarily unavailable.');
+    throw new HttpError(503, 'The AI evaluator is temporarily unavailable.');
   }
 }
 
