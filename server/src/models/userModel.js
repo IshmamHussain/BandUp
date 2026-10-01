@@ -13,7 +13,12 @@ export async function findByEmail(email) {
 export async function findById(id) {
   const [rows] = await pool.execute(
     `SELECT u.id, u.name, u.email, u.role, u.target_band, u.exam_date, u.supabase_id,
-            p.current_band_estimate, p.study_streak, p.country, p.avatar_url
+            p.current_band_estimate, 
+            CASE 
+              WHEN p.last_active_date >= CURDATE() - INTERVAL 1 DAY THEN p.study_streak
+              ELSE 0
+            END AS study_streak, 
+            p.country, p.avatar_url
      FROM users u
      LEFT JOIN profiles p ON p.user_id = u.id
      WHERE u.id = ?`,
