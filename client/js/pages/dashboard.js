@@ -91,6 +91,7 @@ if (el('breakdown-btn') && breakdownModal) {
     
     el('breakdown-total').textContent = calculatedOverall;
     breakdownModal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
 
     // Trigger AI Action Plan
     const actionPlanContainer = el('ai-action-plan-container');
@@ -125,9 +126,14 @@ if (el('breakdown-btn') && breakdownModal) {
     }
   });
   
-  el('breakdown-close').addEventListener('click', () => breakdownModal.classList.add('hidden'));
+  const closeBreakdownModal = () => {
+    breakdownModal.classList.add('hidden');
+    document.body.style.overflow = '';
+  };
+  
+  el('breakdown-close').addEventListener('click', closeBreakdownModal);
   breakdownModal.addEventListener('click', (e) => {
-    if (e.target === breakdownModal) breakdownModal.classList.add('hidden');
+    if (e.target === breakdownModal) closeBreakdownModal();
   });
 }
 
