@@ -27,19 +27,60 @@ export async function weeklyStudyMinutes(userId) {
   return rows;
 }
 
-// Accuracy per module across all time, for the module comparison chart.
 export async function moduleAccuracy(userId) {
-  const [rows] = await pool.execute(
-    `SELECT module,
-            SUM(questions_attempted) AS attempted,
-            SUM(questions_correct) AS correct,
-            ROUND(100 * SUM(questions_correct) / NULLIF(SUM(questions_attempted), 0)) AS accuracy
-     FROM daily_progress
-     WHERE user_id = ?
-     GROUP BY module`,
-    [userId]
+  const [reading] = await pool.execute(
+    `SELECT COUNT(*) AS attempted, SUM(is_correct) AS correct
+     FROM attempts a
+     JOIN questions q ON q.id = a.question_id
+     WHERE a.user_id = ? AND q.passage_id IS NOT NULL`, [userId]
   );
-  return rows;
+  
+  const [listening] = await pool.execute(
+    `SELECT COUNT(*) AS attempted, SUM(is_correct) AS correct
+     FROM attempts a
+     JOIN questions q ON q.id = a.question_id
+     WHERE a.user_id = ? AND q.listening_test_id IS NOT NULL`, [userId]
+  );
+
+  const [writing] = await pool.execute(
+    `SELECT COUNT(*) AS attempted, AVG(band_overall) AS avg_band
+     FROM writing_submissions
+     WHERE user_id = ? AND status = 'evaluated'`, [userId]
+  );
+
+  const [speaking] = await pool.execute(
+    `SELECT COUNT(*) AS attempted, AVG(band_overall) AS avg_band
+     FROM speaking_submissions
+     WHERE user_id = ?`, [userId]
+  );
+
+  const results = [];
+  
+  if (reading[0].attempted > 0) {
+    results.push({ module: 'reading', attempted: reading[0].attempted, accuracy: Math.round((reading[0].correct / reading[0].attempted) * 100) });
+  } else {
+    results.push({ module: 'reading', attempted: 0, accuracy: 0 });
+  }
+
+  if (listening[0].attempted > 0) {
+    results.push({ module: 'listening', attempted: listening[0].attempted, accuracy: Math.round((listening[0].correct / listening[0].attempted) * 100) });
+  } else {
+    results.push({ module: 'listening', attempted: 0, accuracy: 0 });
+  }
+
+  if (writing[0].attempted > 0) {
+    results.push({ module: 'writing', attempted: writing[0].attempted, accuracy: Math.round((writing[0].avg_band / 9) * 100) });
+  } else {
+    results.push({ module: 'writing', attempted: 0, accuracy: 0 });
+  }
+
+  if (speaking[0].attempted > 0) {
+    results.push({ module: 'speaking', attempted: speaking[0].attempted, accuracy: Math.round((speaking[0].avg_band / 9) * 100) });
+  } else {
+    results.push({ module: 'speaking', attempted: 0, accuracy: 0 });
+  }
+
+  return results;
 }
 
 export async function recentActivity(userId, limit = 8) {
@@ -51,6 +92,13 @@ export async function recentActivity(userId, limit = 8) {
       JOIN reading_passages rp ON rp.id = q.passage_id
       WHERE a.user_id = ?
       GROUP BY rp.id, DATE(a.created_at), a.created_at)
+     UNION ALL
+     (SELECT 'listening' AS type, lt.title AS label, a.created_at
+      FROM attempts a
+      JOIN questions q ON q.id = a.question_id
+      JOIN listening_tests lt ON lt.id = q.listening_test_id
+      WHERE a.user_id = ?
+      GROUP BY lt.id, DATE(a.created_at), a.created_at)
      UNION ALL
      (SELECT 'writing' AS type,
              CONCAT('Essay - ', ws.task_type) AS label, ws.created_at
@@ -64,7 +112,7 @@ export async function recentActivity(userId, limit = 8) {
       WHERE ss.user_id = ?)
      ORDER BY created_at DESC
      LIMIT ${Number(limit)}`,
-    [userId, userId, userId]
+    [userId, userId, userId, userId]
   );
   return rows;
 }
