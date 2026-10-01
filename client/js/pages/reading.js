@@ -59,15 +59,27 @@ function testCard(test) {
 
   const bookmarkBtn = card.querySelector('.bookmark-btn');
   bookmarkBtn.addEventListener('click', async () => {
+    const wasBookmarked = Boolean(test.bookmarked);
+    const newBookmarked = !wasBookmarked;
+    
+    // Optimistic UI update
+    test.bookmarked = newBookmarked ? 1 : 0;
+    bookmarkBtn.innerHTML = starIcon(newBookmarked);
+    bookmarkBtn.className = `bookmark-btn shrink-0 -mt-1 -mr-1 p-1.5 rounded-lg transition ${
+      newBookmarked ? 'text-amber-500' : 'text-slate-300 dark:text-slate-600 hover:text-amber-400'}`;
+    bookmarkBtn.setAttribute('aria-pressed', newBookmarked);
+
     try {
-      const { bookmarked } = await api.toggleReadingBookmark(test.id);
-      bookmarkBtn.innerHTML = starIcon(bookmarked);
-      bookmarkBtn.className = `bookmark-btn shrink-0 -mt-1 -mr-1 p-1.5 rounded-lg transition ${
-        bookmarked ? 'text-amber-500' : 'text-slate-300 dark:text-slate-600 hover:text-amber-400'}`;
-      bookmarkBtn.setAttribute('aria-pressed', bookmarked);
-      toast(bookmarked ? 'Test bookmarked' : 'Bookmark removed', 'success');
+      await api.toggleReadingBookmark(test.id);
+      toast(newBookmarked ? 'Test bookmarked' : 'Bookmark removed', 'success');
     } catch (err) {
-      toast(err.message, 'error');
+      // Revert on error
+      test.bookmarked = wasBookmarked ? 1 : 0;
+      bookmarkBtn.innerHTML = starIcon(wasBookmarked);
+      bookmarkBtn.className = `bookmark-btn shrink-0 -mt-1 -mr-1 p-1.5 rounded-lg transition ${
+        wasBookmarked ? 'text-amber-500' : 'text-slate-300 dark:text-slate-600 hover:text-amber-400'}`;
+      bookmarkBtn.setAttribute('aria-pressed', wasBookmarked);
+      toast('Failed to update bookmark: ' + err.message, 'error');
     }
   });
 

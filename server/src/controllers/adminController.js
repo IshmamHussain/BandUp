@@ -1,6 +1,7 @@
 // Admin controller — CRUD endpoints for all IELTS modules.
 // Protected by requireAuth + requireAdmin middleware in routes.
 import * as adminModel from '../models/adminModel.js';
+import { findById as findUserById } from '../models/userModel.js';
 import { generateReadingQuestions } from '../services/aiService.js';
 import { ok, fail, asyncHandler } from '../utils/helpers.js';
 import { isNonEmptyString, isPositiveInt } from '../utils/validate.js';
@@ -334,8 +335,7 @@ export const deleteStudent = asyncHandler(async (req, res) => {
   const studentId = Number(req.params.id);
   
   // Find the student's supabase_id to delete them from Auth as well
-  const { findById } = await import('../models/userModel.js');
-  const student = await findById(studentId);
+  const student = await findUserById(studentId);
   
   if (!student) {
     return fail(res, 'Student not found.', 404);

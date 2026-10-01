@@ -1,5 +1,6 @@
 // Authentication controller: register, login, logout, current user.
 import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
 import { createClient } from '@supabase/supabase-js';
 import { env } from '../config/env.js';
 import * as userModel from '../models/userModel.js';
@@ -89,8 +90,7 @@ export const login = asyncHandler(async (req, res) => {
 
   // Fallback for legacy admin
   if (user.role === 'admin' && !user.supabase_id) {
-    const bcrypt = await import('bcryptjs');
-    const passwordMatches = await bcrypt.default.compare(password, user.password_hash);
+    const passwordMatches = await bcrypt.compare(password, user.password_hash);
     if (!passwordMatches) return fail(res, invalidMessage, 401);
     
     setTokenCookie(res, user);
