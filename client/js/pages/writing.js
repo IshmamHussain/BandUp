@@ -442,8 +442,25 @@ async function loadHistory() {
             ${sub.task_type === 'task1' ? 'Task 1' : 'Task 2'}${sub.category ? ` · ${sub.category}` : ''} · ${sub.word_count} words · ${dateStr}
           </span>
         </span>
+        <div class="delete-test-btn p-2 rounded-xl text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition z-20 shrink-0" aria-label="Delete submission" title="Delete submission">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+        </div>
         <svg class="w-4 h-4 text-slate-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>`;
       row.querySelector('.submission-prompt').textContent = sub.prompt_text || 'Free writing';
+      
+      row.querySelector('.delete-test-btn').addEventListener('click', async (e) => {
+        e.stopPropagation();
+        if (!confirm('Are you sure you want to delete this submission?')) return;
+        try {
+          await api.deleteWritingSubmission(sub.id);
+          progressLoaded = false;
+          loadHistory();
+          toast('Submission deleted successfully', 'success');
+        } catch (err) {
+          toast('Failed to delete: ' + err.message, 'error');
+        }
+      });
+      
       row.addEventListener('click', () => openSubmission(sub.id, row));
       container.appendChild(row);
     } else {
@@ -460,7 +477,23 @@ async function loadHistory() {
             Task 1 & 2 · ${dateStr}${hasBoth && task1.band_overall && task2.band_overall ? ` · T1: ${Number(task1.band_overall).toFixed(1)} · T2: ${Number(task2.band_overall).toFixed(1)}` : ''}
           </span>
         </span>
+        <div class="delete-test-btn p-2 rounded-xl text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition z-20 shrink-0" aria-label="Delete entire test" title="Delete entire test">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+        </div>
         <svg class="w-5 h-5 text-slate-400 shrink-0 transition-transform duration-300 accordion-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>`;
+
+      header.querySelector('.delete-test-btn').addEventListener('click', async (e) => {
+        e.stopPropagation();
+        if (!confirm('Are you sure you want to delete this entire test (both Task 1 and Task 2)?')) return;
+        try {
+          await Promise.all(group.submissions.map(s => api.deleteWritingSubmission(s.id)));
+          progressLoaded = false;
+          loadHistory();
+          toast('Entire test deleted successfully', 'success');
+        } catch (err) {
+          toast('Failed to delete test: ' + err.message, 'error');
+        }
+      });
 
       const expandPanel = document.createElement('div');
       expandPanel.className = 'accordion-panel bg-slate-50/50 dark:bg-slate-900/20 border-t border-slate-100 dark:border-slate-800 relative z-10';
