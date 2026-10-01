@@ -24,3 +24,25 @@ export class HttpError extends Error {
     this.statusCode = statusCode;
   }
 }
+
+// Converts a raw score to an IELTS Band score (scaled to 40 questions)
+export function calculateIeltsBand(correct, total) {
+  if (total === 0) return 0;
+  const scaled = (correct / total) * 40;
+  
+  if (scaled >= 39) return 9.0;
+  if (scaled >= 37) return 8.5;
+  if (scaled >= 35) return 8.0;
+  if (scaled >= 33) return 7.5;
+  if (scaled >= 30) return 7.0;
+  if (scaled >= 27) return 6.5;
+  if (scaled >= 23) return 6.0;
+  if (scaled >= 19) return 5.5;
+  if (scaled >= 15) return 5.0;
+  if (scaled >= 13) return 4.5;
+  if (scaled >= 10) return 4.0;
+  if (scaled >= 8) return 3.5;
+  if (scaled >= 6) return 3.0;
+  if (scaled >= 4) return 2.5;
+  return 2.0;
+}

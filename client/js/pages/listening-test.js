@@ -199,9 +199,22 @@ function renderResults(result) {
   resultsEl.innerHTML = `
     <div class="card p-6 text-center mb-4">
       <p class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">${tone}</p>
-      <p class="font-mono font-bold text-5xl mt-2 text-gradient">${result.accuracy}%</p>
-      <p class="text-sm text-slate-500 dark:text-slate-400 mt-1.5">${result.correct} of ${result.total} correct</p>
-      <div class="flex gap-2 justify-center mt-5">
+      
+      <div class="flex items-center justify-center gap-6 mt-3 mb-4">
+        <div>
+          <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Accuracy</p>
+          <p class="font-mono font-bold text-4xl text-gradient">${result.accuracy}%</p>
+        </div>
+        <div class="w-px h-12 bg-slate-200 dark:bg-slate-700"></div>
+        <div>
+          <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Band Score</p>
+          <p class="font-mono font-bold text-4xl text-brand-600 dark:text-brand-400">${result.bandScore?.toFixed(1)}</p>
+        </div>
+      </div>
+
+      <p class="text-sm text-slate-500 dark:text-slate-400 mb-5">${result.correct} of ${result.total} correct</p>
+      
+      <div class="flex gap-2 justify-center">
         <a href="/pages/listening.html" class="px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition">All tests</a>
         <button id="retry-btn" class="px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold transition">Try again</button>
       </div>
