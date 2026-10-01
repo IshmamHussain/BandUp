@@ -30,42 +30,63 @@ renderGauge(el('gauge'), {
   target: Number(data.user.targetBand) || null,
   label: 'Current band',
   size: 180,
+  color: '#06b6d4' // Cyan color matching the theme
 });
 el('gauge').classList.remove('skeleton');
 
-el('stat-streak').innerHTML = `${data.user.studyStreak}<span class="text-base font-body font-medium text-slate-400"> day${data.user.studyStreak === 1 ? '' : 's'}</span>`;
-
-if (data.user.examCountdownDays !== null) {
-  el('stat-countdown').innerHTML = `${data.user.examCountdownDays}<span class="text-base font-body font-medium text-slate-400"> days</span>`;
-  el('stat-countdown-sub').textContent = `Exam on ${new Date(data.user.examDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}`;
-} else {
-  el('stat-countdown').textContent = '—';
-}
+el('stat-streak').innerHTML = `${data.user.studyStreak}<span class="text-xl font-medium text-slate-400 ml-1">Days</span>`;
 
 const weekTotal = data.weeklyStudy.reduce((sum, day) => sum + day.minutes, 0);
-el('stat-week').innerHTML = `${weekTotal}<span class="text-base font-body font-medium text-slate-400"> min</span>`;
+el('stat-week').innerHTML = `${weekTotal} min studied`;
+
+// Populate Module Accuracies
+const moduleAccCards = document.querySelectorAll('.module-acc');
+moduleAccCards.forEach(card => {
+  const modName = card.dataset.module;
+  const modData = data.moduleAccuracy.find(m => m.module === modName);
+  if (modData && modData.attempted > 0) {
+    const accuracy = Number(modData.accuracy);
+    // Simple mock conversion from accuracy% to band for display (e.g. 90% = 8.0)
+    let estimatedBand = (accuracy / 100) * 9;
+    estimatedBand = Math.max(4, Math.round(estimatedBand * 2) / 2).toFixed(1);
+    card.textContent = estimatedBand;
+    // Update progress bar
+    const bar = card.nextElementSibling.firstElementChild;
+    if (bar) bar.style.width = `${accuracy}%`;
+  } else {
+    card.textContent = '-.-';
+    const bar = card.nextElementSibling.firstElementChild;
+    if (bar) bar.style.width = `0%`;
+  }
+});
 
 // ---------- Charts ----------
-const isDark = document.documentElement.classList.contains('dark');
-const gridColor = isDark ? 'rgba(51,65,85,0.5)' : 'rgba(226,232,240,0.8)';
-const textColor = isDark ? '#94a3b8' : '#64748b';
 Chart.defaults.font.family = 'Inter, system-ui, sans-serif';
+Chart.defaults.color = '#94a3b8';
 
 new Chart(el('chart-week'), {
-  type: 'bar',
+  type: 'line',
   data: {
     labels: data.weeklyStudy.map((d) =>
       new Date(d.date + 'T00:00').toLocaleDateString('en-GB', { weekday: 'short' })),
     datasets: [{
+      label: 'Study Minutes',
       data: data.weeklyStudy.map((d) => d.minutes),
+      borderColor: '#06b6d4', // Cyan
       backgroundColor: (ctx) => {
-        const gradient = ctx.chart.ctx.createLinearGradient(0, 0, 0, 220);
-        gradient.addColorStop(0, '#14b8a6');
-        gradient.addColorStop(1, '#0891b2');
+        const gradient = ctx.chart.ctx.createLinearGradient(0, 0, 0, 300);
+        gradient.addColorStop(0, 'rgba(6, 182, 212, 0.4)'); // Cyan 500
+        gradient.addColorStop(1, 'rgba(168, 85, 247, 0.0)'); // Purple 500
         return gradient;
       },
-      borderRadius: 8,
-      maxBarThickness: 42,
+      borderWidth: 3,
+      tension: 0.4,
+      fill: true,
+      pointBackgroundColor: '#0f172a',
+      pointBorderColor: '#06b6d4',
+      pointBorderWidth: 2,
+      pointRadius: 4,
+      pointHoverRadius: 6
     }],
   },
   options: {
@@ -73,76 +94,54 @@ new Chart(el('chart-week'), {
     maintainAspectRatio: false,
     plugins: {
       legend: { display: false },
-      tooltip: { callbacks: { label: (item) => ` ${item.raw} minutes` } },
+      tooltip: {
+        backgroundColor: 'rgba(15, 23, 42, 0.9)',
+        titleColor: '#fff',
+        bodyColor: '#cbd5e1',
+        borderColor: 'rgba(51, 65, 85, 0.5)',
+        borderWidth: 1,
+        padding: 10,
+        callbacks: { label: (item) => ` ${item.raw} minutes` } 
+      },
     },
     scales: {
-      x: { grid: { display: false }, ticks: { color: textColor } },
-      y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: textColor, precision: 0 } },
+      x: { grid: { display: false, drawBorder: false } },
+      y: { beginAtZero: true, grid: { color: 'rgba(51, 65, 85, 0.3)', drawBorder: false }, ticks: { precision: 0 } },
     },
   },
 });
-
-const modules = data.moduleAccuracy.filter((m) => m.attempted > 0);
-if (modules.length === 0) {
-  el('chart-modules').classList.add('hidden');
-  el('modules-empty').classList.remove('hidden');
-} else {
-  const palette = { reading: '#0d9488', vocabulary: '#06b6d4', writing: '#f59e0b', listening: '#6366f1', grammar: '#ec4899', speaking: '#8b5cf6' };
-  new Chart(el('chart-modules'), {
-    type: 'doughnut',
-    data: {
-      labels: modules.map((m) => m.module[0].toUpperCase() + m.module.slice(1)),
-      datasets: [{
-        data: modules.map((m) => Number(m.accuracy) || 0),
-        backgroundColor: modules.map((m) => palette[m.module] || '#64748b'),
-        borderWidth: 0,
-        spacing: 3,
-        borderRadius: 6,
-      }],
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      cutout: '68%',
-      plugins: {
-        legend: { position: 'bottom', labels: { color: textColor, usePointStyle: true, boxWidth: 8 } },
-        tooltip: { callbacks: { label: (item) => ` ${item.label}: ${item.raw}% accuracy` } },
-      },
-    },
-  });
-}
 
 // ---------- Recent activity ----------
 const activityList = el('activity-list');
 if (data.recentActivity.length === 0) {
   activityList.innerHTML = `
-    <div class="p-6 text-center">
+    <div class="h-full flex flex-col items-center justify-center text-center p-6 text-slate-400">
+      <svg class="w-12 h-12 mb-4 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
       <p class="text-sm font-medium">No activity yet</p>
-      <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Start a reading passage — it takes 15 minutes.</p>
-      <a href="/pages/reading.html" class="inline-block mt-3 px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold transition">Start reading practice</a>
+      <p class="text-xs mt-1">Complete your first test to see it here.</p>
     </div>`;
 } else {
   const icons = {
-    reading: { bg: 'bg-brand-50 dark:bg-brand-900/30 text-brand-600 dark:text-brand-400', path: '<path d="M12 6.5C10 4.8 7.5 4 4 4v14c3.5 0 6 .8 8 2.5 2-1.7 4.5-2.5 8-2.5V4c-3.5 0-6 .8-8 2.5z"/>' },
-    writing: { bg: 'bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400', path: '<path d="M17 3a2.8 2.8 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/>' },
-    speaking: { bg: 'bg-violet-50 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400', path: '<path d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/>' },
+    reading: { bg: 'bg-cyan-500/20 text-cyan-400', path: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>' },
+    writing: { bg: 'bg-purple-500/20 text-purple-400', path: '<path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>' },
+    speaking: { bg: 'bg-green-500/20 text-green-400', path: '<path stroke-linecap="round" stroke-linejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/>' },
+    listening: { bg: 'bg-blue-500/20 text-blue-400', path: '<path stroke-linecap="round" stroke-linejoin="round" d="M3 18v-6a9 9 0 0118 0v6M21 19a2 2 0 01-2 2h-1v-5h3v3zM3 19a2 2 0 002 2h1v-5H3v3z"/>' },
   };
   activityList.innerHTML = data.recentActivity.map((item) => {
     const icon = icons[item.type] || icons.reading;
-    const when = new Date(item.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+    const when = new Date(item.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute:'2-digit' });
     return `
-      <div class="p-3.5 flex items-center gap-3">
-        <span class="grid place-items-center w-8 h-8 rounded-lg shrink-0 ${icon.bg}">
-          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">${icon.path}</svg>
+      <div class="flex items-center gap-4 group hover:bg-slate-800/30 p-2 rounded-xl transition">
+        <span class="grid place-items-center w-10 h-10 rounded-xl shrink-0 ${icon.bg}">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">${icon.path}</svg>
         </span>
-        <p class="text-sm font-medium truncate flex-1"></p>
-        <span class="text-xs text-slate-400 shrink-0">${when}</span>
+        <div class="flex-1 min-w-0">
+          <p class="text-sm font-medium truncate text-slate-200">${item.label}</p>
+          <p class="text-xs text-slate-500 truncate mt-0.5">${item.type.charAt(0).toUpperCase() + item.type.slice(1)} Test</p>
+        </div>
+        <span class="text-xs text-slate-500 shrink-0 bg-slate-800 px-2 py-1 rounded-md">${when}</span>
       </div>`;
   }).join('');
-  // textContent for labels (data from DB, but defence in depth against XSS)
-  activityList.querySelectorAll('p.truncate').forEach((p, i) => {
-    p.textContent = data.recentActivity[i].label;
-  });
 }
 
 // ---------- Goals modal ----------
