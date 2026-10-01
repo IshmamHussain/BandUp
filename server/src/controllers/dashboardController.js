@@ -47,3 +47,36 @@ export const getDashboard = asyncHandler(async (req, res) => {
     recentActivity: recent,
   });
 });
+
+import { actionPlanStream } from '../services/aiService.js';
+
+export const getActionPlan = asyncHandler(async (req, res) => {
+  const [user, modules] = await Promise.all([
+    userModel.findById(req.user.id),
+    progressModel.moduleAccuracy(req.user.id),
+  ]);
+
+  const dashboardData = {
+    targetBand: user.target_band,
+    currentBandEstimate: user.current_band_estimate,
+    moduleAccuracy: modules,
+  };
+
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+
+  try {
+    const stream = actionPlanStream(dashboardData);
+    for await (const chunk of stream) {
+      // SSE format requires data: prefix and double newline
+      res.write(`data: ${JSON.stringify({ text: chunk })}\n\n`);
+    }
+  } catch (err) {
+    console.error('SSE Error:', err);
+    res.write(`data: ${JSON.stringify({ text: '\n\n*(Error generating plan)*' })}\n\n`);
+  } finally {
+    res.write('data: [DONE]\n\n');
+    res.end();
+  }
+});

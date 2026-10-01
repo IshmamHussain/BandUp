@@ -55,6 +55,7 @@ apiRouter.use('/speaking', speakingRoutes);
 
 // --- Dashboard ---
 apiRouter.get('/dashboard', requireAuth, dashboard.getDashboard);
+apiRouter.get('/dashboard/action-plan', requireAuth, dashboard.getActionPlan);
 
 // --- Admin (all routes require auth + admin role) ---
 apiRouter.get('/admin/stats',                          requireAuth, requireAdmin, admin.getStats);
