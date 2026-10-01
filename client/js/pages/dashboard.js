@@ -91,6 +91,38 @@ if (el('breakdown-btn') && breakdownModal) {
     
     el('breakdown-total').textContent = calculatedOverall;
     breakdownModal.classList.remove('hidden');
+
+    // Trigger AI Action Plan
+    const actionPlanContainer = el('ai-action-plan-container');
+    const actionPlanContent = el('ai-action-plan-content');
+    
+    // Only load once
+    if (actionPlanContainer.classList.contains('hidden')) {
+      actionPlanContainer.classList.remove('hidden');
+      actionPlanContent.innerHTML = '<div class="animate-pulse flex space-x-4"><div class="flex-1 space-y-2 py-1"><div class="h-3 bg-slate-200 dark:bg-slate-700 rounded w-3/4"></div><div class="h-3 bg-slate-200 dark:bg-slate-700 rounded"></div></div></div>';
+      
+      const evtSource = new EventSource('/api/dashboard/action-plan');
+      let markdownText = '';
+      
+      evtSource.onmessage = (event) => {
+        if (event.data === '[DONE]') {
+          evtSource.close();
+          return;
+        }
+        try {
+          const data = JSON.parse(event.data);
+          markdownText += data.text;
+          actionPlanContent.innerHTML = marked.parse(markdownText);
+        } catch (err) {}
+      };
+      
+      evtSource.onerror = () => {
+        evtSource.close();
+        if (!markdownText) {
+          actionPlanContent.innerHTML = '*(Failed to load action plan)*';
+        }
+      };
+    }
   });
   
   el('breakdown-close').addEventListener('click', () => breakdownModal.classList.add('hidden'));

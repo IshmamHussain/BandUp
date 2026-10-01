@@ -12,6 +12,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/custom.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body class="min-h-screen bg-slate-50 dark:bg-[#0A0D14] text-slate-900 dark:text-slate-100 antialiased font-sans transition-colors duration-300">
 
@@ -201,6 +202,16 @@
       <div class="pt-4 border-t border-slate-200 dark:border-slate-700 flex justify-between items-center mb-6">
         <span class="font-medium text-slate-700 dark:text-slate-300">Overall Band Score</span>
         <span class="font-display font-bold text-2xl text-brand-600 dark:text-brand-400" id="breakdown-total">-.-</span>
+      </div>
+
+      <div id="ai-action-plan-container" class="mb-6 p-4 rounded-2xl bg-gradient-to-br from-brand-50 to-cyan-50 dark:from-brand-900/20 dark:to-cyan-900/20 border border-brand-100 dark:border-brand-800/50 hidden">
+        <div class="flex items-center gap-2 mb-3 text-brand-700 dark:text-brand-400">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+          <span class="font-semibold text-sm">AI Action Plan</span>
+        </div>
+        <div id="ai-action-plan-content" class="text-sm text-slate-700 dark:text-slate-300 prose prose-sm dark:prose-invert prose-p:leading-relaxed prose-a:text-brand-600">
+          <!-- Streamed content -->
+        </div>
       </div>
 
       <button type="button" id="breakdown-close" class="w-full py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-sm font-semibold transition">Close</button>

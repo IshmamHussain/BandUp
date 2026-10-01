@@ -250,3 +250,31 @@ export async function generateReadingQuestions({ passageTitle, passageBody, coun
     throw new Error('The AI question generator is temporarily unavailable.');
   }
 }
+
+export async function* actionPlanStream(dashboardData) {
+  if (!env.ai.apiKey) {
+    yield "Please configure GEMINI_API_KEY to receive an AI action plan.";
+    return;
+  }
+  
+  const genAI = new GoogleGenerativeAI(env.ai.apiKey);
+  const model = genAI.getGenerativeModel({ model: env.ai.model || "gemini-flash-lite-latest" });
+  
+  const prompt = `You are an expert IELTS tutor. Analyze the student's recent performance data and provide a brief, encouraging 2-paragraph action plan explaining exactly why their estimated band score is what it is, and what 2 specific things they must do to hit their target band. 
+  
+  Data:
+  ${JSON.stringify(dashboardData, null, 2)}
+  
+  Format as plain markdown. Be conversational and highly actionable. No fluff.`;
+  
+  try {
+    const result = await model.generateContentStream(prompt);
+    for await (const chunk of result.stream) {
+      const chunkText = chunk.text();
+      yield chunkText;
+    }
+  } catch (error) {
+    console.error("Gemini stream error:", error);
+    yield "\n\n*(An error occurred while generating your action plan.)*";
+  }
+}
