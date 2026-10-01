@@ -38,31 +38,66 @@ renderGauge(el('gauge'), {
 });
 el('gauge').classList.remove('skeleton');
 
-el('stat-streak').innerHTML = `${data.user.studyStreak}<span class="text-xl font-medium text-slate-400 ml-1">Days</span>`;
+// Populate Module Accuracies
+let overallSum = 0;
+let attemptedModules = 0;
+const breakdownData = [];
 
+el('stat-streak').innerHTML = `${data.user.studyStreak}<span class="text-xl font-medium text-slate-400 ml-1">Days</span>`;
 const weekTotal = data.weeklyStudy.reduce((sum, day) => sum + day.minutes, 0);
 el('stat-week').innerHTML = `${weekTotal} min studied`;
 
-// Populate Module Accuracies
 const moduleAccCards = document.querySelectorAll('.module-acc');
 moduleAccCards.forEach(card => {
   const modName = card.dataset.module;
   const modData = data.moduleAccuracy.find(m => m.module === modName);
+  let estimatedBand = '-.-';
+  
   if (modData && modData.attempted > 0) {
     const accuracy = Number(modData.accuracy);
-    // Simple mock conversion from accuracy% to band for display (e.g. 90% = 8.0)
-    let estimatedBand = (accuracy / 100) * 9;
-    estimatedBand = Math.max(4, Math.round(estimatedBand * 2) / 2).toFixed(1);
+    let bandNum = (accuracy / 100) * 9;
+    bandNum = Math.max(4, Math.round(bandNum * 2) / 2);
+    estimatedBand = bandNum.toFixed(1);
+    
     card.textContent = estimatedBand;
-    // Update progress bar
     const bar = card.nextElementSibling.firstElementChild;
     if (bar) bar.style.width = `${accuracy}%`;
+    
+    overallSum += bandNum;
+    attemptedModules++;
   } else {
     card.textContent = '-.-';
     const bar = card.nextElementSibling.firstElementChild;
     if (bar) bar.style.width = `0%`;
   }
+  
+  breakdownData.push({ 
+    name: modName.charAt(0).toUpperCase() + modName.slice(1), 
+    band: estimatedBand 
+  });
 });
+
+const calculatedOverall = attemptedModules > 0 ? (Math.round((overallSum / attemptedModules) * 2) / 2).toFixed(1) : '-.-';
+
+const breakdownModal = el('breakdown-modal');
+if (el('breakdown-btn') && breakdownModal) {
+  el('breakdown-btn').addEventListener('click', () => {
+    el('breakdown-list').innerHTML = breakdownData.map(item => `
+      <div class="flex justify-between items-center py-2 border-b border-slate-100 dark:border-slate-800 last:border-0">
+        <span class="text-slate-600 dark:text-slate-400 font-medium">${item.name}</span>
+        <span class="font-display font-bold text-slate-900 dark:text-white">${item.band}</span>
+      </div>
+    `).join('');
+    
+    el('breakdown-total').textContent = calculatedOverall;
+    breakdownModal.classList.remove('hidden');
+  });
+  
+  el('breakdown-close').addEventListener('click', () => breakdownModal.classList.add('hidden'));
+  breakdownModal.addEventListener('click', (e) => {
+    if (e.target === breakdownModal) breakdownModal.classList.add('hidden');
+  });
+}
 
 // ---------- Charts ----------
 Chart.defaults.font.family = 'Inter, system-ui, sans-serif';
