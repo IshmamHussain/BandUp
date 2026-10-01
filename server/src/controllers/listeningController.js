@@ -2,7 +2,7 @@ import * as listeningModel from '../models/listeningModel.js';
 import * as readingModel from '../models/readingModel.js';
 import * as progressModel from '../models/progressModel.js';
 import * as userModel from '../models/userModel.js';
-import { ok, fail, asyncHandler } from '../utils/helpers.js';
+import { ok, fail, asyncHandler, calculateIeltsBand } from '../utils/helpers.js';
 import { isPositiveInt } from '../utils/validate.js';
 
 export const listTests = asyncHandler(async (req, res) => {
@@ -58,19 +58,23 @@ export const submitAnswers = asyncHandler(async (req, res) => {
 
   const correctCount = results.filter((r) => r.isCorrect).length;
   const minutes = Math.min(Math.max(Number(minutesSpent) || 0, 0), 180);
+  const bandScore = calculateIeltsBand(correctCount, results.length);
+
   await Promise.all([
     progressModel.recordActivity(req.user.id, 'listening', {
       minutes,
       attempted: results.length,
       correct: correctCount,
     }),
-    userModel.touchStreak(req.user.id)
+    userModel.touchStreak(req.user.id),
+    userModel.updateBandEstimate(req.user.id, bandScore)
   ]);
 
   return ok(res, {
     total: results.length,
     correct: correctCount,
     accuracy: Math.round((100 * correctCount) / results.length),
+    bandScore,
     results,
   });
 });
