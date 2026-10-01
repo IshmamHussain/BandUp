@@ -558,36 +558,44 @@ select.admin-input { appearance: none; background-image: url("data:image/svg+xml
 /* ---- Dashboard Card Illuminations ---- */
 .glow-card-cyan {
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 0 20px -5px rgba(34, 211, 238, 0.25), inset 0 0 10px rgba(34, 211, 238, 0.05) !important;
+  border-color: rgba(34, 211, 238, 0.3) !important;
 }
 .glow-card-cyan:hover {
-  box-shadow: 0 0 30px rgba(34, 211, 238, 0.4), inset 0 0 15px rgba(34, 211, 238, 0.1);
-  border-color: rgba(34, 211, 238, 0.6) !important;
+  box-shadow: 0 0 35px rgba(34, 211, 238, 0.45), inset 0 0 15px rgba(34, 211, 238, 0.15) !important;
+  border-color: rgba(34, 211, 238, 0.7) !important;
   transform: translateY(-4px);
 }
 
 .glow-card-blue {
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 0 20px -5px rgba(59, 130, 246, 0.25), inset 0 0 10px rgba(59, 130, 246, 0.05) !important;
+  border-color: rgba(59, 130, 246, 0.3) !important;
 }
 .glow-card-blue:hover {
-  box-shadow: 0 0 30px rgba(59, 130, 246, 0.4), inset 0 0 15px rgba(59, 130, 246, 0.1);
-  border-color: rgba(59, 130, 246, 0.6) !important;
+  box-shadow: 0 0 35px rgba(59, 130, 246, 0.45), inset 0 0 15px rgba(59, 130, 246, 0.15) !important;
+  border-color: rgba(59, 130, 246, 0.7) !important;
   transform: translateY(-4px);
 }
 
 .glow-card-purple {
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 0 20px -5px rgba(168, 85, 247, 0.25), inset 0 0 10px rgba(168, 85, 247, 0.05) !important;
+  border-color: rgba(168, 85, 247, 0.3) !important;
 }
 .glow-card-purple:hover {
-  box-shadow: 0 0 30px rgba(168, 85, 247, 0.4), inset 0 0 15px rgba(168, 85, 247, 0.1);
-  border-color: rgba(168, 85, 247, 0.6) !important;
+  box-shadow: 0 0 35px rgba(168, 85, 247, 0.45), inset 0 0 15px rgba(168, 85, 247, 0.15) !important;
+  border-color: rgba(168, 85, 247, 0.7) !important;
   transform: translateY(-4px);
 }
 
 .glow-card-green {
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 0 20px -5px rgba(34, 197, 94, 0.25), inset 0 0 10px rgba(34, 197, 94, 0.05) !important;
+  border-color: rgba(34, 197, 94, 0.3) !important;
 }
 .glow-card-green:hover {
-  box-shadow: 0 0 30px rgba(34, 197, 94, 0.4), inset 0 0 15px rgba(34, 197, 94, 0.1);
-  border-color: rgba(34, 197, 94, 0.6) !important;
+  box-shadow: 0 0 35px rgba(34, 197, 94, 0.45), inset 0 0 15px rgba(34, 197, 94, 0.15) !important;
+  border-color: rgba(34, 197, 94, 0.7) !important;
   transform: translateY(-4px);
 }

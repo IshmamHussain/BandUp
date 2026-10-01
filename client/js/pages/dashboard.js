@@ -24,6 +24,10 @@ const greeting = el('greeting');
 greeting.classList.remove('skeleton');
 greeting.textContent = `${timeOfDay}, ${data.user.name.split(' ')[0]}`;
 
+// Hide the redundant topbar streak counter since the dashboard has a giant one
+const topbarStreak = document.getElementById('streak-chip');
+if (topbarStreak) topbarStreak.classList.add('!hidden');
+
 // ---------- Stat cards ----------
 renderGauge(el('gauge'), {
   value: Number(data.user.currentBandEstimate) || 0,
