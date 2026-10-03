@@ -364,7 +364,7 @@ INSERT INTO questions (listening_test_id, module, question_type, question_text, 
 INSERT INTO users (name, email, password_hash) VALUES ('Test User', 'test@example.com', '$2a$10$xiXEl/jHEGh8np75t.bngOCvxpWf8TSX1yJni3FqnXoqXb04iCUcq');
 INSERT INTO profiles (user_id) VALUES (LAST_INSERT_ID());
 
--- Admin account: admin@bandup.com / Admin@123
+-- Admin account: admin@bandup.com / <Change this password in production>
 INSERT INTO users (name, email, password_hash, role) VALUES ('Admin', 'admin@bandup.com', '$2a$12$t37kVn.rHkijlLMNbW1WzuOs7xFIwb.xKbA6zHA3l2DDdnIdkWT/6', 'admin');
 INSERT INTO profiles (user_id) VALUES (LAST_INSERT_ID());
 INSERT INTO writing_prompts (task_type, category, prompt_text, chart_data) VALUES
