@@ -364,7 +364,7 @@ INSERT INTO questions (listening_test_id, module, question_type, question_text, 
 INSERT INTO users (name, email, password_hash) VALUES ('Test User', 'test@example.com', '***REMOVED***');
 INSERT INTO profiles (user_id) VALUES (LAST_INSERT_ID());
 
--- Admin account: admin@bandup.com / ***REMOVED***
+-- Admin account: admin@bandup.com / <Change this password in production>
 INSERT INTO users (name, email, password_hash, role) VALUES ('Admin', 'admin@bandup.com', '***REMOVED***', 'admin');
 INSERT INTO profiles (user_id) VALUES (LAST_INSERT_ID());
 INSERT INTO writing_prompts (task_type, category, prompt_text, chart_data) VALUES
