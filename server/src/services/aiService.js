@@ -251,79 +251,126 @@ export async function generateReadingQuestions({ passageTitle, passageBody, coun
   }
 }
 
-export async function* actionPlanStream(dashboardData) {
-  if (!env.ai.apiKey) {
-    yield "Please configure GEMINI_API_KEY to receive an AI action plan.";
-    return;
-  }
-  
-  const genAI = new GoogleGenerativeAI(env.ai.apiKey);
-
+export async function generateActionPlan(dashboardData) {
   const reading = dashboardData.moduleAccuracy?.find(m => m.module === 'reading') || { attempted: 0, accuracy: 0 };
   const listening = dashboardData.moduleAccuracy?.find(m => m.module === 'listening') || { attempted: 0, accuracy: 0 };
   const writing = dashboardData.moduleAccuracy?.find(m => m.module === 'writing') || { attempted: 0, accuracy: 0 };
   const speaking = dashboardData.moduleAccuracy?.find(m => m.module === 'speaking') || { attempted: 0, accuracy: 0 };
 
-  const prompt = `You are an expert IELTS tutor. Analyze the student's recent performance data and provide a comprehensive IELTS Action Plan.
+  const UNATTEMPTED_MSG = 'Attempt a test of that module for action plan.';
+
+  const attemptedList = [
+    { key: 'reading', name: 'Reading', ...reading },
+    { key: 'listening', name: 'Listening', ...listening },
+    { key: 'writing', name: 'Writing', ...writing },
+    { key: 'speaking', name: 'Speaking', ...speaking },
+  ].filter(m => m.attempted > 0);
+
+  // If no tests attempted at all, return instant response without calling AI
+  if (attemptedList.length === 0) {
+    return {
+      overall: `Welcome to BandUp! You haven't attempted any diagnostic tests yet. To receive a personalized AI action plan to reach your Target Band of ${dashboardData.targetBand || '7.5'}, please complete a diagnostic test in Reading, Listening, Writing, or Speaking.`,
+      reading: UNATTEMPTED_MSG,
+      listening: UNATTEMPTED_MSG,
+      writing: UNATTEMPTED_MSG,
+      speaking: UNATTEMPTED_MSG,
+    };
+  }
+
+  if (!env.ai.apiKey) {
+    return {
+      overall: `Currently sitting at estimated band ${dashboardData.currentBandEstimate || 'in progress'}. Configure GEMINI_API_KEY in server/.env for live AI tutoring advice.`,
+      reading: reading.attempted > 0 ? 'Practice skimming, scanning, and time management.' : UNATTEMPTED_MSG,
+      listening: listening.attempted > 0 ? 'Focus on active note-taking and audio tracking.' : UNATTEMPTED_MSG,
+      writing: writing.attempted > 0 ? 'Review grammatical range and high-level lexical resource.' : UNATTEMPTED_MSG,
+      speaking: speaking.attempted > 0 ? 'Practice fluid discourse without hesitations.' : UNATTEMPTED_MSG,
+    };
+  }
+
+  const attemptedDesc = attemptedList.map(m => `- ${m.name}: ${m.attempted} tests (Accuracy: ${m.accuracy}%)`).join('\n');
+  const prompt = `You are an expert IELTS tutor. Provide a brief, high-impact action plan for this student.
 
 Target Band: ${dashboardData.targetBand || '7.5'}
 Current Overall Band Estimate: ${dashboardData.currentBandEstimate || 'In progress'}
 
-Module Breakdown:
-- Reading: ${reading.attempted} attempts (Accuracy: ${reading.accuracy}%)
-- Listening: ${listening.attempted} attempts (Accuracy: ${listening.accuracy}%)
-- Writing: ${writing.attempted} attempts (Accuracy: ${writing.accuracy}%)
-- Speaking: ${speaking.attempted} attempts (Accuracy: ${speaking.accuracy}%)
+Attempted Modules:
+${attemptedDesc}
 
-CRITICAL RULES:
-1. Provide a cohesive '### 🎯 Overall Action Plan' (2-3 sentences explaining their current standing and overall strategy to reach target band).
-2. Provide a separate section for each module in this exact order:
-   - '### 📖 Reading'
-   - '### 🎧 Listening'
-   - '### ✍️ Writing'
-   - '### 🗣️ Speaking'
-3. MANDATORY RULE FOR UNATTEMPTED MODULES: For any module with 0 attempts / no data, you MUST output EXACTLY:
-   Attempt a test of that module for action plan.
-   Do NOT provide tips or advice for modules with 0 attempts.
-4. For modules WITH attempts (>0), give 2-3 specific, high-impact action steps tailored to their score and target band.
+Format your output exactly as follows:
+### 🎯 Overall Action Plan
+[Exactly 2 encouraging sentences summarizing their standing and overall strategy]
 
-Format as clean markdown.`;
+${attemptedList.map(m => `### ${m.name}\n[Exactly 2 bullet points with concise, high-yield action steps to reach Target Band]`).join('\n\n')}
+`;
 
-  // Candidate models to try in order of resilience
+  const genAI = new GoogleGenerativeAI(env.ai.apiKey);
   const candidateModels = [
-    env.ai.model,
+    env.ai.model || 'gemini-flash-lite-latest',
     'gemini-flash-lite-latest',
-    'gemini-flash-latest',
-    'gemini-3.5-flash',
-    'gemini-3.5-flash-lite',
-  ].filter(Boolean);
+  ];
   const uniqueModels = [...new Set(candidateModels)];
 
-  let lastError = null;
-  let succeeded = false;
-
+  let generatedText = '';
   for (const modelName of uniqueModels) {
     try {
-      const model = genAI.getGenerativeModel({ model: modelName });
-      const result = await model.generateContentStream(prompt);
-      for await (const chunk of result.stream) {
-        const chunkText = chunk.text();
-        yield chunkText;
-      }
-      succeeded = true;
-      break;
-    } catch (error) {
-      console.error(`Gemini stream error with model ${modelName}:`, error?.message || error);
-      lastError = error;
+      const model = genAI.getGenerativeModel({ model: modelName }, { timeout: 15000 });
+      const result = await model.generateContent(prompt);
+      generatedText = result.response.text();
+      if (generatedText) break;
+    } catch (err) {
+      console.error(`Gemini action plan error with model ${modelName}:`, err?.message || err);
     }
   }
 
-  if (!succeeded) {
-    const isRateLimit = lastError?.status === 429 || lastError?.message?.includes('429') || lastError?.message?.includes('quota') || lastError?.message?.includes('exhausted');
-    if (isRateLimit) {
-      yield "\n\n*(The AI action plan service is temporarily busy due to rate limits. Please try again in a few moments.)*";
-    } else {
-      yield "\n\n*(An error occurred while generating your action plan. Please try again.)*";
+  const result = {
+    overall: `Focus on disciplined daily drills across your active modules to close the gap to your target Band ${dashboardData.targetBand || '7.5'}.`,
+    reading: UNATTEMPTED_MSG,
+    listening: UNATTEMPTED_MSG,
+    writing: UNATTEMPTED_MSG,
+    speaking: UNATTEMPTED_MSG,
+  };
+
+  if (generatedText) {
+    const lines = generatedText.split('\n');
+    let currentKey = 'overall';
+    let currentLines = [];
+
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (trimmed.startsWith('### ')) {
+        if (currentLines.length > 0) {
+          result[currentKey] = currentLines.join('\n').trim();
+        }
+        const lower = trimmed.toLowerCase();
+        if (lower.includes('reading')) currentKey = 'reading';
+        else if (lower.includes('listening')) currentKey = 'listening';
+        else if (lower.includes('writing')) currentKey = 'writing';
+        else if (lower.includes('speaking')) currentKey = 'speaking';
+        else currentKey = 'overall';
+        currentLines = [];
+      } else {
+        currentLines.push(line);
+      }
+    }
+    if (currentLines.length > 0) {
+      result[currentKey] = currentLines.join('\n').trim();
     }
   }
+
+  // Guarantee that unattempted modules strictly have the exact message
+  if (reading.attempted === 0) result.reading = UNATTEMPTED_MSG;
+  if (listening.attempted === 0) result.listening = UNATTEMPTED_MSG;
+  if (writing.attempted === 0) result.writing = UNATTEMPTED_MSG;
+  if (speaking.attempted === 0) result.speaking = UNATTEMPTED_MSG;
+
+  return result;
+}
+
+export async function* actionPlanStream(dashboardData) {
+  const plan = await generateActionPlan(dashboardData);
+  yield `### 🎯 Overall Action Plan\n${plan.overall}\n\n`;
+  yield `### 📖 Reading\n${plan.reading}\n\n`;
+  yield `### 🎧 Listening\n${plan.listening}\n\n`;
+  yield `### ✍️ Writing\n${plan.writing}\n\n`;
+  yield `### 🗣️ Speaking\n${plan.speaking}\n\n`;
 }
