@@ -83,10 +83,9 @@ const breakdownModal = el('breakdown-modal');
 if (el('breakdown-btn') && breakdownModal) {
   const actionPlanContainer = el('ai-action-plan-container');
   const actionPlanContent = el('ai-action-plan-content');
-  let currentRawPlan = '';
+  let currentPlanData = null;
   let currentActiveTab = 'all';
-  let actionPlanLoaded = false;
-  let currentEvtSource = null;
+  let actionPlanLoading = false;
 
   const MODULE_CONFIG = {
     reading: { key: 'reading', name: 'Reading', emoji: '📖', url: '/pages/reading.html' },
@@ -96,75 +95,34 @@ if (el('breakdown-btn') && breakdownModal) {
     overall: { key: 'overall', name: 'Overall Strategy', emoji: '🎯', url: null },
   };
 
-  function identifySectionModule(title) {
-    const lower = (title || '').toLowerCase();
-    if (lower.includes('reading')) return MODULE_CONFIG.reading;
-    if (lower.includes('listening')) return MODULE_CONFIG.listening;
-    if (lower.includes('writing')) return MODULE_CONFIG.writing;
-    if (lower.includes('speaking')) return MODULE_CONFIG.speaking;
-    return MODULE_CONFIG.overall;
-  }
+  function renderActionPlanCards(plan, activeFilter = 'all') {
+    if (!plan) return '';
 
-  function parseActionPlanSections(markdownText) {
-    const sections = [];
-    const lines = (markdownText || '').split('\n');
-    let currentTitle = '';
-    let currentLines = [];
+    const sections = [
+      { key: 'overall', title: '🎯 Overall Action Plan', content: plan.overall, mod: MODULE_CONFIG.overall },
+      { key: 'reading', title: '📖 Reading', content: plan.reading, mod: MODULE_CONFIG.reading },
+      { key: 'listening', title: '🎧 Listening', content: plan.listening, mod: MODULE_CONFIG.listening },
+      { key: 'writing', title: '✍️ Writing', content: plan.writing, mod: MODULE_CONFIG.writing },
+      { key: 'speaking', title: '🗣️ Speaking', content: plan.speaking, mod: MODULE_CONFIG.speaking },
+    ];
 
-    for (const line of lines) {
-      if (line.trim().startsWith('### ')) {
-        if (currentTitle || currentLines.length > 0) {
-          sections.push({
-            title: currentTitle || 'Overall Action Plan',
-            content: currentLines.join('\n').trim()
-          });
-        }
-        currentTitle = line.trim().replace(/^###\s+/, '').trim();
-        currentLines = [];
-      } else {
-        currentLines.push(line);
-      }
-    }
-
-    if (currentTitle || currentLines.length > 0) {
-      sections.push({
-        title: currentTitle || 'Overall Action Plan',
-        content: currentLines.join('\n').trim()
-      });
-    }
-
-    return sections;
-  }
-
-  function renderActionPlanCards(markdownText, activeFilter = 'all') {
-    const sections = parseActionPlanSections(markdownText);
-    
-    if (sections.length === 0) {
-      return marked.parse(markdownText);
-    }
-
-    const filteredSections = activeFilter === 'all' 
+    const filtered = activeFilter === 'all' 
       ? sections 
-      : sections.filter(sec => {
-          const mod = identifySectionModule(sec.title);
-          return mod.key === activeFilter;
-        });
+      : sections.filter(s => s.key === activeFilter);
 
-    if (filteredSections.length === 0) {
+    if (filtered.length === 0) {
       return `<div class="p-6 text-center text-xs text-slate-500 dark:text-slate-400">No action plan items found for this filter.</div>`;
     }
 
-    return filteredSections.map(sec => {
-      const mod = identifySectionModule(sec.title);
-      const content = sec.content;
-      const isUnattempted = /attempt a test of that module for action plan/i.test(content) || /no test data/i.test(content);
+    return filtered.map(sec => {
+      const isUnattempted = (sec.content || '').includes('Attempt a test of that module for action plan');
 
-      if (isUnattempted && mod.url) {
+      if (isUnattempted && sec.mod.url) {
         return `
           <div class="p-4 rounded-2xl bg-amber-500/10 dark:bg-amber-500/10 border border-amber-500/25 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
             <div class="flex items-center gap-3">
               <div class="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 flex items-center justify-center flex-shrink-0 text-xl">
-                ${mod.emoji}
+                ${sec.mod.emoji}
               </div>
               <div>
                 <div class="flex items-center gap-2">
@@ -174,8 +132,8 @@ if (el('breakdown-btn') && breakdownModal) {
                 <p class="text-xs text-amber-800 dark:text-amber-300 font-medium mt-0.5">Attempt a test of that module for action plan.</p>
               </div>
             </div>
-            <a href="${mod.url}" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-amber-600 hover:bg-amber-700 text-white transition shadow-xs whitespace-nowrap">
-              Take ${mod.name} Test
+            <a href="${sec.mod.url}" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-amber-600 hover:bg-amber-700 text-white transition shadow-xs whitespace-nowrap">
+              Take ${sec.mod.name} Test
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
             </a>
           </div>
@@ -186,37 +144,36 @@ if (el('breakdown-btn') && breakdownModal) {
         <div class="p-4 sm:p-5 rounded-2xl bg-white/80 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 shadow-xs space-y-2.5">
           <div class="flex items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-700/50 pb-2.5">
             <div class="flex items-center gap-2.5">
-              <span class="text-lg">${mod.emoji}</span>
+              <span class="text-lg">${sec.mod.emoji}</span>
               <h4 class="text-sm font-bold text-slate-900 dark:text-white">${sec.title}</h4>
             </div>
-            <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full ${mod.key === 'overall' ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300 border border-indigo-200/50 dark:border-indigo-800/40' : 'bg-brand-50 text-brand-700 dark:bg-brand-900/30 dark:text-brand-300 border border-brand-200/50 dark:border-brand-800/40'}">
-              ${mod.key === 'overall' ? 'Strategy' : 'Action Steps'}
+            <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full ${sec.key === 'overall' ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300 border border-indigo-200/50 dark:border-indigo-800/40' : 'bg-brand-50 text-brand-700 dark:bg-brand-900/30 dark:text-brand-300 border border-brand-200/50 dark:border-brand-800/40'}">
+              ${sec.key === 'overall' ? 'Strategy' : 'Action Steps'}
             </span>
           </div>
           <div class="text-xs sm:text-sm text-slate-700 dark:text-slate-300 prose prose-sm dark:prose-invert prose-p:leading-relaxed prose-li:my-1 max-w-none">
-            ${marked.parse(content)}
+            ${marked.parse(sec.content || '')}
           </div>
         </div>
       `;
     }).join('');
   }
 
-  function loadActionPlan(forceReload = false) {
-    if (actionPlanLoaded && !forceReload && currentRawPlan) {
+  async function loadActionPlan(forceReload = false) {
+    if (currentPlanData && !forceReload) {
+      actionPlanContent.innerHTML = renderActionPlanCards(currentPlanData, currentActiveTab);
       return;
     }
 
-    if (currentEvtSource) {
-      currentEvtSource.close();
-      currentEvtSource = null;
-    }
+    if (actionPlanLoading) return;
+    actionPlanLoading = true;
 
     actionPlanContainer.classList.remove('hidden');
     actionPlanContent.innerHTML = `
       <div class="p-4 rounded-xl bg-slate-50/50 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-700/50 space-y-3">
         <div class="flex items-center gap-2 text-xs font-medium text-brand-600 dark:text-brand-400 animate-pulse">
           <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
-          Analyzing performance data across all modules and generating action plan...
+          Analyzing performance data and generating action plan...
         </div>
         <div class="space-y-2 animate-pulse">
           <div class="h-3 bg-slate-200 dark:bg-slate-700 rounded w-3/4"></div>
@@ -226,47 +183,31 @@ if (el('breakdown-btn') && breakdownModal) {
       </div>
     `;
 
-    currentRawPlan = '';
-    const evtSource = new EventSource('/api/dashboard/action-plan');
-    currentEvtSource = evtSource;
-
-    evtSource.onmessage = (event) => {
-      if (event.data === '[DONE]') {
-        evtSource.close();
-        currentEvtSource = null;
-        actionPlanLoaded = true;
-        actionPlanContent.innerHTML = renderActionPlanCards(currentRawPlan, currentActiveTab);
-        return;
-      }
-      try {
-        const data = JSON.parse(event.data);
-        currentRawPlan += data.text;
-        actionPlanContent.innerHTML = renderActionPlanCards(currentRawPlan, currentActiveTab);
-      } catch (err) {}
-    };
-
-    evtSource.onerror = () => {
-      evtSource.close();
-      currentEvtSource = null;
-      if (!currentRawPlan || currentRawPlan.includes('*(An error occurred') || currentRawPlan.includes('*(The AI action plan')) {
-        actionPlanContent.innerHTML = `
-          <div class="p-4 rounded-2xl bg-amber-500/10 dark:bg-amber-500/10 border border-amber-500/30 text-center space-y-2.5">
-            <div class="inline-flex p-2 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 mb-1">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-            </div>
-            <p class="text-xs sm:text-sm text-slate-800 dark:text-slate-200 font-semibold">AI Action Plan is temporarily busy</p>
-            <p class="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto">The AI service experienced high demand or a temporary rate limit. Please retry in a few moments.</p>
-            <div>
-              <button type="button" id="action-plan-retry-btn" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold transition shadow-xs">
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-                Retry Generating Action Plan
-              </button>
-            </div>
+    try {
+      const plan = await api.actionPlan(forceReload);
+      currentPlanData = plan;
+      actionPlanContent.innerHTML = renderActionPlanCards(plan, currentActiveTab);
+    } catch (err) {
+      console.error('Action plan error:', err);
+      actionPlanContent.innerHTML = `
+        <div class="p-4 rounded-2xl bg-amber-500/10 dark:bg-amber-500/10 border border-amber-500/30 text-center space-y-2.5">
+          <div class="inline-flex p-2 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 mb-1">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
           </div>
-        `;
-        document.getElementById('action-plan-retry-btn')?.addEventListener('click', () => loadActionPlan(true));
-      }
-    };
+          <p class="text-xs sm:text-sm text-slate-800 dark:text-slate-200 font-semibold">AI Action Plan is temporarily busy</p>
+          <p class="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto">The AI service experienced high demand or a temporary rate limit. Please retry in a few moments.</p>
+          <div>
+            <button type="button" id="action-plan-retry-btn" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold transition shadow-xs">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+              Retry Generating Action Plan
+            </button>
+          </div>
+        </div>
+      `;
+      document.getElementById('action-plan-retry-btn')?.addEventListener('click', () => loadActionPlan(true));
+    } finally {
+      actionPlanLoading = false;
+    }
   }
 
   // Bind tab click events
@@ -281,8 +222,8 @@ if (el('breakdown-btn') && breakdownModal) {
       btn.classList.remove('text-slate-600', 'dark:text-slate-400');
 
       currentActiveTab = btn.dataset.tab;
-      if (currentRawPlan) {
-        actionPlanContent.innerHTML = renderActionPlanCards(currentRawPlan, currentActiveTab);
+      if (currentPlanData) {
+        actionPlanContent.innerHTML = renderActionPlanCards(currentPlanData, currentActiveTab);
       }
     });
   });

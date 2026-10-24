@@ -87,4 +87,5 @@ export const api = {
 
   // Dashboard
   dashboard: () => request('/dashboard'),
+  actionPlan: (refresh = false) => request(`/dashboard/action-plan${refresh ? '?refresh=true' : ''}`),
 };
