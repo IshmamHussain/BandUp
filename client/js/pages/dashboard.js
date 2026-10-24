@@ -81,11 +81,222 @@ const calculatedOverall = attemptedModules > 0 ? (Math.round((overallSum / attem
 
 const breakdownModal = el('breakdown-modal');
 if (el('breakdown-btn') && breakdownModal) {
+  const actionPlanContainer = el('ai-action-plan-container');
+  const actionPlanContent = el('ai-action-plan-content');
+  let currentRawPlan = '';
+  let currentActiveTab = 'all';
+  let actionPlanLoaded = false;
+  let currentEvtSource = null;
+
+  const MODULE_CONFIG = {
+    reading: { key: 'reading', name: 'Reading', emoji: '📖', url: '/pages/reading.html' },
+    listening: { key: 'listening', name: 'Listening', emoji: '🎧', url: '/pages/listening.html' },
+    writing: { key: 'writing', name: 'Writing', emoji: '✍️', url: '/pages/writing.html' },
+    speaking: { key: 'speaking', name: 'Speaking', emoji: '🗣️', url: '/pages/speaking.html' },
+    overall: { key: 'overall', name: 'Overall Strategy', emoji: '🎯', url: null },
+  };
+
+  function identifySectionModule(title) {
+    const lower = (title || '').toLowerCase();
+    if (lower.includes('reading')) return MODULE_CONFIG.reading;
+    if (lower.includes('listening')) return MODULE_CONFIG.listening;
+    if (lower.includes('writing')) return MODULE_CONFIG.writing;
+    if (lower.includes('speaking')) return MODULE_CONFIG.speaking;
+    return MODULE_CONFIG.overall;
+  }
+
+  function parseActionPlanSections(markdownText) {
+    const sections = [];
+    const lines = (markdownText || '').split('\n');
+    let currentTitle = '';
+    let currentLines = [];
+
+    for (const line of lines) {
+      if (line.trim().startsWith('### ')) {
+        if (currentTitle || currentLines.length > 0) {
+          sections.push({
+            title: currentTitle || 'Overall Action Plan',
+            content: currentLines.join('\n').trim()
+          });
+        }
+        currentTitle = line.trim().replace(/^###\s+/, '').trim();
+        currentLines = [];
+      } else {
+        currentLines.push(line);
+      }
+    }
+
+    if (currentTitle || currentLines.length > 0) {
+      sections.push({
+        title: currentTitle || 'Overall Action Plan',
+        content: currentLines.join('\n').trim()
+      });
+    }
+
+    return sections;
+  }
+
+  function renderActionPlanCards(markdownText, activeFilter = 'all') {
+    const sections = parseActionPlanSections(markdownText);
+    
+    if (sections.length === 0) {
+      return marked.parse(markdownText);
+    }
+
+    const filteredSections = activeFilter === 'all' 
+      ? sections 
+      : sections.filter(sec => {
+          const mod = identifySectionModule(sec.title);
+          return mod.key === activeFilter;
+        });
+
+    if (filteredSections.length === 0) {
+      return `<div class="p-6 text-center text-xs text-slate-500 dark:text-slate-400">No action plan items found for this filter.</div>`;
+    }
+
+    return filteredSections.map(sec => {
+      const mod = identifySectionModule(sec.title);
+      const content = sec.content;
+      const isUnattempted = /attempt a test of that module for action plan/i.test(content) || /no test data/i.test(content);
+
+      if (isUnattempted && mod.url) {
+        return `
+          <div class="p-4 rounded-2xl bg-amber-500/10 dark:bg-amber-500/10 border border-amber-500/25 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 flex items-center justify-center flex-shrink-0 text-xl">
+                ${mod.emoji}
+              </div>
+              <div>
+                <div class="flex items-center gap-2">
+                  <h4 class="text-sm font-bold text-slate-900 dark:text-white">${sec.title}</h4>
+                  <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-300">No test data</span>
+                </div>
+                <p class="text-xs text-amber-800 dark:text-amber-300 font-medium mt-0.5">Attempt a test of that module for action plan.</p>
+              </div>
+            </div>
+            <a href="${mod.url}" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-amber-600 hover:bg-amber-700 text-white transition shadow-xs whitespace-nowrap">
+              Take ${mod.name} Test
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </a>
+          </div>
+        `;
+      }
+
+      return `
+        <div class="p-4 sm:p-5 rounded-2xl bg-white/80 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 shadow-xs space-y-2.5">
+          <div class="flex items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-700/50 pb-2.5">
+            <div class="flex items-center gap-2.5">
+              <span class="text-lg">${mod.emoji}</span>
+              <h4 class="text-sm font-bold text-slate-900 dark:text-white">${sec.title}</h4>
+            </div>
+            <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full ${mod.key === 'overall' ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300 border border-indigo-200/50 dark:border-indigo-800/40' : 'bg-brand-50 text-brand-700 dark:bg-brand-900/30 dark:text-brand-300 border border-brand-200/50 dark:border-brand-800/40'}">
+              ${mod.key === 'overall' ? 'Strategy' : 'Action Steps'}
+            </span>
+          </div>
+          <div class="text-xs sm:text-sm text-slate-700 dark:text-slate-300 prose prose-sm dark:prose-invert prose-p:leading-relaxed prose-li:my-1 max-w-none">
+            ${marked.parse(content)}
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function loadActionPlan(forceReload = false) {
+    if (actionPlanLoaded && !forceReload && currentRawPlan) {
+      return;
+    }
+
+    if (currentEvtSource) {
+      currentEvtSource.close();
+      currentEvtSource = null;
+    }
+
+    actionPlanContainer.classList.remove('hidden');
+    actionPlanContent.innerHTML = `
+      <div class="p-4 rounded-xl bg-slate-50/50 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-700/50 space-y-3">
+        <div class="flex items-center gap-2 text-xs font-medium text-brand-600 dark:text-brand-400 animate-pulse">
+          <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
+          Analyzing performance data across all modules and generating action plan...
+        </div>
+        <div class="space-y-2 animate-pulse">
+          <div class="h-3 bg-slate-200 dark:bg-slate-700 rounded w-3/4"></div>
+          <div class="h-3 bg-slate-200 dark:bg-slate-700 rounded"></div>
+          <div class="h-3 bg-slate-200 dark:bg-slate-700 rounded w-5/6"></div>
+        </div>
+      </div>
+    `;
+
+    currentRawPlan = '';
+    const evtSource = new EventSource('/api/dashboard/action-plan');
+    currentEvtSource = evtSource;
+
+    evtSource.onmessage = (event) => {
+      if (event.data === '[DONE]') {
+        evtSource.close();
+        currentEvtSource = null;
+        actionPlanLoaded = true;
+        actionPlanContent.innerHTML = renderActionPlanCards(currentRawPlan, currentActiveTab);
+        return;
+      }
+      try {
+        const data = JSON.parse(event.data);
+        currentRawPlan += data.text;
+        actionPlanContent.innerHTML = renderActionPlanCards(currentRawPlan, currentActiveTab);
+      } catch (err) {}
+    };
+
+    evtSource.onerror = () => {
+      evtSource.close();
+      currentEvtSource = null;
+      if (!currentRawPlan || currentRawPlan.includes('*(An error occurred') || currentRawPlan.includes('*(The AI action plan')) {
+        actionPlanContent.innerHTML = `
+          <div class="p-4 rounded-2xl bg-amber-500/10 dark:bg-amber-500/10 border border-amber-500/30 text-center space-y-2.5">
+            <div class="inline-flex p-2 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 mb-1">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+            </div>
+            <p class="text-xs sm:text-sm text-slate-800 dark:text-slate-200 font-semibold">AI Action Plan is temporarily busy</p>
+            <p class="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto">The AI service experienced high demand or a temporary rate limit. Please retry in a few moments.</p>
+            <div>
+              <button type="button" id="action-plan-retry-btn" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold transition shadow-xs">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                Retry Generating Action Plan
+              </button>
+            </div>
+          </div>
+        `;
+        document.getElementById('action-plan-retry-btn')?.addEventListener('click', () => loadActionPlan(true));
+      }
+    };
+  }
+
+  // Bind tab click events
+  const tabButtons = document.querySelectorAll('.action-tab-btn');
+  tabButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      tabButtons.forEach(b => {
+        b.classList.remove('active', 'bg-brand-600', 'text-white', 'shadow-xs', 'font-semibold');
+        b.classList.add('text-slate-600', 'dark:text-slate-400');
+      });
+      btn.classList.add('active', 'bg-brand-600', 'text-white', 'shadow-xs', 'font-semibold');
+      btn.classList.remove('text-slate-600', 'dark:text-slate-400');
+
+      currentActiveTab = btn.dataset.tab;
+      if (currentRawPlan) {
+        actionPlanContent.innerHTML = renderActionPlanCards(currentRawPlan, currentActiveTab);
+      }
+    });
+  });
+
+  // Refresh button listener
+  el('ai-action-plan-refresh')?.addEventListener('click', () => {
+    loadActionPlan(true);
+  });
+
   el('breakdown-btn').addEventListener('click', () => {
     el('breakdown-list').innerHTML = breakdownData.map(item => `
-      <div class="flex justify-between items-center py-2 border-b border-slate-100 dark:border-slate-800 last:border-0">
-        <span class="text-slate-600 dark:text-slate-400 font-medium">${item.name}</span>
-        <span class="font-display font-bold text-slate-900 dark:text-white">${item.band}</span>
+      <div class="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 text-center">
+        <span class="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">${item.name}</span>
+        <span class="font-display font-extrabold text-xl ${item.band === '-.-' ? 'text-slate-400 dark:text-slate-500' : 'text-slate-900 dark:text-white'} mt-0.5 block">${item.band}</span>
       </div>
     `).join('');
     
@@ -94,36 +305,7 @@ if (el('breakdown-btn') && breakdownModal) {
     document.body.style.overflow = 'hidden';
 
     // Trigger AI Action Plan
-    const actionPlanContainer = el('ai-action-plan-container');
-    const actionPlanContent = el('ai-action-plan-content');
-    
-    // Only load once
-    if (actionPlanContainer.classList.contains('hidden')) {
-      actionPlanContainer.classList.remove('hidden');
-      actionPlanContent.innerHTML = '<div class="animate-pulse flex space-x-4"><div class="flex-1 space-y-2 py-1"><div class="h-3 bg-slate-200 dark:bg-slate-700 rounded w-3/4"></div><div class="h-3 bg-slate-200 dark:bg-slate-700 rounded"></div></div></div>';
-      
-      const evtSource = new EventSource('/api/dashboard/action-plan');
-      let markdownText = '';
-      
-      evtSource.onmessage = (event) => {
-        if (event.data === '[DONE]') {
-          evtSource.close();
-          return;
-        }
-        try {
-          const data = JSON.parse(event.data);
-          markdownText += data.text;
-          actionPlanContent.innerHTML = marked.parse(markdownText);
-        } catch (err) {}
-      };
-      
-      evtSource.onerror = () => {
-        evtSource.close();
-        if (!markdownText) {
-          actionPlanContent.innerHTML = '*(Failed to load action plan)*';
-        }
-      };
-    }
+    loadActionPlan(false);
   });
   
   const closeBreakdownModal = () => {
@@ -131,7 +313,8 @@ if (el('breakdown-btn') && breakdownModal) {
     document.body.style.overflow = '';
   };
   
-  el('breakdown-close').addEventListener('click', closeBreakdownModal);
+  el('breakdown-close')?.addEventListener('click', closeBreakdownModal);
+  el('breakdown-close-top')?.addEventListener('click', closeBreakdownModal);
   breakdownModal.addEventListener('click', (e) => {
     if (e.target === breakdownModal) closeBreakdownModal();
   });

@@ -57,9 +57,9 @@ export const getActionPlan = asyncHandler(async (req, res) => {
   ]);
 
   const dashboardData = {
-    targetBand: user.target_band,
-    currentBandEstimate: user.current_band_estimate,
-    moduleAccuracy: modules,
+    targetBand: user?.target_band || '7.5',
+    currentBandEstimate: user?.current_band_estimate || null,
+    moduleAccuracy: modules || [],
   };
 
   res.setHeader('Content-Type', 'text/event-stream');
