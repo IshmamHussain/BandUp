@@ -258,23 +258,72 @@ export async function* actionPlanStream(dashboardData) {
   }
   
   const genAI = new GoogleGenerativeAI(env.ai.apiKey);
-  const model = genAI.getGenerativeModel({ model: env.ai.model || "gemini-flash-lite-latest" });
-  
-  const prompt = `You are an expert IELTS tutor. Analyze the student's recent performance data and provide a brief, encouraging 2-paragraph action plan explaining exactly why their estimated band score is what it is, and what 2 specific things they must do to hit their target band. 
-  
-  Data:
-  ${JSON.stringify(dashboardData, null, 2)}
-  
-  Format as plain markdown. Be conversational and highly actionable. No fluff.`;
-  
-  try {
-    const result = await model.generateContentStream(prompt);
-    for await (const chunk of result.stream) {
-      const chunkText = chunk.text();
-      yield chunkText;
+
+  const reading = dashboardData.moduleAccuracy?.find(m => m.module === 'reading') || { attempted: 0, accuracy: 0 };
+  const listening = dashboardData.moduleAccuracy?.find(m => m.module === 'listening') || { attempted: 0, accuracy: 0 };
+  const writing = dashboardData.moduleAccuracy?.find(m => m.module === 'writing') || { attempted: 0, accuracy: 0 };
+  const speaking = dashboardData.moduleAccuracy?.find(m => m.module === 'speaking') || { attempted: 0, accuracy: 0 };
+
+  const prompt = `You are an expert IELTS tutor. Analyze the student's recent performance data and provide a comprehensive IELTS Action Plan.
+
+Target Band: ${dashboardData.targetBand || '7.5'}
+Current Overall Band Estimate: ${dashboardData.currentBandEstimate || 'In progress'}
+
+Module Breakdown:
+- Reading: ${reading.attempted} attempts (Accuracy: ${reading.accuracy}%)
+- Listening: ${listening.attempted} attempts (Accuracy: ${listening.accuracy}%)
+- Writing: ${writing.attempted} attempts (Accuracy: ${writing.accuracy}%)
+- Speaking: ${speaking.attempted} attempts (Accuracy: ${speaking.accuracy}%)
+
+CRITICAL RULES:
+1. Provide a cohesive '### 🎯 Overall Action Plan' (2-3 sentences explaining their current standing and overall strategy to reach target band).
+2. Provide a separate section for each module in this exact order:
+   - '### 📖 Reading'
+   - '### 🎧 Listening'
+   - '### ✍️ Writing'
+   - '### 🗣️ Speaking'
+3. MANDATORY RULE FOR UNATTEMPTED MODULES: For any module with 0 attempts / no data, you MUST output EXACTLY:
+   Attempt a test of that module for action plan.
+   Do NOT provide tips or advice for modules with 0 attempts.
+4. For modules WITH attempts (>0), give 2-3 specific, high-impact action steps tailored to their score and target band.
+
+Format as clean markdown.`;
+
+  // Candidate models to try in order of resilience
+  const candidateModels = [
+    env.ai.model,
+    'gemini-flash-lite-latest',
+    'gemini-flash-latest',
+    'gemini-3.5-flash',
+    'gemini-3.5-flash-lite',
+  ].filter(Boolean);
+  const uniqueModels = [...new Set(candidateModels)];
+
+  let lastError = null;
+  let succeeded = false;
+
+  for (const modelName of uniqueModels) {
+    try {
+      const model = genAI.getGenerativeModel({ model: modelName });
+      const result = await model.generateContentStream(prompt);
+      for await (const chunk of result.stream) {
+        const chunkText = chunk.text();
+        yield chunkText;
+      }
+      succeeded = true;
+      break;
+    } catch (error) {
+      console.error(`Gemini stream error with model ${modelName}:`, error?.message || error);
+      lastError = error;
     }
-  } catch (error) {
-    console.error("Gemini stream error:", error);
-    yield "\n\n*(An error occurred while generating your action plan.)*";
+  }
+
+  if (!succeeded) {
+    const isRateLimit = lastError?.status === 429 || lastError?.message?.includes('429') || lastError?.message?.includes('quota') || lastError?.message?.includes('exhausted');
+    if (isRateLimit) {
+      yield "\n\n*(The AI action plan service is temporarily busy due to rate limits. Please try again in a few moments.)*";
+    } else {
+      yield "\n\n*(An error occurred while generating your action plan. Please try again.)*";
+    }
   }
 }
