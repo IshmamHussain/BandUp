@@ -48,7 +48,11 @@ export const getDashboard = asyncHandler(async (req, res) => {
   });
 });
 
-import { actionPlanStream } from '../services/aiService.js';
+import { generateActionPlan, actionPlanStream } from '../services/aiService.js';
+import { ok } from '../utils/helpers.js';
+
+// In-memory cache for action plans: userId -> { data, timestamp, totalAttempts }
+const planCache = new Map();
 
 export const getActionPlan = asyncHandler(async (req, res) => {
   const [user, modules] = await Promise.all([
@@ -62,21 +66,50 @@ export const getActionPlan = asyncHandler(async (req, res) => {
     moduleAccuracy: modules || [],
   };
 
-  res.setHeader('Content-Type', 'text/event-stream');
-  res.setHeader('Cache-Control', 'no-cache');
-  res.setHeader('Connection', 'keep-alive');
+  const totalAttempts = (modules || []).reduce((sum, m) => sum + (m.attempted || 0), 0);
+  const cacheKey = req.user.id;
+  const isRefresh = req.query.refresh === 'true';
 
-  try {
-    const stream = actionPlanStream(dashboardData);
-    for await (const chunk of stream) {
-      // SSE format requires data: prefix and double newline
-      res.write(`data: ${JSON.stringify({ text: chunk })}\n\n`);
+  // Return cached action plan if valid (10 minutes and same attempt count)
+  if (!isRefresh && planCache.has(cacheKey)) {
+    const cached = planCache.get(cacheKey);
+    if (Date.now() - cached.timestamp < 10 * 60 * 1000 && cached.totalAttempts === totalAttempts) {
+      if (req.headers.accept?.includes('text/event-stream')) {
+        res.setHeader('Content-Type', 'text/event-stream');
+        res.setHeader('Cache-Control', 'no-cache');
+        res.setHeader('Connection', 'keep-alive');
+        if (res.flushHeaders) res.flushHeaders();
+        const text = `### 🎯 Overall Action Plan\n${cached.data.overall}\n\n### 📖 Reading\n${cached.data.reading}\n\n### 🎧 Listening\n${cached.data.listening}\n\n### ✍️ Writing\n${cached.data.writing}\n\n### 🗣️ Speaking\n${cached.data.speaking}\n\n`;
+        res.write(`data: ${JSON.stringify({ text, plan: cached.data })}\n\n`);
+        if (res.flush) res.flush();
+        res.write('data: [DONE]\n\n');
+        if (res.flush) res.flush();
+        return res.end();
+      }
+      return ok(res, cached.data);
     }
-  } catch (err) {
-    console.error('SSE Error:', err);
-    res.write(`data: ${JSON.stringify({ text: '\n\n*(Error generating plan)*' })}\n\n`);
-  } finally {
-    res.write('data: [DONE]\n\n');
-    res.end();
   }
+
+  // Generate structured action plan
+  const planData = await generateActionPlan(dashboardData);
+  planCache.set(cacheKey, {
+    data: planData,
+    timestamp: Date.now(),
+    totalAttempts,
+  });
+
+  if (req.headers.accept?.includes('text/event-stream')) {
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    if (res.flushHeaders) res.flushHeaders();
+    const text = `### 🎯 Overall Action Plan\n${planData.overall}\n\n### 📖 Reading\n${planData.reading}\n\n### 🎧 Listening\n${planData.listening}\n\n### ✍️ Writing\n${planData.writing}\n\n### 🗣️ Speaking\n${planData.speaking}\n\n`;
+    res.write(`data: ${JSON.stringify({ text, plan: planData })}\n\n`);
+    if (res.flush) res.flush();
+    res.write('data: [DONE]\n\n');
+    if (res.flush) res.flush();
+    return res.end();
+  }
+
+  return ok(res, planData);
 });
