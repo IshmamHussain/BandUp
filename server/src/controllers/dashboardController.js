@@ -49,7 +49,6 @@ export const getDashboard = asyncHandler(async (req, res) => {
 });
 
 import { generateActionPlan, actionPlanStream } from '../services/aiService.js';
-import { ok } from '../utils/helpers.js';
 
 // In-memory cache for action plans: userId -> { data, timestamp, totalAttempts }
 const planCache = new Map();
