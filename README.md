@@ -57,7 +57,9 @@ New here? Follow **SETUP.md** for a step-by-step walkthrough. Short version:
    ```
    (Add `-p` if your root user has a password. Or import `database/setup.sql` via phpMyAdmin.)
 
-3. **Config is pre-filled.** `server/.env` already works for XAMPP defaults (root user, empty password, a generated JWT secret). Only edit `DB_PASSWORD` if your MySQL root user has a password.
+3. **Configure.** Copy `server/.env.example` to `server/.env`, set `DB_PASSWORD`, generate a fresh `JWT_SECRET` and add your Supabase keys (see SETUP.md).
+
+   Admins are not seeded. Register normally, then run `npm run admin -- promote <email>` from `server/`.
 
 4. **Run:**
    ```bash
@@ -76,7 +78,7 @@ Auth uses a JWT in an HTTP-only cookie; the browser never handles tokens in JS.
 |---|---|---|---|
 | POST | /api/auth/register | - | Create account (sets cookie) |
 | POST | /api/auth/login | - | Sign in (sets cookie) |
-| POST | /api/auth/logout | - | Clear cookie |
+| POST | /api/auth/logout | - | Clear cookie and revoke the session server-side |
 | GET | /api/auth/verify | - | Verify email link |
 | GET | /api/auth/me | yes | Current user + profile |
 | PATCH | /api/auth/goals | yes | Set target band / exam date |

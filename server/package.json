@@ -8,12 +8,12 @@
     "start": "node scripts/run-prod-fixes.js && node server.js",
     "dev": "node --watch server.js",
     "db:reset": "node scripts/run-seeds.js",
-    "db:fix-vocab": "node scripts/fix-vocab-mojibake.js"
+    "db:fix-vocab": "node scripts/fix-vocab-mojibake.js",
+    "admin": "node scripts/manage-admin.js"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
     "@supabase/supabase-js": "^2.112.3",
-    "bcryptjs": "^2.4.3",
     "compression": "^1.8.1",
     "cookie-parser": "^1.4.6",
     "dotenv": "^16.4.5",

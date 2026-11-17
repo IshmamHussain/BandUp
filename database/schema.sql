@@ -16,12 +16,13 @@ CREATE TABLE users (
   id            INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   name          VARCHAR(100)  NOT NULL,
   email         VARCHAR(255)  NOT NULL UNIQUE,
-  password_hash VARCHAR(255)  NULL,
+  password_hash VARCHAR(255)  NULL,          -- legacy, unused: passwords live in Supabase Auth
   supabase_id   VARCHAR(36)   UNIQUE DEFAULT NULL,
   role          ENUM('student','admin') NOT NULL DEFAULT 'student',
   target_band   DECIMAL(2,1)  NULL,          -- e.g. 7.5
   exam_date     DATE          NULL,
   is_verified   BOOLEAN       NOT NULL DEFAULT FALSE,
+  token_version INT UNSIGNED  NOT NULL DEFAULT 0,  -- bump to revoke all of a user's sessions
   created_at    TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at    TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP
                               ON UPDATE CURRENT_TIMESTAMP

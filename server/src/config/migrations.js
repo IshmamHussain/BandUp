@@ -114,6 +114,32 @@ const MIGRATIONS = [
     }
   },
   {
+    id: 'harden_admin_auth_2026_11',
+    description: 'Remove seeded/legacy admin, purge local password hashes, add token_version for session revocation',
+    async run(connection) {
+      // token_version: every JWT carries it; bumping it revokes sessions.
+      try {
+        await connection.execute(`ALTER TABLE users ADD COLUMN token_version INT UNSIGNED NOT NULL DEFAULT 0`);
+      } catch (err) {
+        if (err.errno !== 1060) throw err; // column already exists
+      }
+
+      // The seeded admin (admin@bandup.com) and any other admin that was
+      // never linked to Supabase could only log in through the removed
+      // bcrypt bypass. Its password and hash are public in Git history, so
+      // delete it outright. Real admins are re-created via Supabase and
+      // promoted with `npm run admin -- promote <email>`.
+      await connection.execute(`DELETE FROM users WHERE role = 'admin' AND supabase_id IS NULL`);
+
+      // Supabase stores every password now; no local hash should remain.
+      await connection.execute(`UPDATE users SET password_hash = NULL WHERE password_hash IS NOT NULL`);
+
+      // Revoke every session issued before this fix (they also lack the
+      // "tv" claim, so requireAuth would reject them anyway).
+      await connection.execute(`UPDATE users SET token_version = token_version + 1`);
+    }
+  },
+  {
     id: 'add_speaking_to_daily_progress',
     description: 'Add speaking module to daily_progress enum',
     async run(connection) {

@@ -4,7 +4,7 @@ import { pool } from '../config/db.js';
 
 export async function findByEmail(email) {
   const [rows] = await pool.execute(
-    'SELECT id, name, email, password_hash, role, is_verified, supabase_id FROM users WHERE email = ?',
+    'SELECT id, name, email, role, is_verified, supabase_id, token_version FROM users WHERE email = ?',
     [email]
   );
   return rows[0] || null;
@@ -27,15 +27,15 @@ export async function findById(id) {
   return rows[0] || null;
 }
 
-export async function createUser({ name, email, passwordHash, supabaseId }) {
+export async function createUser({ name, email, supabaseId }) {
   const connection = await pool.getConnection();
   try {
     // User + profile are created together, so wrap them in a transaction:
     // either both rows exist afterwards, or neither does.
     await connection.beginTransaction();
     const [result] = await connection.execute(
-      'INSERT INTO users (name, email, password_hash, supabase_id) VALUES (?, ?, ?, ?)',
-      [name, email, passwordHash || null, supabaseId || null]
+      'INSERT INTO users (name, email, supabase_id) VALUES (?, ?, ?)',
+      [name, email, supabaseId || null]
     );
     await connection.execute('INSERT INTO profiles (user_id) VALUES (?)', [result.insertId]);
     await connection.commit();
@@ -100,5 +100,26 @@ export async function deleteUnverifiedUser(email) {
   await pool.execute(
     'DELETE FROM users WHERE email = ? AND is_verified = FALSE',
     [email]
+  );
+}
+
+// --- Session revocation -------------------------------------------------
+// Every JWT carries the user's token_version (claim "tv"). requireAuth
+// compares it with the database on each request, so bumping the number
+// instantly invalidates every token issued before - logout, demotion,
+// or an incident response all use this.
+
+export async function findAuthState(id) {
+  const [rows] = await pool.execute(
+    'SELECT id, name, role, token_version FROM users WHERE id = ?',
+    [id]
+  );
+  return rows[0] || null;
+}
+
+export async function revokeSessions(userId) {
+  await pool.execute(
+    'UPDATE users SET token_version = token_version + 1 WHERE id = ?',
+    [userId]
   );
 }

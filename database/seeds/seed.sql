@@ -360,13 +360,9 @@ INSERT INTO questions (listening_test_id, module, question_type, question_text, 
 (1, 'listening', 'fill_blank', 'The man wants to join the ________.', NULL, 'library', 'He says "I''d like to join the library, please."', 2),
 (2, 'listening', 'mcq', 'Where does the campus tour start?', '["Science labs", "Main building", "Library", "Cafeteria"]', 'Main building', 'The guide states: "We will start here at the main building".', 1),
 (2, 'listening', 'fill_blank', 'After the main building, they will visit the ________.', NULL, 'science labs', 'The guide says they will "head over to the science labs".', 2);
--- Test student account
-INSERT INTO users (name, email, password_hash) VALUES ('Test User', 'test@example.com', '***REMOVED***');
-INSERT INTO profiles (user_id) VALUES (LAST_INSERT_ID());
-
--- Admin account: admin@bandup.com / <Change this password in production>
-INSERT INTO users (name, email, password_hash, role) VALUES ('Admin', 'admin@bandup.com', '***REMOVED***', 'admin');
-INSERT INTO profiles (user_id) VALUES (LAST_INSERT_ID());
+-- No user accounts are seeded. Every account (admins included) must be
+-- created through Supabase Auth: register in the app, verify the email,
+-- then promote it with `npm run admin -- promote <email>` (see SETUP.md).
 INSERT INTO writing_prompts (task_type, category, prompt_text, chart_data) VALUES
 ('task1', 'Academic Test 1', 'The chart below shows the number of men and women in further education in Britain in three periods and whether they were studying full-time or part-time. Summarise the information by selecting and reporting the main features, and make comparisons where relevant.', '{
   \"type\": \"bar\",
