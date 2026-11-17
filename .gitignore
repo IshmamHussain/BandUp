@@ -3,5 +3,5 @@ node_modules/
 graphify-out/
 .agents/
 DEPLOYMENT.md
-client/media/audio/submissions/*
-!client/media/audio/submissions/.gitkeep
+client/media/audio/submissions/
+
