@@ -1,11 +1,11 @@
 // Authentication controller: register, login, logout, current user.
 import jwt from 'jsonwebtoken';
-import bcrypt from 'bcryptjs';
 import { createClient } from '@supabase/supabase-js';
 import { env } from '../config/env.js';
 import * as userModel from '../models/userModel.js';
 import { ok, fail, asyncHandler } from '../utils/helpers.js';
 import { isNonEmptyString, isValidEmail, isValidPassword } from '../utils/validate.js';
+import { cookieOptions } from '../middleware/auth.js';
 
 const supabase = process.env.SUPABASE_URL && process.env.SUPABASE_ANON_KEY
   ? createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY)
@@ -13,15 +13,13 @@ const supabase = process.env.SUPABASE_URL && process.env.SUPABASE_ANON_KEY
 
 function setTokenCookie(res, user) {
   const token = jwt.sign(
-    { sub: user.id, role: user.role, name: user.name },
+    // tv = token_version; requireAuth rejects the token once it no longer
+    // matches the database (see middleware/auth.js).
+    { sub: user.id, role: user.role, name: user.name, tv: user.token_version },
     env.jwt.secret,
-    { expiresIn: env.jwt.expiresIn }
+    { expiresIn: env.jwt.expiresIn, algorithm: 'HS256' }
   );
-  res.cookie('token', token, {
-    httpOnly: true,                          // JS in the browser cannot read it
-    secure: env.isProduction,                // HTTPS only in production
-    sameSite: 'strict',                      // CSRF protection
-  });
+  res.cookie('token', token, cookieOptions());
 }
 
 export const register = asyncHandler(async (req, res) => {
@@ -67,7 +65,6 @@ export const register = asyncHandler(async (req, res) => {
   await userModel.createUser({
     name: name.trim(),
     email: email.toLowerCase(),
-    passwordHash: null,
     supabaseId: authData.user?.id
   });
 
@@ -88,15 +85,6 @@ export const login = asyncHandler(async (req, res) => {
     return fail(res, 'Supabase is not configured.', 500);
   }
 
-  // Fallback for legacy admin
-  if (user.role === 'admin' && !user.supabase_id) {
-    const passwordMatches = await bcrypt.compare(password, user.password_hash);
-    if (!passwordMatches) return fail(res, invalidMessage, 401);
-    
-    setTokenCookie(res, user);
-    return ok(res, { id: user.id, name: user.name, email: user.email, role: user.role });
-  }
-
   // Authenticate with Supabase
   const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
     email: email.toLowerCase(),
@@ -107,6 +95,15 @@ export const login = asyncHandler(async (req, res) => {
     if (authError.message.includes('Email not confirmed')) {
       return fail(res, 'Please verify your email address before logging in. Check your inbox for the verification link.', 403);
     }
+    return fail(res, invalidMessage, 401);
+  }
+
+  // Every account - admins included - is authenticated by Supabase, and the
+  // Supabase identity must be the one bound to this MySQL row. Matching on
+  // email alone is not enough: if someone created a Supabase account for an
+  // email that already has a local row (e.g. directly through the public
+  // anon key), they would inherit that row's role.
+  if (!user.supabase_id || authData.user?.id !== user.supabase_id) {
     return fail(res, invalidMessage, 401);
   }
 
@@ -121,7 +118,22 @@ export const login = asyncHandler(async (req, res) => {
 });
 
 export const logout = asyncHandler(async (req, res) => {
-  res.clearCookie('token');
+  // Revoke server-side too, so a copied cookie stops working after logout.
+  // Logout is public (an expired session must still be able to log out), so
+  // only act on a token that verifies.
+  const token = req.cookies?.token;
+  if (token) {
+    try {
+      const payload = jwt.verify(token, env.jwt.secret, { algorithms: ['HS256'] });
+      const current = await userModel.findAuthState(payload.sub);
+      if (current && payload.tv === current.token_version) {
+        await userModel.revokeSessions(current.id);
+      }
+    } catch {
+      // Invalid/expired token: nothing to revoke.
+    }
+  }
+  res.clearCookie('token', cookieOptions());
   return ok(res, { message: 'Logged out.' });
 });
 

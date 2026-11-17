@@ -42,13 +42,20 @@ mysql -u root -p < database/setup.sql
 This creates the `ielts_prep` database and fills it with the demo content
 (reading passages, questions, vocabulary, writing prompts).
 
-## Step 3 — Check the config (usually nothing to change)
+## Step 3 — Create the config
 
-The file `server/.env` is already filled in for XAMPP defaults
-(user `root`, empty password, a ready-made security key).
+Copy `server/.env.example` to `server/.env`, then:
 
-Only edit it if your MySQL root user **has** a password — in that case open
-`server/.env` and put the password after `DB_PASSWORD=`.
+- put your MySQL password after `DB_PASSWORD=` (leave it empty for XAMPP's
+  default root user),
+- generate your **own** `JWT_SECRET` (never reuse one from a doc, chat or
+  commit; anyone who knows it can forge an admin login):
+  ```bash
+  node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
+  ```
+- fill in `SUPABASE_URL`, `SUPABASE_ANON_KEY` and `SUPABASE_SERVICE_ROLE_KEY`
+  from your Supabase project (Settings → API). Login and registration go
+  through Supabase Auth.
 
 ## Step 4 — Install and run
 
@@ -70,6 +77,21 @@ IELTS Prep API running at http://localhost:5000 (development)
 Go to **http://localhost:5000** in your browser. Create an account, and
 you're in. The AI essay grading runs in a clearly-labelled demo mode until
 you add a Gemini API key (`GEMINI_API_KEY`) to `server/.env` (optional).
+
+## Step 6 — Create an admin account
+
+There is **no built-in admin and no default password**. Every admin is a
+normal Supabase account that you promote:
+
+1. Register in the app with the admin's email and verify it from the inbox.
+2. From `server/`, run:
+   ```bash
+   npm run admin -- promote you@example.com
+   ```
+3. Log in with "Admin Sign In".
+
+Other commands: `npm run admin -- list`, `demote <email>`,
+`revoke <email>` (sign one user out everywhere) and `revoke-all`.
 
 ---
 

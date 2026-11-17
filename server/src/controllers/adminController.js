@@ -337,7 +337,10 @@ export const deleteStudent = asyncHandler(async (req, res) => {
   // Find the student's supabase_id to delete them from Auth as well
   const student = await findUserById(studentId);
   
-  if (!student) {
+  // Only students may be deleted here. Without this check an admin ID would
+  // have its Supabase identity deleted below even though the MySQL delete
+  // (role = 'student') is a no-op.
+  if (!student || student.role !== 'student') {
     return fail(res, 'Student not found.', 404);
   }
 
