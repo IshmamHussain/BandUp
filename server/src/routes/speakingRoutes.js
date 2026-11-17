@@ -1,34 +1,16 @@
 import express from 'express';
 import multer from 'multer';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import fs from 'fs';
 import * as speakingController from '../controllers/speakingController.js';
 import { requireAuth } from '../middleware/auth.js';
 
 const router = express.Router();
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const uploadDir = path.join(__dirname, '../../../client/media/audio/submissions');
 
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
-
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, uploadDir);
-  },
-  filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    let ext = '.webm';
-    if (file.mimetype.includes('mp4') || file.mimetype.includes('m4a')) ext = '.mp4';
-    else if (file.mimetype.includes('mp3')) ext = '.mp3';
-    else if (file.mimetype.includes('wav')) ext = '.wav';
-    
-    cb(null, file.fieldname + '-' + uniqueSuffix + ext);
-  }
+// Use memory storage — the buffer is uploaded to Supabase Storage,
+// never written to Render's ephemeral disk.
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 25 * 1024 * 1024 }, // 25 MB max
 });
-const upload = multer({ storage: storage });
 
 router.use(requireAuth);
 
@@ -37,6 +19,7 @@ router.post('/submit', upload.single('audio'), speakingController.submitAudio);
 router.get('/history', speakingController.getHistory);
 router.get('/stats', speakingController.getStats);
 router.get('/:id', speakingController.getSubmission);
+router.get('/:id/audio', speakingController.getAudioUrl);
 router.post('/:id/retry', speakingController.retryEvaluation);
 router.delete('/:id', speakingController.deleteSubmission);
 

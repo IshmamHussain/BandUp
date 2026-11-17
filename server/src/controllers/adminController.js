@@ -349,7 +349,12 @@ export const deleteStudent = asyncHandler(async (req, res) => {
       return fail(res, 'Cannot delete from Supabase. SUPABASE_SERVICE_ROLE_KEY is missing in Render.', 500);
     }
     const { error } = await supabaseAdmin.auth.admin.deleteUser(student.supabase_id);
-    if (error) {
+    const isNotFound = error && (
+      error.status === 404 ||
+      error.message?.toLowerCase().includes('not found') ||
+      error.code === 'user_not_found'
+    );
+    if (error && !isNotFound) {
       console.error('Failed to delete user from Supabase:', error);
       return fail(res, `Supabase delete error: ${error.message}`, 500);
     }
