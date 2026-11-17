@@ -155,6 +155,55 @@ export async function evaluateSpeaking({ promptText, audioFilePath, mimeType }) 
   }
 }
 
+/**
+ * Evaluate speaking from an in-memory Buffer (no filesystem needed).
+ * Used by the Supabase Storage flow where audio never touches disk.
+ */
+export async function evaluateSpeakingFromBuffer({ promptText, audioBuffer, mimeType }) {
+  if (!env.ai.apiKey) return { evaluation: mockSpeakingEvaluation(), isMock: true };
+
+  const userMessage = `Speaking Prompt:\n"""\n${promptText}\n"""\n\nPlease evaluate the provided audio file.`;
+
+  try {
+    const genAI = new GoogleGenerativeAI(env.ai.apiKey);
+    const model = genAI.getGenerativeModel({
+      model: env.ai.model || "gemini-1.5-flash",
+      systemInstruction: SPEAKING_SYSTEM_PROMPT
+    });
+
+    const audioData = Buffer.isBuffer(audioBuffer)
+      ? audioBuffer.toString('base64')
+      : Buffer.from(audioBuffer).toString('base64');
+
+    const audioPart = {
+      inlineData: {
+        data: audioData,
+        mimeType: (mimeType || "audio/webm").split(';')[0]
+      }
+    };
+
+    const result = await model.generateContent({
+      contents: [{ role: 'user', parts: [{ text: userMessage }, audioPart] }],
+      generationConfig: { responseMimeType: "application/json" }
+    });
+
+    const text = result.response.text();
+    const match = text.match(/\{[\s\S]*\}/);
+    if (!match) throw new Error('The AI evaluator returned an unexpected response.');
+
+    let evaluation;
+    try {
+      evaluation = JSON.parse(match[0]);
+    } catch {
+      throw new Error('The AI evaluator returned an unexpected response.');
+    }
+    return { evaluation, isMock: false };
+  } catch (error) {
+    console.error("Gemini Audio API Error:", error);
+    throw new Error('The AI evaluator failed to process the audio.');
+  }
+}
+
 // ── Reading question generation ──────────────────────────────────────
 
 const READING_QUESTIONS_PROMPT = `You are a certified IELTS examiner and question designer. Given a reading passage, generate high-quality IELTS-style questions.
