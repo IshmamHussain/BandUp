@@ -36,7 +36,7 @@ BandUp/
 │       ├── routes/          # index.js + speakingRoutes.js — URL → controller mappings
 │       ├── controllers/     # auth, reading, listening, writing, speaking, vocabulary, dashboard, admin
 │       ├── models/          # ALL SQL lives here (prepared statements only)
-│       ├── services/        # aiService.js (Gemini API), emailService.js
+│       ├── services/        # aiService.js (Gemini API), storageService.js (private audio)
 │       └── utils/           # helpers.js, validate.js
 └── database/
     ├── setup.sql            # Runs schema + seed in one command
@@ -69,6 +69,21 @@ New here? Follow **SETUP.md** for a step-by-step walkthrough. Short version:
    ```
    Open http://localhost:5000
 
+## Database migrations
+
+Schema and data changes live in `server/src/config/migrations.js`. Each one
+runs exactly once, in order, and is recorded in the `_migrations` table. The
+server applies pending migrations on startup; you can also run them by hand:
+
+```bash
+cd server
+npm run migrate
+```
+
+`npm start` only starts the server. Nothing deletes or re-inserts content on
+startup. To change content, add a new migration (insert-if-missing or a guarded
+update) or use the admin panel.
+
 ## Tests, linting and CI
 
 ```bash
@@ -92,7 +107,6 @@ Auth uses a JWT in an HTTP-only cookie; the browser never handles tokens in JS.
 | POST | /api/auth/register | - | Create account (sets cookie) |
 | POST | /api/auth/login | - | Sign in (sets cookie) |
 | POST | /api/auth/logout | - | Clear cookie and revoke the session server-side |
-| GET | /api/auth/verify | - | Verify email link |
 | GET | /api/auth/me | yes | Current user + profile |
 | PATCH | /api/auth/goals | yes | Set target band / exam date |
 | GET | /api/reading/tests | yes | List passages + per-user best score |
@@ -110,6 +124,7 @@ Auth uses a JWT in an HTTP-only cookie; the browser never handles tokens in JS.
 | POST | /api/writing/submit | yes | Save essay + AI evaluation |
 | GET | /api/writing/submissions | yes | Essay history |
 | GET | /api/writing/submissions/:id | yes | One essay + full feedback |
+| POST | /api/writing/submissions/:id/retry | yes | Re-run a failed AI evaluation |
 | GET | /api/writing/stats | yes | Writing statistics |
 | GET | /api/speaking/prompts | yes | Speaking prompts |
 | POST | /api/speaking/submit | yes | Upload audio + AI evaluation |

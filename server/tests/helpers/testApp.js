@@ -100,8 +100,17 @@ function startFakeSupabase() {
 // ------------------------------------------------------------------- MySQL
 // Only the queries the tested routes use are modelled; anything else returns
 // an empty result, which is what background work (streaks, progress) needs.
-function createFakeDb({ users = [], submissions = [] }) {
-  const db = { users: users.map((u) => ({ ...u })), submissions: submissions.map((s) => ({ ...s })), nextId: 1000, failInserts: false };
+function createFakeDb({ users = [], submissions = [], essays = [], questions = [] }) {
+  const db = {
+    users: users.map((u) => ({ ...u })),
+    submissions: submissions.map((s) => ({ ...s })), // speaking
+    essays: essays.map((e) => ({ ...e })),           // writing
+    questions: questions.map((q) => ({ ...q })),     // listening questions
+    attempts: [],
+    nextId: 1000,
+    failInserts: false,
+  };
+  const essayById = (id) => db.essays.find((e) => e.id === Number(id));
   const userById = (id) => db.users.find((u) => u.id === Number(id));
   const copy = (row) => (row ? [{ ...row }] : []); // MySQL returns fresh rows
 
@@ -132,6 +141,32 @@ function createFakeDb({ users = [], submissions = [] }) {
       return [copy(db.submissions.find((s) => s.id === Number(params[0]) && s.user_id === Number(params[1])))];
     }
 
+    // Writing submissions
+    if (q.startsWith('SELECT ws.*, wp.prompt_text FROM writing_submissions ws')) {
+      return [copy(db.essays.find((e) => e.id === Number(params[0]) && e.user_id === Number(params[1])))];
+    }
+    if (q.startsWith("UPDATE writing_submissions SET status = 'failed'")) {
+      Object.assign(essayById(params[1]), { status: 'failed', band_overall: null, evaluation_json: JSON.parse(params[0]) });
+      return [{ affectedRows: 1 }];
+    }
+    if (q.startsWith("UPDATE writing_submissions SET status = 'submitted'")) {
+      Object.assign(essayById(params[0]), { status: 'submitted', evaluation_json: null });
+      return [{ affectedRows: 1 }];
+    }
+    if (q.startsWith("UPDATE writing_submissions SET status = 'evaluated'")) {
+      Object.assign(essayById(params[2]), { status: 'evaluated', band_overall: params[0], evaluation_json: JSON.parse(params[1]) });
+      return [{ affectedRows: 1 }];
+    }
+
+    // Listening scoring
+    if (q.startsWith('SELECT id, question_type, options_json, correct_answer, explanation FROM questions WHERE listening_test_id')) {
+      return [db.questions.filter((x) => x.listening_test_id === Number(params[0])).map((x) => ({ ...x }))];
+    }
+    if (q.startsWith('INSERT INTO attempts')) {
+      db.attempts.push(params);
+      return [{ affectedRows: 1 }];
+    }
+
     return [[], []];
   };
   return db;
@@ -142,7 +177,7 @@ function createFakeDb({ users = [], submissions = [] }) {
  * Boot the app with fake services.
  * @param {{ users?: object[], submissions?: object[], authUsers?: Record<string, {password: string, id: string}> }} opts
  */
-export async function startTestApp({ users = [], submissions = [], authUsers = {} } = {}) {
+export async function startTestApp({ users = [], submissions = [], essays = [], questions = [], authUsers = {} } = {}) {
   const supa = await startFakeSupabase();
   for (const [email, u] of Object.entries(authUsers)) supa.state.authUsers.set(email, u);
 
@@ -156,7 +191,7 @@ export async function startTestApp({ users = [], submissions = [], authUsers = {
   });
 
   const { pool } = await import('../../src/config/db.js');
-  const db = createFakeDb({ users, submissions });
+  const db = createFakeDb({ users, submissions, essays, questions });
   pool.execute = db.execute;
   pool.query = db.execute;
   pool.getConnection = async () => { throw new Error('fake db: transactions are not modelled'); };

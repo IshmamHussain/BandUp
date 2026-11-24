@@ -61,7 +61,7 @@ async function evaluateBackground(userId, submissionId, audioBuffer, mimeType, p
     ]);
   } catch (error) {
     console.error('Failed to evaluate speaking submission:', error);
-    await speakingModel.updateSubmissionEvaluation(submissionId, null, { error: error.message });
+    await speakingModel.markSubmissionFailed(submissionId, error.message);
   }
 }
 

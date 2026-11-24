@@ -121,7 +121,7 @@ async function loadHistory(skipOpen = false) {
       row.style.animationDelay = `${index * 50}ms`;
       row.innerHTML = `
         <span class="flex items-center justify-center w-11 h-11 rounded-full font-bold text-sm shrink-0 ${sub.status === 'evaluated' ? 'bg-gradient-to-br from-brand-100 to-cyan-100 text-brand-700 dark:from-brand-900/40 dark:to-cyan-900/30 dark:text-brand-300' : 'bg-slate-100 text-slate-500 dark:bg-slate-800'}">
-          ${sub.band_overall ? Number(sub.band_overall).toFixed(1) : '...'}
+          ${sub.band_overall ? Number(sub.band_overall).toFixed(1) : (sub.status === 'failed' ? '!' : '...')}
         </span>
         <span class="flex-1 min-w-0">
           <span class="block text-sm font-medium truncate">${sub.prompt_text || 'Speaking Test'}</span>
@@ -200,7 +200,7 @@ async function openSubmission(id) {
     
     const evalContainer = detail.querySelector('.eval-container');
     
-    if (sub.status === 'evaluated' && sub.evaluation_json) {
+    if ((sub.status === 'evaluated' || sub.status === 'failed') && sub.evaluation_json) {
       evalContainer.innerHTML = '';
       renderSpeakingEvaluation(evalContainer, sub.evaluation_json, id);
     } else {

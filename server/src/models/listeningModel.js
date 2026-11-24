@@ -41,7 +41,7 @@ export async function getTestWithQuestions(testId) {
 
 export async function getAnswerKey(testId) {
   const [rows] = await pool.execute(
-    'SELECT id, correct_answer, explanation FROM questions WHERE listening_test_id = ?',
+    'SELECT id, question_type, options_json, correct_answer, explanation FROM questions WHERE listening_test_id = ?',
     [testId]
   );
   return rows;

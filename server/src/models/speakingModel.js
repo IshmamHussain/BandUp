@@ -20,6 +20,15 @@ export async function updateSubmissionEvaluation(submissionId, bandOverall, eval
   );
 }
 
+// B6: a failed evaluation is 'failed' (never 'evaluated' with a null band),
+// so stats and accuracy only ever count real results.
+export async function markSubmissionFailed(submissionId, errorMessage) {
+  await pool.execute(
+    'UPDATE speaking_submissions SET status = ?, band_overall = NULL, evaluation_json = ? WHERE id = ?',
+    ['failed', JSON.stringify({ error: errorMessage }), submissionId]
+  );
+}
+
 export async function resetSubmissionEvaluation(submissionId) {
   await pool.execute(
     'UPDATE speaking_submissions SET status = ?, band_overall = NULL, evaluation_json = NULL WHERE id = ?',

@@ -15,7 +15,8 @@ app.listen(env.port, async () => {
   try {
     await verifyDatabaseConnection();
     console.log(`Database connected: ${env.db.database}@${env.db.host}`);
-    await runMigrations();
+    const { failed } = await runMigrations();
+    if (failed) console.error(`Migrations stopped at "${failed}". The app is running on an older schema; see the log above.`);
     await ensureAudioBucket();
   } catch (err) {
     console.error('Could not connect to MySQL. Is the database running and .env correct?');

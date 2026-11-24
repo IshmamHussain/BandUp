@@ -66,6 +66,7 @@ export const api = {
   submission: (id) => request(`/writing/submissions/${id}`),
   deleteWritingSubmission: (id) => request(`/writing/submissions/${id}`, { method: 'DELETE' }),
   writingStats: () => request('/writing/stats'),
+  retryWritingEvaluation: (id) => request(`/writing/submissions/${id}/retry`, { method: 'POST' }),
 
   // Speaking
   speakingPrompts: () => request('/speaking/prompts'),

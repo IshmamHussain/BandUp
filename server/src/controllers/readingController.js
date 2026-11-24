@@ -3,6 +3,7 @@ import * as readingModel from '../models/readingModel.js';
 import * as progressModel from '../models/progressModel.js';
 import * as userModel from '../models/userModel.js';
 import { ok, fail, asyncHandler, calculateIeltsBand } from '../utils/helpers.js';
+import { scoreAnswers } from '../utils/questions.js';
 import { isPositiveInt } from '../utils/validate.js';
 
 export const listTests = asyncHandler(async (req, res) => {
@@ -39,26 +40,7 @@ export const submitAnswers = asyncHandler(async (req, res) => {
   const answerKey = await readingModel.getAnswerKey(testId);
   if (answerKey.length === 0) return fail(res, 'Test not found.', 404);
 
-  const keyById = new Map(answerKey.map((q) => [q.id, q]));
-  const results = [];
-  const attemptRows = [];
-
-  for (const submitted of answers) {
-    const question = keyById.get(Number(submitted.questionId));
-    if (!question) continue; // ignore answers for questions not in this test
-
-    const given = String(submitted.answer ?? '').trim();
-    const isCorrect = given.toLowerCase() === question.correct_answer.toLowerCase();
-
-    results.push({
-      questionId: question.id,
-      givenAnswer: given,
-      correctAnswer: question.correct_answer,
-      isCorrect,
-      explanation: question.explanation,
-    });
-    attemptRows.push({ questionId: question.id, givenAnswer: given, isCorrect, timeTaken: submitted.timeTaken });
-  }
+  const { results, attemptRows } = scoreAnswers(answerKey, answers);
 
   if (results.length === 0) return fail(res, 'Submitted answers did not match any questions in this test.');
 

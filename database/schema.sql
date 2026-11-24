@@ -161,7 +161,7 @@ CREATE TABLE writing_submissions (
   task_type       ENUM('task1','task2') NOT NULL DEFAULT 'task2',
   essay_text      MEDIUMTEXT NOT NULL,
   word_count      SMALLINT UNSIGNED NOT NULL,
-  status          ENUM('draft','submitted','evaluated') NOT NULL DEFAULT 'draft',
+  status          ENUM('draft','submitted','evaluated','failed') NOT NULL DEFAULT 'draft',
   band_overall    DECIMAL(2,1) NULL,
   evaluation_json JSON NULL,                  -- full structured AI feedback
   created_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,

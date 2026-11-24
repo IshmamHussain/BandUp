@@ -1,6 +1,24 @@
-// Lightweight auto-migrations that run on server startup.
-// Each migration runs only once — tracked by a simple migrations table.
+// Database migrations: explicit, ordered, run-once schema and data changes.
+//
+// - Each migration has a unique id and is recorded in the _migrations table
+//   after it succeeds, so it never runs twice.
+// - They run in array order, on one dedicated connection, under a MySQL
+//   named lock so two processes (e.g. a deploy and `npm run migrate`) can't
+//   apply the same migration at once.
+// - The first failure stops the run: later migrations may depend on it.
+// - Write every migration so it is safe to re-run if it fails half-way
+//   (IF NOT EXISTS, "insert only if missing", guarded ALTERs). MySQL commits
+//   DDL implicitly, so a transaction cannot roll a migration back.
+//
+// They run automatically at server startup and can be run by hand with
+// `npm run migrate` (exits non-zero on failure).
+import fs from 'node:fs';
 import { pool } from './db.js';
+import { normalizeQuestion } from '../utils/questions.js';
+
+const CORE_CONTENT = JSON.parse(
+  fs.readFileSync(new URL('../content/core-content.json', import.meta.url), 'utf8')
+);
 
 const MIGRATIONS = [
   {
@@ -145,36 +163,136 @@ const MIGRATIONS = [
     async run(connection) {
       await connection.execute(`ALTER TABLE daily_progress MODIFY COLUMN module ENUM('reading','listening','writing','vocabulary','grammar','speaking') NOT NULL`);
     }
+  },
+  {
+    id: 'core_content_once_2026_11',
+    description: 'Replace run-prod-fixes.js: remove mock leftovers once and add any missing core writing/speaking content (never deletes real content)',
+    async run(connection) {
+      // One-time version of scripts/clean-mock-data.js (low-quality generated tests).
+      await connection.execute(`DELETE FROM writing_prompts WHERE category LIKE 'Test %'`);
+      await connection.execute(`DELETE FROM reading_tests WHERE title LIKE 'Reading Test %'`);
+      await connection.execute(`DELETE FROM listening_tests WHERE title LIKE 'Listening Test %'`);
+
+      // Previously seed_writing_tests.js deleted ALL prompts and re-inserted
+      // them on every start, unlinking every essay from its prompt. Now each
+      // prompt is inserted only if it is missing, so existing ids stay put.
+      for (const p of CORE_CONTENT.writingPrompts) {
+        await connection.execute(
+          `INSERT INTO writing_prompts (category, task_type, prompt_text, chart_data)
+           SELECT ?, ?, ?, ? FROM DUAL
+           WHERE NOT EXISTS (SELECT 1 FROM writing_prompts WHERE category = ? AND task_type = ?)`,
+          [p.category, p.taskType, p.promptText, p.chartData ? JSON.stringify(p.chartData) : null, p.category, p.taskType]
+        );
+      }
+
+      // Previously seed_speaking.js truncated speaking_tests with foreign-key
+      // checks off. Now: insert a test only if its title is missing.
+      for (const t of CORE_CONTENT.speakingTests) {
+        await connection.execute(
+          `INSERT INTO speaking_tests (title, category, part1_prompt, part2_prompt, part3_prompt)
+           SELECT ?, ?, ?, ?, ? FROM DUAL
+           WHERE NOT EXISTS (SELECT 1 FROM speaking_tests WHERE title = ?)`,
+          [t.title, t.category, t.part1, t.part2, t.part3, t.title]
+        );
+      }
+      // Listening test 3 ("Crime") already ships correctly in
+      // database/seeds/listening-cambridge.sql, so its per-start
+      // delete-and-reinsert (which wiped students' attempts) is simply gone.
+    }
+  },
+  {
+    id: 'failed_evaluation_status_2026_11',
+    description: "Add 'failed' submission status (B6/B7) and mark past failed evaluations",
+    async run(connection) {
+      await connection.execute(
+        `ALTER TABLE writing_submissions MODIFY COLUMN status ENUM('draft','submitted','evaluated','failed') NOT NULL DEFAULT 'draft'`
+      );
+      await connection.execute(
+        `ALTER TABLE speaking_submissions MODIFY COLUMN status ENUM('draft','submitted','evaluated','failed') NOT NULL DEFAULT 'draft'`
+      );
+      // Speaking failures used to be stored as 'evaluated' with no band.
+      await connection.execute(
+        `UPDATE speaking_submissions SET status = 'failed' WHERE status = 'evaluated' AND band_overall IS NULL`
+      );
+      // Writing failures were left 'submitted' forever (the request is
+      // synchronous, so anything older than a few minutes has failed).
+      await connection.execute(
+        `UPDATE writing_submissions SET status = 'failed'
+         WHERE status = 'submitted' AND band_overall IS NULL AND created_at < NOW() - INTERVAL 10 MINUTE`
+      );
+      await connection.execute(
+        `UPDATE speaking_submissions SET status = 'failed'
+         WHERE status = 'submitted' AND band_overall IS NULL AND created_at < NOW() - INTERVAL 30 MINUTE`
+      );
+    }
+  },
+  {
+    id: 'normalize_mcq_answers_2026_11',
+    description: 'B4: strip "A)" labels from MCQ options and turn letter answers into the option text',
+    async run(connection) {
+      const [rows] = await connection.query(
+        "SELECT id, question_type, options_json, correct_answer FROM questions WHERE question_type = 'mcq'"
+      );
+      for (const q of rows) {
+        const { optionsJson, correctAnswer } = normalizeQuestion({
+          questionType: q.question_type, optionsJson: q.options_json, correctAnswer: q.correct_answer,
+        });
+        const before = JSON.stringify([q.options_json == null ? null : (typeof q.options_json === 'string' ? JSON.parse(q.options_json) : q.options_json), q.correct_answer]);
+        const after = JSON.stringify([optionsJson, correctAnswer]);
+        if (before !== after) {
+          await connection.execute(
+            'UPDATE questions SET options_json = ?, correct_answer = ? WHERE id = ?',
+            [optionsJson ? JSON.stringify(optionsJson) : null, correctAnswer, q.id]
+          );
+        }
+      }
+    }
   }
 ];
 
-export async function runMigrations() {
-  // Ensure migrations table exists
-  await pool.execute(`
-    CREATE TABLE IF NOT EXISTS _migrations (
-      id VARCHAR(100) PRIMARY KEY,
-      description VARCHAR(255),
-      applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )
-  `);
+export const MIGRATION_IDS = MIGRATIONS.map((m) => m.id);
 
-  const [applied] = await pool.execute('SELECT id FROM _migrations');
-  const appliedIds = new Set(applied.map(r => r.id));
+/**
+ * Apply every pending migration in order.
+ * @returns {Promise<{ applied: string[], failed: string | null, error?: Error }>}
+ */
+export async function runMigrations({ log = console } = {}) {
+  const connection = await pool.getConnection();
+  const applied = [];
+  try {
+    const [[{ locked }]] = await connection.query("SELECT GET_LOCK('bandup_migrations', 60) AS locked");
+    if (locked !== 1) throw new Error('Timed out waiting for the migration lock.');
 
-  for (const migration of MIGRATIONS) {
-    if (appliedIds.has(migration.id)) continue;
+    await connection.execute(`
+      CREATE TABLE IF NOT EXISTS _migrations (
+        id VARCHAR(100) PRIMARY KEY,
+        description VARCHAR(255),
+        applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    const [rows] = await connection.execute('SELECT id FROM _migrations');
+    const done = new Set(rows.map((r) => r.id));
 
-    console.log(`Running migration: ${migration.id} — ${migration.description}`);
-    try {
-      await migration.run(pool);
-      await pool.execute(
-        'INSERT INTO _migrations (id, description) VALUES (?, ?)',
-        [migration.id, migration.description]
-      );
-      console.log(`  ✓ Migration ${migration.id} applied.`);
-    } catch (err) {
-      console.error(`  ✗ Migration ${migration.id} failed:`, err.message);
-      // Don't block server startup for a label fix
+    for (const migration of MIGRATIONS) {
+      if (done.has(migration.id)) continue;
+      log.log(`Running migration: ${migration.id} — ${migration.description}`);
+      try {
+        await migration.run(connection);
+        await connection.execute(
+          'INSERT INTO _migrations (id, description) VALUES (?, ?)',
+          [migration.id, migration.description.slice(0, 255)]
+        );
+        applied.push(migration.id);
+        log.log(`  ✓ ${migration.id} applied.`);
+      } catch (err) {
+        log.error(`  ✗ Migration ${migration.id} failed: ${err.message}`);
+        log.error('  Stopping: later migrations may depend on this one. Fix it and run `npm run migrate`.');
+        return { applied, failed: migration.id, error: err };
+      }
     }
+    return { applied, failed: null };
+  } finally {
+    await connection.query("SELECT RELEASE_LOCK('bandup_migrations')").catch(() => {});
+    connection.release();
   }
 }

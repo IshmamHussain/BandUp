@@ -433,7 +433,7 @@ async function loadHistory() {
       row.className = 'w-full p-4 flex items-center gap-4 text-left hover:bg-slate-50 dark:hover:bg-slate-900/50 transition z-10 relative';
       row.innerHTML = `
         <span class="grid place-items-center w-12 h-12 rounded-xl bg-brand-50 dark:bg-brand-900/30 font-mono font-bold text-brand-700 dark:text-brand-300">
-          ${sub.band_overall ? Number(sub.band_overall).toFixed(1) : '…'}
+          ${sub.band_overall ? Number(sub.band_overall).toFixed(1) : (sub.status === 'failed' ? '!' : '…')}
         </span>
         <span class="flex-1 min-w-0">
           <span class="block text-sm font-medium truncate submission-prompt"></span>
@@ -515,7 +515,7 @@ async function loadHistory() {
         taskRow.className = 'w-full p-3 flex items-center gap-3 text-left rounded-xl border border-transparent hover:border-brand-200 dark:hover:border-brand-800 hover:bg-white dark:hover:bg-slate-800 transition';
         taskRow.innerHTML = `
           <span class="grid place-items-center w-10 h-10 rounded-lg bg-brand-50 dark:bg-brand-900/30 font-mono font-bold text-sm text-brand-700 dark:text-brand-300">
-            ${sub.band_overall ? Number(sub.band_overall).toFixed(1) : '…'}
+            ${sub.band_overall ? Number(sub.band_overall).toFixed(1) : (sub.status === 'failed' ? '!' : '…')}
           </span>
           <span class="flex-1 min-w-0">
             <span class="block text-sm font-medium truncate task-prompt-text"></span>
@@ -603,8 +603,11 @@ async function openSubmission(id, afterElement) {
     });
   });
 
-  if (submission.evaluation_json) {
-    renderEvaluation(detail.querySelector('.eval-container'), submission.evaluation_json, { wordCount: submission.word_count });
+  const evalContainer = detail.querySelector('.eval-container');
+  if (submission.status === 'evaluated' && submission.evaluation_json) {
+    renderEvaluation(evalContainer, submission.evaluation_json, { wordCount: submission.word_count });
+  } else if (submission.status === 'failed' || submission.status === 'submitted') {
+    renderRetryPanel(evalContainer, submission);
   }
 
   // 5. Insert it directly underneath the element that was clicked
@@ -621,6 +624,37 @@ async function openSubmission(id, afterElement) {
   }
 
   detail.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// A failed (or stuck) AI evaluation: explain and offer a retry.
+function renderRetryPanel(container, submission) {
+  container.innerHTML = `
+    <div class="card p-4 border-red-200 dark:border-red-900/30 bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-400 text-sm flex flex-col gap-3">
+      <p class="retry-message"></p>
+      <div>
+        <button class="retry-btn px-4 py-2 bg-brand-600 text-white rounded-lg text-sm font-medium hover:bg-brand-700 transition disabled:opacity-60">Retry evaluation</button>
+      </div>
+    </div>`;
+  container.querySelector('.retry-message').textContent = submission.status === 'failed'
+    ? 'The AI evaluation for this essay failed. Your essay is saved, so you can try again.'
+    : 'This essay was never evaluated. You can run the evaluation again.';
+
+  const btn = container.querySelector('.retry-btn');
+  btn.addEventListener('click', async () => {
+    btn.disabled = true;
+    btn.textContent = 'Evaluating…';
+    try {
+      const result = await api.retryWritingEvaluation(submission.id);
+      renderEvaluation(container, result.evaluation, { isMock: result.isMock, wordCount: result.wordCount });
+      progressLoaded = false;
+      loadHistory();
+      toast('Essay evaluated', 'success');
+    } catch (err) {
+      btn.disabled = false;
+      btn.textContent = 'Retry evaluation';
+      toast(err.message, 'error');
+    }
+  });
 }
 
 // ---------- Progress tab ----------

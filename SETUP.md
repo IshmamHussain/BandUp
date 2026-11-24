@@ -24,7 +24,7 @@ Everything lives inside one folder — don't move
 
 ## Step 2 — Create the database
 
-Open a terminal **inside the `ielts-platform` folder** and run:
+Open a terminal **inside the `BandUp` folder** (the project root) and run:
 
 ```bash
 mysql -u root < database/setup.sql

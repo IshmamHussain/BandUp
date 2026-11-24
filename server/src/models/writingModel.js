@@ -41,6 +41,21 @@ export async function saveEvaluation(submissionId, bandOverall, evaluation) {
   );
 }
 
+// B7: a failed AI evaluation is recorded as 'failed' so the essay can be retried.
+export async function markFailed(submissionId, errorMessage) {
+  await pool.execute(
+    `UPDATE writing_submissions SET status = 'failed', band_overall = NULL, evaluation_json = ? WHERE id = ?`,
+    [JSON.stringify({ error: errorMessage }), submissionId]
+  );
+}
+
+export async function markRetrying(submissionId) {
+  await pool.execute(
+    `UPDATE writing_submissions SET status = 'submitted', evaluation_json = NULL WHERE id = ?`,
+    [submissionId]
+  );
+}
+
 export async function listSubmissions(userId) {
   const [rows] = await pool.execute(
     `SELECT ws.id, ws.task_type, ws.word_count, ws.status, ws.band_overall, ws.created_at,

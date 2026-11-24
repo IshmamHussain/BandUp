@@ -1,6 +1,7 @@
 // Admin CRUD model — all SQL for managing IELTS modules.
 // Every query uses prepared statements; no string interpolation of user input.
 import { pool } from '../config/db.js';
+import { normalizeQuestion } from '../utils/questions.js';
 
 // ── Dashboard stats ──────────────────────────────────────────────────
 export async function getStats() {
@@ -93,6 +94,7 @@ export async function listQuestions(filter) {
 }
 
 export async function createQuestion({ passageId, listeningTestId, module, questionType, questionText, optionsJson, correctAnswer, explanation, position }) {
+  ({ optionsJson, correctAnswer } = normalizeQuestion({ questionType, optionsJson, correctAnswer }));
   const [result] = await pool.execute(
     `INSERT INTO questions (passage_id, listening_test_id, module, question_type, question_text, options_json, correct_answer, explanation, position)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -103,6 +105,7 @@ export async function createQuestion({ passageId, listeningTestId, module, quest
 }
 
 export async function updateQuestion(id, { questionType, questionText, optionsJson, correctAnswer, explanation, position }) {
+  ({ optionsJson, correctAnswer } = normalizeQuestion({ questionType, optionsJson, correctAnswer }));
   await pool.execute(
     `UPDATE questions SET question_type = ?, question_text = ?, options_json = ?, correct_answer = ?, explanation = ?, position = ? WHERE id = ?`,
     [questionType, questionText, optionsJson ? JSON.stringify(optionsJson) : null, correctAnswer, explanation || null, position, id]
@@ -115,15 +118,21 @@ export async function deleteQuestion(id) {
 
 export async function bulkCreateQuestions(passageId, questions) {
   if (!questions || questions.length === 0) return [];
-  const values = questions.map((q) => [
-    passageId, null, 'reading',
-    q.question_type || 'mcq',
-    q.question_text,
-    q.options_json ? JSON.stringify(q.options_json) : null,
-    q.correct_answer,
-    q.explanation || null,
-    q.position || 1,
-  ]);
+  const values = questions.map((q) => {
+    const questionType = q.question_type || 'mcq';
+    const { optionsJson, correctAnswer } = normalizeQuestion({
+      questionType, optionsJson: q.options_json, correctAnswer: q.correct_answer,
+    });
+    return [
+      passageId, null, 'reading',
+      questionType,
+      q.question_text,
+      optionsJson ? JSON.stringify(optionsJson) : null,
+      correctAnswer,
+      q.explanation || null,
+      q.position || 1,
+    ];
+  });
   const placeholders = values.map(() => '(?, ?, ?, ?, ?, ?, ?, ?, ?)').join(', ');
   const flat = values.flat();
   const [result] = await pool.query(

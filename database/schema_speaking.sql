@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS speaking_submissions (
   test_id         INT UNSIGNED NULL,
   audio_url       VARCHAR(500) NOT NULL,
   duration_sec    SMALLINT UNSIGNED NOT NULL DEFAULT 0,
-  status          ENUM('draft','submitted','evaluated') NOT NULL DEFAULT 'draft',
+  status          ENUM('draft','submitted','evaluated','failed') NOT NULL DEFAULT 'draft',
   band_overall    DECIMAL(2,1) NULL,
   evaluation_json JSON NULL,
   created_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,

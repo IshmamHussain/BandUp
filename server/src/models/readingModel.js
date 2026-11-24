@@ -64,7 +64,7 @@ export async function getTestWithPassages(testId) {
 
 export async function getAnswerKey(testId) {
   const [rows] = await pool.execute(
-    `SELECT q.id, q.correct_answer, q.explanation, q.passage_id 
+    `SELECT q.id, q.question_type, q.options_json, q.correct_answer, q.explanation, q.passage_id 
      FROM questions q 
      JOIN reading_passages rp ON q.passage_id = rp.id 
      WHERE rp.test_id = ?`,

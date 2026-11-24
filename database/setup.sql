@@ -19,4 +19,5 @@
 DROP DATABASE IF EXISTS ielts_prep;
 
 SOURCE schema.sql;
+SOURCE schema_speaking.sql;
 SOURCE seeds/seed.sql;

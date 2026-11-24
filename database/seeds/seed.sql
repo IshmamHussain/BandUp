@@ -363,25 +363,6 @@ INSERT INTO questions (listening_test_id, module, question_type, question_text, 
 -- No user accounts are seeded. Every account (admins included) must be
 -- created through Supabase Auth: register in the app, verify the email,
 -- then promote it with `npm run admin -- promote <email>` (see SETUP.md).
-INSERT INTO writing_prompts (task_type, category, prompt_text, chart_data) VALUES
-('task1', 'Academic Test 1', 'The chart below shows the number of men and women in further education in Britain in three periods and whether they were studying full-time or part-time. Summarise the information by selecting and reporting the main features, and make comparisons where relevant.', '{
-  \"type\": \"bar\",
-  \"data\": {
-    \"labels\": [\"1970/71\", \"1980/81\", \"1990/91\"],
-    \"datasets\": [
-      { \"label\": \"Men Full-time\", \"data\": [100, 150, 200], \"backgroundColor\": \"#3b82f6\" },
-      { \"label\": \"Men Part-time\", \"data\": [1000, 850, 950], \"backgroundColor\": \"#60a5fa\" },
-      { \"label\": \"Women Full-time\", \"data\": [80, 120, 250], \"backgroundColor\": \"#ec4899\" },
-      { \"label\": \"Women Part-time\", \"data\": [750, 800, 1050], \"backgroundColor\": \"#f472b6\" }
-    ]
-  },
-  \"options\": {
-    \"responsive\": true,
-    \"scales\": {
-      \"y\": { \"beginAtZero\": true, \"title\": { \"display\": true, \"text\": \"Thousands\" } }
-    }
-  }
-}'),
-('task2', 'Academic Test 1', 'Some people believe that university education should be free for everyone. Others think that students should pay for their higher education. Discuss both these views and give your own opinion. Give reasons for your answer and include any relevant examples from your own knowledge or experience.', NULL),
-('task1', 'General Training Test 1', 'You recently stayed at a hotel and had a problem with the service. Write a letter to the hotel manager. In your letter: state when you stayed there, explain the problem, and suggest what the hotel should do.', NULL),
-('task2', 'General Training Test 1', 'In many countries, the amount of crime is increasing. What do you think are the main causes of this? What can be done to reduce crime rates? Give reasons for your answer and include any relevant examples from your own knowledge or experience.', NULL);
+-- Writing prompts and speaking tests are not seeded here. The canonical
+-- content lives in server/src/content/core-content.json and is inserted (only
+-- if missing) by the 'core_content_once_2026_11' migration on first start.

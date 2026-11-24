@@ -171,8 +171,8 @@ Respond ONLY with a valid JSON object, no markdown fences, no preamble, using ex
     {
       "question_type": "mcq",
       "question_text": "What does the author suggest about...?",
-      "options_json": ["A) ...", "B) ...", "C) ...", "D) ..."],
-      "correct_answer": "B",
+      "options_json": ["...", "...", "...", "..."],
+      "correct_answer": "<exact text of the correct option>",
       "explanation": "The passage states in paragraph 2 that...",
       "position": 1
     },
@@ -198,7 +198,7 @@ Respond ONLY with a valid JSON object, no markdown fences, no preamble, using ex
 Rules:
 - Generate exactly the number of questions requested.
 - Use a realistic mix of question types: mcq, true_false_ng, fill_blank, and matching.
-- For MCQ questions, always provide exactly 4 options labeled A) through D).
+- For MCQ questions, always provide exactly 4 options as plain text with NO letter labels (no "A)", "B."), and set correct_answer to the exact text of the correct option, never a letter.
 - For true_false_ng, set options_json to ["True", "False", "Not Given"].
 - For fill_blank, set options_json to null. The correct_answer should be a single word or short phrase from the passage.
 - For matching, provide a list of items to match as options_json and the correct pairing as correct_answer.

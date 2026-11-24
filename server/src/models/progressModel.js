@@ -45,13 +45,13 @@ export async function moduleAccuracy(userId) {
   const [writing] = await pool.execute(
     `SELECT COUNT(*) AS attempted, AVG(band_overall) AS avg_band
      FROM writing_submissions
-     WHERE user_id = ? AND status = 'evaluated'`, [userId]
+     WHERE user_id = ? AND status = 'evaluated' AND band_overall IS NOT NULL`, [userId]
   );
 
   const [speaking] = await pool.execute(
     `SELECT COUNT(*) AS attempted, AVG(band_overall) AS avg_band
      FROM speaking_submissions
-     WHERE user_id = ?`, [userId]
+     WHERE user_id = ? AND status = 'evaluated' AND band_overall IS NOT NULL`, [userId]
   );
 
   const results = [];

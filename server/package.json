@@ -5,13 +5,14 @@
   "main": "server.js",
   "type": "module",
   "scripts": {
-    "start": "node scripts/run-prod-fixes.js && node server.js",
+    "start": "node server.js",
     "dev": "node --watch server.js",
+    "migrate": "node scripts/migrate.js",
     "db:reset": "node scripts/run-seeds.js",
     "db:fix-vocab": "node scripts/fix-vocab-mojibake.js",
     "admin": "node scripts/manage-admin.js",
     "test": "node --test --test-reporter=spec tests/*.test.js",
-    "lint": "cd .. && eslint -c server/eslint.config.js server client add-favicon.js fix.js"
+    "lint": "cd .. && eslint -c server/eslint.config.js server client"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",

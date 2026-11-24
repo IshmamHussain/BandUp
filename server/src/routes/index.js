@@ -46,6 +46,7 @@ apiRouter.get('/writing/prompts', requireAuth, writing.listPrompts);
 apiRouter.post('/writing/submit', requireAuth, writing.submitEssay);
 apiRouter.get('/writing/submissions', requireAuth, writing.listSubmissions);
 apiRouter.get('/writing/submissions/:id', requireAuth, writing.getSubmission);
+apiRouter.post('/writing/submissions/:id/retry', requireAuth, writing.retryEvaluation);
 apiRouter.delete('/writing/submissions/:id', requireAuth, writing.deleteSubmission);
 apiRouter.get('/writing/stats', requireAuth, writing.getWritingStats);
 

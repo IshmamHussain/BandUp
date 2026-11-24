@@ -44,22 +44,69 @@ export const submitEssay = asyncHandler(async (req, res) => {
     status: 'submitted',
   });
 
-  const { evaluation, isMock } = await evaluateEssay({
-    taskType,
-    promptText: prompt?.prompt_text,
-    essayText: essayText.trim(),
+  // The essay is saved before the AI call, so if evaluation fails the
+  // student's work survives as a 'failed' submission they can retry.
+  const { evaluation, isMock } = await evaluateAndSave(req.user.id, {
+    id: submissionId, taskType, promptText: prompt?.prompt_text, essayText: essayText.trim(), wordCount,
   });
 
-  const safeBand = evaluation.band_overall ?? evaluation.overall_band ?? 0.0;
-  
-  await Promise.all([
-    writingModel.saveEvaluation(submissionId, safeBand, evaluation),
-    progressModel.recordActivity(req.user.id, 'writing', { minutes: Math.min(40, Math.round(wordCount / 10)), attempted: 1, correct: 1 }),
-    userModel.touchStreak(req.user.id),
-    userModel.updateBandEstimate(req.user.id, safeBand)
-  ]);
-
   return ok(res, { submissionId, wordCount, isMock, evaluation }, 201);
+});
+
+/**
+ * Evaluate an essay with the AI and store the result. Shared by submit and
+ * retry. On failure the submission is marked 'failed' and the error is
+ * rethrown (the client sees 503 and can retry from history).
+ */
+async function evaluateAndSave(userId, { id, taskType, promptText, essayText, wordCount }) {
+  let result;
+  try {
+    result = await evaluateEssay({ taskType, promptText, essayText });
+  } catch (err) {
+    await writingModel.markFailed(id, err.message);
+    if (err.statusCode === 503) {
+      err.message = 'The AI evaluator is temporarily unavailable. Your essay was saved - you can retry it from your history.';
+    }
+    throw err;
+  }
+
+  const { evaluation, isMock } = result;
+  const safeBand = evaluation.band_overall ?? evaluation.overall_band ?? 0.0;
+
+  await Promise.all([
+    writingModel.saveEvaluation(id, safeBand, evaluation),
+    progressModel.recordActivity(userId, 'writing', { minutes: Math.min(40, Math.round(wordCount / 10)), attempted: 1, correct: 1 }),
+    userModel.touchStreak(userId),
+    userModel.updateBandEstimate(userId, safeBand),
+  ]);
+  return { evaluation, isMock };
+}
+
+// POST /api/writing/submissions/:id/retry  (B7)
+// Re-run the AI evaluation for an essay whose evaluation failed.
+export const retryEvaluation = asyncHandler(async (req, res) => {
+  if (!isPositiveInt(req.params.id)) return fail(res, 'Invalid submission id.');
+  const submission = await writingModel.getSubmission(req.user.id, Number(req.params.id));
+  if (!submission) return fail(res, 'Submission not found.', 404);
+
+  // Only failed essays (or ones stuck mid-evaluation for over 2 minutes,
+  // e.g. after a server restart) can be re-marked; evaluated essays keep
+  // their result.
+  const stuck = submission.status === 'submitted' &&
+    Date.now() - new Date(submission.created_at).getTime() > 2 * 60 * 1000;
+  if (submission.status !== 'failed' && !stuck) {
+    return fail(res, 'Only essays whose evaluation failed can be retried.', 409);
+  }
+
+  await writingModel.markRetrying(submission.id);
+  const { evaluation, isMock } = await evaluateAndSave(req.user.id, {
+    id: submission.id,
+    taskType: submission.task_type,
+    promptText: submission.prompt_text,
+    essayText: submission.essay_text,
+    wordCount: submission.word_count,
+  });
+  return ok(res, { submissionId: submission.id, wordCount: submission.word_count, isMock, evaluation });
 });
 
 export const listSubmissions = asyncHandler(async (req, res) => {

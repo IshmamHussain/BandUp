@@ -1,0 +1,734 @@
+{
+  "writingPrompts": [
+    {
+      "category": "Academic 15 - Test 1",
+      "taskType": "task1",
+      "promptText": "The chart below shows the results of a survey about people’s coffee and tea buying and drinking habits in five Australian cities. Summarise the information by selecting and reporting the main features, and make comparisons where relevant.",
+      "chartData": {
+        "data": {
+          "labels": [
+            "Sydney",
+            "Melbourne",
+            "Brisbane",
+            "Adelaide",
+            "Hobart"
+          ],
+          "datasets": [
+            {
+              "data": [
+                44,
+                43,
+                34,
+                39,
+                38
+              ],
+              "label": "Bought fresh coffee in last 4 weeks",
+              "backgroundColor": "#0d9488"
+            },
+            {
+              "data": [
+                46,
+                48,
+                53,
+                50,
+                54
+              ],
+              "label": "Bought instant coffee in last 4 weeks",
+              "backgroundColor": "#0284c7"
+            },
+            {
+              "data": [
+                61,
+                63,
+                56,
+                49,
+                63
+              ],
+              "label": "Went to a cafe for coffee or tea in last 4 weeks",
+              "backgroundColor": "#eab308"
+            }
+          ]
+        },
+        "type": "bar",
+        "options": {
+          "scales": {
+            "y": {
+              "max": 70,
+              "title": {
+                "text": "Percentage of city residents (%)",
+                "display": true
+              },
+              "beginAtZero": true
+            }
+          },
+          "responsive": true
+        }
+      }
+    },
+    {
+      "category": "Academic 15 - Test 1",
+      "taskType": "task2",
+      "promptText": "In some countries, owning a home rather than renting one is very important for people. Why might this be the case? Do you think this is a positive or negative situation? Give reasons for your answer and include any relevant examples from your own knowledge or experience.",
+      "chartData": null
+    },
+    {
+      "category": "Academic 15 - Test 2",
+      "taskType": "task1",
+      "promptText": "The graph below shows the number of tourists visiting a particular Caribbean island between 2010 and 2017. Summarise the information by selecting and reporting the main features, and make comparisons where relevant.",
+      "chartData": {
+        "data": {
+          "labels": [
+            "2010",
+            "2011",
+            "2012",
+            "2013",
+            "2014",
+            "2015",
+            "2016",
+            "2017"
+          ],
+          "datasets": [
+            {
+              "data": [
+                0.25,
+                0.5,
+                0.5,
+                0.5,
+                1,
+                1.2,
+                1.5,
+                2
+              ],
+              "fill": false,
+              "label": "Visitors staying on cruise ships",
+              "borderColor": "#0d9488"
+            },
+            {
+              "data": [
+                0.75,
+                1,
+                1.25,
+                1.5,
+                1.5,
+                1.5,
+                1.25,
+                1.5
+              ],
+              "fill": false,
+              "label": "Visitors staying on island",
+              "borderColor": "#0284c7"
+            },
+            {
+              "data": [
+                1,
+                1.5,
+                1.75,
+                2,
+                2.5,
+                2.7,
+                2.75,
+                3.5
+              ],
+              "fill": false,
+              "label": "Total",
+              "borderColor": "#eab308"
+            }
+          ]
+        },
+        "type": "line",
+        "options": {
+          "scales": {
+            "y": {
+              "title": {
+                "text": "Number of tourists (millions)",
+                "display": true
+              },
+              "beginAtZero": true
+            }
+          },
+          "responsive": true
+        }
+      }
+    },
+    {
+      "category": "Academic 15 - Test 2",
+      "taskType": "task2",
+      "promptText": "In the future, nobody will buy printed newspapers or books because they will be able to read everything they want online without paying. To what extent do you agree or disagree with this statement?",
+      "chartData": null
+    },
+    {
+      "category": "Academic 14 - Test 1",
+      "taskType": "task1",
+      "promptText": "The charts below show the average percentages in typical meals of three types of nutrients, all of which may be unhealthy if eaten too much. Summarise the information by selecting and reporting the main features, and make comparisons where relevant.",
+      "chartData": {
+        "data": {
+          "labels": [
+            "Breakfast",
+            "Lunch",
+            "Dinner",
+            "Snacks"
+          ],
+          "datasets": [
+            {
+              "data": [
+                14,
+                29,
+                37,
+                14
+              ],
+              "label": "Sodium",
+              "backgroundColor": "#f43f5e"
+            },
+            {
+              "data": [
+                16,
+                26,
+                37,
+                21
+              ],
+              "label": "Saturated fat",
+              "backgroundColor": "#eab308"
+            },
+            {
+              "data": [
+                16,
+                19,
+                23,
+                42
+              ],
+              "label": "Added sugar",
+              "backgroundColor": "#3b82f6"
+            }
+          ]
+        },
+        "type": "bar",
+        "options": {
+          "scales": {
+            "y": {
+              "max": 50,
+              "title": {
+                "text": "Percentage (%)",
+                "display": true
+              }
+            }
+          },
+          "responsive": true
+        }
+      }
+    },
+    {
+      "category": "Academic 14 - Test 1",
+      "taskType": "task2",
+      "promptText": "Some people believe that it is best to accept a bad situation, such as an unsatisfactory job or shortage of money. Others argue that it is better to try and improve such situations. Discuss both these views and give your own opinion.",
+      "chartData": null
+    },
+    {
+      "category": "Academic 14 - Test 2",
+      "taskType": "task1",
+      "promptText": "The chart below shows the value of one country’s exports in various categories during 2015 and 2016. The table shows the percentage change in each category of exports in 2016 compared with 2015. Summarise the information by selecting and reporting the main features, and make comparisons where relevant.",
+      "chartData": {
+        "data": {
+          "labels": [
+            "Petroleum products",
+            "Engineered goods",
+            "Gems and jewellery",
+            "Agricultural products",
+            "Textiles"
+          ],
+          "datasets": [
+            {
+              "data": [
+                61,
+                58,
+                43,
+                31,
+                26
+              ],
+              "label": "2015",
+              "backgroundColor": "#94a3b8"
+            },
+            {
+              "data": [
+                63,
+                62,
+                41,
+                32,
+                30
+              ],
+              "label": "2016",
+              "backgroundColor": "#0f172a"
+            }
+          ]
+        },
+        "type": "bar",
+        "options": {
+          "scales": {
+            "y": {
+              "title": {
+                "text": "Export value (billions HK$)",
+                "display": true
+              }
+            }
+          },
+          "responsive": true
+        }
+      }
+    },
+    {
+      "category": "Academic 14 - Test 2",
+      "taskType": "task2",
+      "promptText": "Some people say that environmental problems are too big for individuals to solve. Others say that individuals cannot solve environmental problems unless governments take action. Discuss both views and give your opinion.",
+      "chartData": null
+    },
+    {
+      "category": "Academic 13 - Test 1",
+      "taskType": "task1",
+      "promptText": "The chart below shows the number of men and women in further education in Britain in three periods and whether they were studying full-time or part-time. Summarise the information by selecting and reporting the main features, and make comparisons where relevant.",
+      "chartData": {
+        "data": {
+          "labels": [
+            "1970/71",
+            "1980/81",
+            "1990/91"
+          ],
+          "datasets": [
+            {
+              "data": [
+                100,
+                800,
+                900
+              ],
+              "label": "Males - Full-time",
+              "backgroundColor": "#2563eb"
+            },
+            {
+              "data": [
+                1000,
+                850,
+                950
+              ],
+              "label": "Males - Part-time",
+              "backgroundColor": "#60a5fa"
+            },
+            {
+              "data": [
+                50,
+                700,
+                1100
+              ],
+              "label": "Females - Full-time",
+              "backgroundColor": "#db2777"
+            },
+            {
+              "data": [
+                750,
+                800,
+                1050
+              ],
+              "label": "Females - Part-time",
+              "backgroundColor": "#f472b6"
+            }
+          ]
+        },
+        "type": "bar",
+        "options": {
+          "scales": {
+            "y": {
+              "title": {
+                "text": "Thousands",
+                "display": true
+              }
+            }
+          },
+          "responsive": true
+        }
+      }
+    },
+    {
+      "category": "Academic 13 - Test 1",
+      "taskType": "task2",
+      "promptText": "Living in a country where you have to speak a foreign language can cause serious social problems, as well as practical problems. To what extent do you agree or disagree with this statement?",
+      "chartData": null
+    },
+    {
+      "category": "Academic 13 - Test 2",
+      "taskType": "task1",
+      "promptText": "The chart below shows the percentage of households in owned and rented accommodation in England and Wales between 1918 and 2011. Summarise the information by selecting and reporting the main features, and make comparisons where relevant.",
+      "chartData": {
+        "data": {
+          "labels": [
+            "1918",
+            "1939",
+            "1953",
+            "1961",
+            "1971",
+            "1981",
+            "1991",
+            "2001",
+            "2011"
+          ],
+          "datasets": [
+            {
+              "data": [
+                78,
+                68,
+                68,
+                59,
+                50,
+                41,
+                32,
+                31,
+                35
+              ],
+              "fill": false,
+              "label": "Households in rented accommodation",
+              "borderColor": "#f43f5e"
+            },
+            {
+              "data": [
+                22,
+                32,
+                32,
+                41,
+                50,
+                59,
+                68,
+                69,
+                65
+              ],
+              "fill": false,
+              "label": "Households in owned accommodation",
+              "borderColor": "#10b981"
+            }
+          ]
+        },
+        "type": "line",
+        "options": {
+          "scales": {
+            "y": {
+              "max": 100,
+              "title": {
+                "text": "Percentage of households (%)",
+                "display": true
+              }
+            }
+          },
+          "responsive": true
+        }
+      }
+    },
+    {
+      "category": "Academic 13 - Test 2",
+      "taskType": "task2",
+      "promptText": "Some people believe that nowadays we have too many choices. To what extent do you agree or disagree with this statement?",
+      "chartData": null
+    },
+    {
+      "category": "Academic 12 - Test 1",
+      "taskType": "task1",
+      "promptText": "The bar chart below shows the percentage of Australian men and women in different age groups who did regular physical activity in 2010. Summarise the information by selecting and reporting the main features, and make comparisons where relevant.",
+      "chartData": {
+        "data": {
+          "labels": [
+            "15 to 24",
+            "25 to 34",
+            "35 to 44",
+            "45 to 54",
+            "55 to 64",
+            "65 and over"
+          ],
+          "datasets": [
+            {
+              "data": [
+                52.8,
+                42.2,
+                39.5,
+                43.1,
+                45.1,
+                46.7
+              ],
+              "label": "Men",
+              "backgroundColor": "#3b82f6"
+            },
+            {
+              "data": [
+                47.7,
+                48.9,
+                52.5,
+                53.3,
+                53,
+                47.1
+              ],
+              "label": "Women",
+              "backgroundColor": "#ec4899"
+            }
+          ]
+        },
+        "type": "bar",
+        "options": {
+          "scales": {
+            "y": {
+              "max": 60,
+              "title": {
+                "text": "Percentage (%)",
+                "display": true
+              }
+            }
+          },
+          "responsive": true
+        }
+      }
+    },
+    {
+      "category": "Academic 12 - Test 1",
+      "taskType": "task2",
+      "promptText": "It is a natural process for animal species to become extinct (e.g. dinosaurs, dodos, etc.). There is no reason why people should try to prevent this from happening. Do you agree or disagree?",
+      "chartData": null
+    },
+    {
+      "category": "Academic 12 - Test 2",
+      "taskType": "task1",
+      "promptText": "The chart below shows the results of a survey on the reasons why people travelled to work by bicycle or by car in a particular city. Summarise the information by selecting and reporting the main features, and make comparisons where relevant.",
+      "chartData": {
+        "data": {
+          "labels": [
+            "Health / Fitness",
+            "Less Pollution",
+            "No parking problems",
+            "No costs",
+            "Faster",
+            "Comfortable",
+            "Distance to work",
+            "Carry things"
+          ],
+          "datasets": [
+            {
+              "data": [
+                30,
+                30,
+                30,
+                10,
+                0,
+                0,
+                0,
+                0
+              ],
+              "label": "Bicycle (%)",
+              "backgroundColor": "#10b981"
+            },
+            {
+              "data": [
+                0,
+                0,
+                0,
+                0,
+                30,
+                40,
+                20,
+                10
+              ],
+              "label": "Car (%)",
+              "backgroundColor": "#f43f5e"
+            }
+          ]
+        },
+        "type": "bar",
+        "options": {
+          "scales": {
+            "y": {
+              "max": 50,
+              "title": {
+                "text": "Percentage (%)",
+                "display": true
+              }
+            }
+          },
+          "responsive": true
+        }
+      }
+    },
+    {
+      "category": "Academic 12 - Test 2",
+      "taskType": "task2",
+      "promptText": "In a number of countries, some people think it is necessary to spend large sums of money on constructing new railway lines for very fast trains between cities. Others believe the money should be spent on improving existing public transport. Discuss both these views and give your own opinion.",
+      "chartData": null
+    },
+    {
+      "category": "Academic 11 - Test 1",
+      "taskType": "task1",
+      "promptText": "The charts below show the percentage of water used for different purposes in six areas of the world. Summarise the information by selecting and reporting the main features, and make comparisons where relevant.",
+      "chartData": {
+        "data": {
+          "labels": [
+            "North America",
+            "South America",
+            "Europe",
+            "Africa",
+            "Central Asia",
+            "South East Asia"
+          ],
+          "datasets": [
+            {
+              "data": [
+                39,
+                71,
+                32,
+                84,
+                88,
+                81
+              ],
+              "label": "Agricultural Use",
+              "backgroundColor": "#22c55e"
+            },
+            {
+              "data": [
+                48,
+                10,
+                53,
+                7,
+                5,
+                12
+              ],
+              "label": "Industrial Use",
+              "backgroundColor": "#64748b"
+            },
+            {
+              "data": [
+                13,
+                19,
+                15,
+                9,
+                7,
+                7
+              ],
+              "label": "Domestic Use",
+              "backgroundColor": "#3b82f6"
+            }
+          ]
+        },
+        "type": "bar",
+        "options": {
+          "scales": {
+            "x": {
+              "stacked": true
+            },
+            "y": {
+              "max": 100,
+              "title": {
+                "text": "Percentage (%)",
+                "display": true
+              },
+              "stacked": true
+            }
+          },
+          "responsive": true
+        }
+      }
+    },
+    {
+      "category": "Academic 11 - Test 1",
+      "taskType": "task2",
+      "promptText": "Governments should spend money on railways rather than roads. To what extent do you agree or disagree with this statement?",
+      "chartData": null
+    },
+    {
+      "category": "Academic 11 - Test 2",
+      "taskType": "task1",
+      "promptText": "The chart below shows the proportions of British students at one university in England who were able to speak other languages in addition to English, in 2000 and 2010. Summarise the information by selecting and reporting the main features, and make comparisons where relevant.",
+      "chartData": {
+        "data": {
+          "labels": [
+            "No other language",
+            "French only",
+            "German only",
+            "Spanish only",
+            "Another language",
+            "Two other languages"
+          ],
+          "datasets": [
+            {
+              "data": [
+                20,
+                15,
+                10,
+                20,
+                15,
+                10
+              ],
+              "label": "2000",
+              "backgroundColor": "#94a3b8"
+            },
+            {
+              "data": [
+                10,
+                10,
+                10,
+                30,
+                20,
+                15
+              ],
+              "label": "2010",
+              "backgroundColor": "#0f172a"
+            }
+          ]
+        },
+        "type": "bar",
+        "options": {
+          "scales": {
+            "y": {
+              "max": 40,
+              "title": {
+                "text": "Percentage (%)",
+                "display": true
+              }
+            }
+          },
+          "responsive": true
+        }
+      }
+    },
+    {
+      "category": "Academic 11 - Test 2",
+      "taskType": "task2",
+      "promptText": "Some people claim that not enough of the waste from homes is recycled. They say that the only way to increase recycling is for governments to make it a legal requirement. To what extent do you think laws are needed to make people recycle more of their waste?",
+      "chartData": null
+    }
+  ],
+  "speakingTests": [
+    {
+      "title": "Hometown & People",
+      "category": "Hometown",
+      "part1": "Let's talk about your hometown. Where is your hometown?\nWhat do you like most about your hometown?\nIs your hometown a good place for young people to live?",
+      "part2": "Describe a person who has had a significant influence on your life.\n\nYou should say:\n- Who this person is\n- How you met them\n- What they have done for you\n\nAnd explain why they have had such a strong influence on you.",
+      "part3": "How do you think relationships between family members have changed in recent years?\nIn what ways do role models influence younger generations?"
+    },
+    {
+      "title": "Studies, Work & History",
+      "category": "Work/Study",
+      "part1": "Let's talk about your studies or work. Do you work or are you a student?\nWhat do you study (or what is your job), and why did you choose that?\nIs it a popular subject or job in your country?",
+      "part2": "Describe an important historical event in your country.\n\nYou should say:\n- What the event was\n- When it happened\n- Who was involved\n\nAnd explain why this event is important to your country's history.",
+      "part3": "Do you think it is important for children to learn history in school? Why or why not?\nHow has technology changed the way we preserve historical artifacts?"
+    },
+    {
+      "title": "Hobbies & Achievement",
+      "category": "Hobbies",
+      "part1": "Let's talk about hobbies. What do you usually do in your free time?\nDid you have the same hobbies when you were a child?\nDo you prefer spending your free time alone or with others?",
+      "part2": "Describe a challenging goal you achieved.\n\nYou should say:\n- What the goal was\n- Why it was challenging\n- What you did to achieve it\n\nAnd explain how you felt after you achieved it.",
+      "part3": "What are the main qualities a person needs to achieve success in their career?\nDo you think society puts too much pressure on young people to succeed?"
+    },
+    {
+      "title": "Weather & Technology",
+      "category": "Technology",
+      "part1": "Let's talk about weather. What kind of weather do you like most?\nHow does the weather affect your mood?\nDoes your country experience extreme weather conditions?",
+      "part2": "Describe a piece of technology (not a computer or phone) that you find very useful.\n\nYou should say:\n- What it is\n- What you use it for\n- How often you use it\n\nAnd explain why you find it so useful.",
+      "part3": "In what ways is artificial intelligence likely to change the workplace in the future?\nAre people becoming too dependent on technology in their daily lives?"
+    },
+    {
+      "title": "Travel & Culture",
+      "category": "Travel",
+      "part1": "Let's talk about travel. Do you like travelling?\nWhich country would you like to visit in the future?\nWhat is the longest journey you have ever been on?",
+      "part2": "Describe an interesting place in your country that not many tourists visit.\n\nYou should say:\n- Where it is\n- Why it is interesting\n- How you know about it\n\nAnd explain why you think more people should visit it.",
+      "part3": "How has the tourism industry changed your country over the last decade?\nWhat are the environmental impacts of global tourism?"
+    }
+  ]
+}
