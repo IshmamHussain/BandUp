@@ -5,11 +5,12 @@ import * as progressModel from '../models/progressModel.js';
 import { ok, asyncHandler } from '../utils/helpers.js';
 
 export const getDashboard = asyncHandler(async (req, res) => {
-  const [user, weekly, modules, recent] = await Promise.all([
+  const [user, weekly, modules, recent, bandEstimate] = await Promise.all([
     userModel.findById(req.user.id),
     progressModel.weeklyStudyMinutes(req.user.id),
     progressModel.moduleAccuracy(req.user.id),
     progressModel.recentActivity(req.user.id),
+    userModel.getBandEstimate(req.user.id),
   ]);
 
   // Fill the last 7 days so the chart always has 7 bars, even with no data.
@@ -37,13 +38,15 @@ export const getDashboard = asyncHandler(async (req, res) => {
     user: {
       name: user.name,
       targetBand: user.target_band,
-      currentBandEstimate: user.current_band_estimate,
+      currentBandEstimate: bandEstimate.overall,
       studyStreak: user.study_streak,
       examDate: user.exam_date,
       examCountdownDays,
     },
     weeklyStudy: last7Days,
     moduleAccuracy: modules,
+    // Aggregated estimate: per-module bands from recent results + overall.
+    bandEstimate,
     recentActivity: recent,
   });
 });

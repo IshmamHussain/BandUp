@@ -100,13 +100,20 @@ function startFakeSupabase() {
 // ------------------------------------------------------------------- MySQL
 // Only the queries the tested routes use are modelled; anything else returns
 // an empty result, which is what background work (streaks, progress) needs.
-function createFakeDb({ users = [], submissions = [], essays = [], questions = [] }) {
+const DEFAULT_SPEAKING_TESTS = [
+  { id: 1, title: 'Hometown', part1_prompt: 'Where is your hometown?', part2_prompt: 'Describe a person.', part3_prompt: 'Why do people move?' },
+];
+
+function createFakeDb({ users = [], submissions = [], essays = [], questions = [], speakingTests = DEFAULT_SPEAKING_TESTS }) {
   const db = {
     users: users.map((u) => ({ ...u })),
     submissions: submissions.map((s) => ({ ...s })), // speaking
     essays: essays.map((e) => ({ ...e })),           // writing
     questions: questions.map((q) => ({ ...q })),     // listening questions
     attempts: [],
+    speakingTests: speakingTests.map((t) => ({ ...t })),
+    testResults: [],   // reading/listening per-test results, oldest first
+    estimates: {},     // userId -> last stored current_band_estimate
     nextId: 1000,
     failInserts: false,
   };
@@ -156,6 +163,53 @@ function createFakeDb({ users = [], submissions = [], essays = [], questions = [
     if (q.startsWith("UPDATE writing_submissions SET status = 'evaluated'")) {
       Object.assign(essayById(params[2]), { status: 'evaluated', band_overall: params[0], evaluation_json: JSON.parse(params[1]) });
       return [{ affectedRows: 1 }];
+    }
+
+    // Speaking tests and evaluation results
+    if (q.startsWith('SELECT id, title, part1_prompt, part2_prompt, part3_prompt FROM speaking_tests WHERE id')) {
+      return [copy(db.speakingTests.find((t) => t.id === Number(params[0])))];
+    }
+    if (q.startsWith('UPDATE speaking_submissions SET status = ?, band_overall = ?, evaluation_json = ? WHERE id')) {
+      Object.assign(db.submissions.find((s) => s.id === Number(params[3])) || {}, { status: params[0], band_overall: params[1] });
+      return [{ affectedRows: 1 }];
+    }
+    if (q.startsWith('UPDATE speaking_submissions SET status = ?, band_overall = NULL, evaluation_json = ? WHERE id')) {
+      Object.assign(db.submissions.find((s) => s.id === Number(params[2])) || {}, { status: params[0], band_overall: null });
+      return [{ affectedRows: 1 }];
+    }
+
+    // Band estimate inputs and output
+    if (q.startsWith('INSERT INTO test_results')) {
+      const [user_id, module, test_id, correct, total, band] = params;
+      db.testResults.push({ id: db.nextId++, user_id, module, test_id, correct, total, band });
+      return [{ affectedRows: 1 }];
+    }
+    if (q.startsWith('DELETE FROM test_results')) {
+      db.testResults = db.testResults.filter((r) => !(r.user_id === params[0] && r.module === params[1] && r.test_id === params[2]));
+      return [{ affectedRows: 1 }];
+    }
+    if (q.startsWith('SELECT band, total FROM test_results')) {
+      const module = q.includes("'reading'") ? 'reading' : 'listening';
+      const limit = Number(/LIMIT (\d+)/.exec(q)[1]);
+      return [db.testResults.filter((r) => r.user_id === Number(params[0]) && r.module === module)
+        .slice().reverse().slice(0, limit).map(({ band, total }) => ({ band, total }))];
+    }
+    if (q.startsWith('SELECT band_overall AS band, task_type AS taskType FROM writing_submissions')) {
+      return [db.essays.filter((e) => e.user_id === Number(params[0]) && e.status === 'evaluated' && e.band_overall != null)
+        .slice().reverse().map((e) => ({ band: e.band_overall, taskType: e.task_type }))];
+    }
+    if (q.startsWith('SELECT band_overall AS band FROM speaking_submissions')) {
+      return [db.submissions.filter((s) => s.user_id === Number(params[0]) && s.status === 'evaluated' && s.band_overall != null)
+        .slice().reverse().map((s) => ({ band: s.band_overall }))];
+    }
+    if (q.startsWith('UPDATE profiles SET current_band_estimate')) {
+      db.estimates[params[1]] = params[0];
+      return [{ affectedRows: 1 }];
+    }
+
+    // Dashboard module accuracy (aggregate rows always exist in MySQL)
+    if (q.startsWith('SELECT COUNT(*) AS attempted')) {
+      return [[{ attempted: 0, correct: 0, avg_band: null }]];
     }
 
     // Listening scoring

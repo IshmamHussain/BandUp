@@ -5,6 +5,14 @@ export async function getPrompts() {
   return rows;
 }
 
+export async function getTest(testId) {
+  const [rows] = await pool.execute(
+    'SELECT id, title, part1_prompt, part2_prompt, part3_prompt FROM speaking_tests WHERE id = ?',
+    [testId]
+  );
+  return rows[0] || null;
+}
+
 export async function createSubmission(userId, testId, audioUrl, durationSec) {
   const [result] = await pool.execute(
     'INSERT INTO speaking_submissions (user_id, test_id, audio_url, duration_sec, status) VALUES (?, ?, ?, ?, ?)',

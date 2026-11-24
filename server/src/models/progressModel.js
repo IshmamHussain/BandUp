@@ -116,3 +116,19 @@ export async function recentActivity(userId, limit = 8) {
   );
   return rows;
 }
+
+// One row per submitted reading/listening test, so the band estimate can
+// average recent tests (attempts only stores per-question rows).
+export async function recordTestResult(userId, { module, testId, correct, total, band }) {
+  await pool.execute(
+    'INSERT INTO test_results (user_id, module, test_id, correct, total, band) VALUES (?, ?, ?, ?, ?, ?)',
+    [userId, module, testId, correct, total, band]
+  );
+}
+
+export async function deleteTestResults(userId, module, testId) {
+  await pool.execute(
+    'DELETE FROM test_results WHERE user_id = ? AND module = ? AND test_id = ?',
+    [userId, module, testId]
+  );
+}

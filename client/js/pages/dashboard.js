@@ -39,8 +39,10 @@ renderGauge(el('gauge'), {
 el('gauge').classList.remove('skeleton');
 
 // Populate Module Accuracies
-let overallSum = 0;
-let attemptedModules = 0;
+// Module bands and the overall come from the server's aggregated estimate
+// (recent results per module, IELTS rounding), so the gauge, the module cards
+// and the breakdown modal always agree.
+const estimate = data.bandEstimate || { overall: null, modules: {} };
 const breakdownData = [];
 
 el('stat-streak').innerHTML = `${data.user.studyStreak}<span class="text-xl font-medium text-slate-400 ml-1">Days</span>`;
@@ -51,20 +53,16 @@ const moduleAccCards = document.querySelectorAll('.module-acc');
 moduleAccCards.forEach(card => {
   const modName = card.dataset.module;
   const modData = data.moduleAccuracy.find(m => m.module === modName);
+  const moduleBand = estimate.modules?.[modName]?.band;
   let estimatedBand = '-.-';
-  
-  if (modData && modData.attempted > 0) {
+
+  if (moduleBand != null && modData && modData.attempted > 0) {
     const accuracy = Number(modData.accuracy);
-    let bandNum = (accuracy / 100) * 9;
-    bandNum = Math.max(4, Math.round(bandNum * 2) / 2);
-    estimatedBand = bandNum.toFixed(1);
-    
+    estimatedBand = Number(moduleBand).toFixed(1);
+
     card.textContent = estimatedBand;
     const bar = card.nextElementSibling.firstElementChild;
     if (bar) bar.style.width = `${accuracy}%`;
-    
-    overallSum += bandNum;
-    attemptedModules++;
   } else {
     card.textContent = '-.-';
     const bar = card.nextElementSibling.firstElementChild;
@@ -77,7 +75,7 @@ moduleAccCards.forEach(card => {
   });
 });
 
-const calculatedOverall = attemptedModules > 0 ? (Math.round((overallSum / attemptedModules) * 2) / 2).toFixed(1) : '-.-';
+const calculatedOverall = estimate.overall != null ? Number(estimate.overall).toFixed(1) : '-.-';
 
 const breakdownModal = el('breakdown-modal');
 if (el('breakdown-btn') && breakdownModal) {

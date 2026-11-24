@@ -1,6 +1,7 @@
 // All SQL that touches the users and profiles tables lives here.
 // Controllers never write SQL directly - that is the M in MVC.
 import { pool } from '../config/db.js';
+import { estimateBand, RECENT_RESULTS_PER_MODULE } from '../services/bandEstimate.js';
 
 export async function findByEmail(email) {
   const [rows] = await pool.execute(
@@ -71,25 +72,43 @@ export async function touchStreak(userId) {
   );
 }
 
-export async function updateBandEstimate(userId, band) {
-  await pool.execute(
-    'UPDATE profiles SET current_band_estimate = ? WHERE user_id = ?',
-    [band, userId]
+// --- Band estimate (B3) -----------------------------------------------
+// The estimate aggregates each module's recent results (see
+// services/bandEstimate.js) instead of copying the latest single score.
+// `db` lets migrations run this on their own connection.
+
+const RECENT = Number(RECENT_RESULTS_PER_MODULE); // inlined: mysql2 can't bind LIMIT in execute()
+
+export async function getBandEstimate(userId, db = pool) {
+  const [reading] = await db.execute(
+    `SELECT band, total FROM test_results WHERE user_id = ? AND module = 'reading'
+     ORDER BY created_at DESC, id DESC LIMIT ${RECENT}`, [userId]
   );
+  const [listening] = await db.execute(
+    `SELECT band, total FROM test_results WHERE user_id = ? AND module = 'listening'
+     ORDER BY created_at DESC, id DESC LIMIT ${RECENT}`, [userId]
+  );
+  const [writing] = await db.execute(
+    `SELECT band_overall AS band, task_type AS taskType FROM writing_submissions
+     WHERE user_id = ? AND status = 'evaluated' AND band_overall IS NOT NULL
+     ORDER BY created_at DESC, id DESC LIMIT ${RECENT}`, [userId]
+  );
+  const [speaking] = await db.execute(
+    `SELECT band_overall AS band FROM speaking_submissions
+     WHERE user_id = ? AND status = 'evaluated' AND band_overall IS NOT NULL
+     ORDER BY created_at DESC, id DESC LIMIT ${RECENT}`, [userId]
+  );
+  return estimateBand({ reading, listening, writing, speaking });
 }
 
-export async function recalculateBandEstimate(userId) {
-  // Find the most recent test score across both writing and speaking
-  const [rows] = await pool.execute(`
-    SELECT band_overall, created_at FROM writing_submissions WHERE user_id = ? AND band_overall IS NOT NULL
-    UNION ALL
-    SELECT band_overall, created_at FROM speaking_submissions WHERE user_id = ? AND band_overall IS NOT NULL
-    ORDER BY created_at DESC LIMIT 1
-  `, [userId, userId]);
-
-  const latestBand = rows.length > 0 ? rows[0].band_overall : null;
-  await updateBandEstimate(userId, latestBand);
-  return latestBand;
+/** Recompute and store the user's estimate. Call after any result is added or deleted. */
+export async function recalculateBandEstimate(userId, db = pool) {
+  const estimate = await getBandEstimate(userId, db);
+  await db.execute(
+    'UPDATE profiles SET current_band_estimate = ? WHERE user_id = ?',
+    [estimate.overall, userId]
+  );
+  return estimate;
 }
 
 export async function markUserVerified(userId) {

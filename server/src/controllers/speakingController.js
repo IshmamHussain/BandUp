@@ -4,6 +4,20 @@ import * as userModel from '../models/userModel.js';
 import * as aiService from '../services/aiService.js';
 import * as storage from '../services/storageService.js';
 import { ok, fail, asyncHandler } from '../utils/helpers.js';
+import { isPositiveInt } from '../utils/validate.js';
+
+/** The full question text for a three-part speaking test. */
+function buildSpeakingPrompt(test) {
+  if (!test.part1_prompt) return test.title || 'IELTS Speaking test';
+  return `Part 1:
+${test.part1_prompt}
+
+Part 2:
+${test.part2_prompt}
+
+Part 3:
+${test.part3_prompt}`;
+}
 
 export const getPrompts = asyncHandler(async (req, res) => {
   const prompts = await speakingModel.getPrompts();
@@ -12,11 +26,18 @@ export const getPrompts = asyncHandler(async (req, res) => {
 
 export const submitAudio = asyncHandler(async (req, res) => {
   const userId = req.user.id;
-  const { testId, durationSec, promptText } = req.body;
+  const { testId, durationSec } = req.body;
 
   if (!req.file) {
     return fail(res, 'No audio file uploaded.', 400);
   }
+
+  // The questions the AI judges against come from the database, never from
+  // the request body (a modified request could otherwise swap the prompt).
+  if (!isPositiveInt(testId)) return fail(res, 'Invalid speaking test.', 400);
+  const test = await speakingModel.getTest(Number(testId));
+  if (!test) return fail(res, 'Speaking test not found.', 404);
+  const promptText = buildSpeakingPrompt(test);
 
   // The upload filter already rejected non-audio files; use the validated
   // type from the file itself, never the client-supplied "mimeType" field.
@@ -32,7 +53,7 @@ export const submitAudio = asyncHandler(async (req, res) => {
   // is left in storage.
   let submissionId;
   try {
-    submissionId = await speakingModel.createSubmission(userId, testId, storagePath, durationSec || 0);
+    submissionId = await speakingModel.createSubmission(userId, test.id, storagePath, durationSec || 0);
   } catch (err) {
     await storage.deleteAudio(storagePath);
     throw err;
@@ -53,12 +74,13 @@ async function evaluateBackground(userId, submissionId, audioBuffer, mimeType, p
   try {
     const { evaluation } = await aiService.evaluateSpeakingFromBuffer({ promptText, audioBuffer, mimeType });
     const minutes = Math.max(1, Math.round((durationSec || 0) / 60));
+    // evaluation is validated in aiService (band_overall recomputed from criteria).
+    await speakingModel.updateSubmissionEvaluation(submissionId, evaluation.band_overall, evaluation);
     await Promise.all([
-      speakingModel.updateSubmissionEvaluation(submissionId, evaluation.band_overall, evaluation),
       progressModel.recordActivity(userId, 'speaking', { minutes, attempted: 1, correct: 1 }),
       userModel.touchStreak(userId),
-      userModel.updateBandEstimate(userId, evaluation.band_overall)
     ]);
+    await userModel.recalculateBandEstimate(userId);
   } catch (error) {
     console.error('Failed to evaluate speaking submission:', error);
     await speakingModel.markSubmissionFailed(submissionId, error.message);
@@ -114,19 +136,20 @@ export const retryEvaluation = asyncHandler(async (req, res) => {
   const submission = await speakingModel.getSubmission(req.params.id, req.user.id);
   if (!submission) return fail(res, 'Submission not found', 404);
 
-  await speakingModel.resetSubmissionEvaluation(submission.id);
-
   const audioPath = submission.audio_url;
 
+  // Check the audio still exists BEFORE resetting the row; otherwise a
+  // legacy submission would be left 'submitted' (polled forever).
   if (!audioPath || audioPath.startsWith('/media/')) {
     return fail(res, 'Audio file is no longer available for re-evaluation.', 410);
   }
 
+  await speakingModel.resetSubmissionEvaluation(submission.id);
+
   // Download from Supabase Storage to get the buffer for Gemini
   const audioBuffer = await storage.downloadAudio(audioPath);
-  const combinedPrompt = submission.part1_prompt
-    ? `Part 1:\n${submission.part1_prompt}\n\nPart 2:\n${submission.part2_prompt}\n\nPart 3:\n${submission.part3_prompt}`
-    : submission.prompt_text;
+  // getSubmission joins speaking_tests: prompt_text is the title, partN_prompt the questions.
+  const combinedPrompt = buildSpeakingPrompt({ title: submission.prompt_text, ...submission });
 
   evaluateBackground(req.user.id, submission.id, audioBuffer, storage.mimeForPath(audioPath), combinedPrompt, submission.duration_sec)
     .catch(console.error);

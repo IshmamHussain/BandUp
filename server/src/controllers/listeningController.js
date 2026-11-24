@@ -40,6 +40,10 @@ export const submitAnswers = asyncHandler(async (req, res) => {
   const minutes = Math.min(Math.max(Number(minutesSpent) || 0, 0), 180);
   const bandScore = calculateIeltsBand(correctCount, results.length);
 
+  // Store this test's result, then recompute the aggregated estimate (B3).
+  await progressModel.recordTestResult(req.user.id, {
+    module: 'listening', testId, correct: correctCount, total: results.length, band: bandScore,
+  });
   await Promise.all([
     progressModel.recordActivity(req.user.id, 'listening', {
       minutes,
@@ -47,8 +51,8 @@ export const submitAnswers = asyncHandler(async (req, res) => {
       correct: correctCount,
     }),
     userModel.touchStreak(req.user.id),
-    userModel.updateBandEstimate(req.user.id, bandScore)
   ]);
+  await userModel.recalculateBandEstimate(req.user.id);
 
   return ok(res, {
     total: results.length,
@@ -63,5 +67,7 @@ export const deleteAttempts = asyncHandler(async (req, res) => {
   if (!isPositiveInt(req.params.id)) return fail(res, 'Invalid test id.');
   const testId = Number(req.params.id);
   await listeningModel.deleteAttempts(req.user.id, testId);
+  await progressModel.deleteTestResults(req.user.id, 'listening', testId);
+  await userModel.recalculateBandEstimate(req.user.id);
   return ok(res, { message: 'Attempts deleted successfully.' });
 });

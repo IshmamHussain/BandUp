@@ -70,15 +70,15 @@ async function evaluateAndSave(userId, { id, taskType, promptText, essayText, wo
     throw err;
   }
 
+  // evaluation was validated in aiService: band_overall is recomputed from
+  // the four criteria, each clamped to 0-9 in 0.5 steps.
   const { evaluation, isMock } = result;
-  const safeBand = evaluation.band_overall ?? evaluation.overall_band ?? 0.0;
-
+  await writingModel.saveEvaluation(id, evaluation.band_overall, evaluation);
   await Promise.all([
-    writingModel.saveEvaluation(id, safeBand, evaluation),
     progressModel.recordActivity(userId, 'writing', { minutes: Math.min(40, Math.round(wordCount / 10)), attempted: 1, correct: 1 }),
     userModel.touchStreak(userId),
-    userModel.updateBandEstimate(userId, safeBand),
   ]);
+  await userModel.recalculateBandEstimate(userId);
   return { evaluation, isMock };
 }
 

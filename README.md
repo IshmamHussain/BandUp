@@ -69,6 +69,25 @@ New here? Follow **SETUP.md** for a step-by-step walkthrough. Short version:
    ```
    Open http://localhost:5000
 
+## How scores are calculated
+
+- **Reading / listening:** marked on the server and stored as one result per
+  test (`test_results`), converted to a band on a 40-question scale.
+- **Writing / speaking:** Gemini's JSON is validated before it is saved
+  (`server/src/services/evaluationValidator.js`). All four criteria must be
+  present, each is clamped to 0–9 in 0.5 steps, and `band_overall` is
+  recomputed from them. If Gemini's own overall disagrees, that is recorded
+  in `meta.inconsistent`. The model name is stored in `meta.model`. Speaking
+  prompts are loaded from the database, and essay text is fenced as untrusted
+  input.
+- **Band estimate:** for each module, a weighted mean of the last 5 results:
+  - reading and listening tests are weighted by question count
+  - Task 2 essays count double
+
+  The overall band is the mean of the module bands, rounded the IELTS way
+  (`server/src/services/bandEstimate.js`). It is recalculated whenever a
+  result is added or deleted.
+
 ## Database migrations
 
 Schema and data changes live in `server/src/config/migrations.js`. Each one

@@ -15,6 +15,8 @@
 import fs from 'node:fs';
 import { pool } from './db.js';
 import { normalizeQuestion } from '../utils/questions.js';
+import { calculateIeltsBand } from '../utils/helpers.js';
+import { recalculateBandEstimate } from '../models/userModel.js';
 
 const CORE_CONTENT = JSON.parse(
   fs.readFileSync(new URL('../content/core-content.json', import.meta.url), 'utf8')
@@ -245,6 +247,63 @@ const MIGRATIONS = [
             [optionsJson ? JSON.stringify(optionsJson) : null, correctAnswer, q.id]
           );
         }
+      }
+    }
+  },
+  {
+    id: 'band_estimate_aggregation_2026_11',
+    description: 'B3: per-test results table, backfilled from attempts; recompute every estimate as an aggregate',
+    async run(connection) {
+      await connection.execute(`
+        CREATE TABLE IF NOT EXISTS test_results (
+          id         BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+          user_id    INT UNSIGNED NOT NULL,
+          module     ENUM('reading','listening') NOT NULL,
+          test_id    INT UNSIGNED NOT NULL,
+          correct    SMALLINT UNSIGNED NOT NULL,
+          total      SMALLINT UNSIGNED NOT NULL,
+          band       DECIMAL(2,1) NOT NULL,
+          created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          CONSTRAINT fk_tr_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+          INDEX idx_tr_user_module (user_id, module, created_at)
+        ) ENGINE=InnoDB
+      `);
+
+      // A submission writes all its attempts in one INSERT, so they share a
+      // created_at: grouping by (user, test, created_at) recovers each test.
+      const [past] = await connection.query(`
+        SELECT a.user_id, 'reading' AS module, rp.test_id, a.created_at,
+               COUNT(*) AS total, SUM(a.is_correct) AS correct
+        FROM attempts a
+        JOIN questions q ON q.id = a.question_id
+        JOIN reading_passages rp ON rp.id = q.passage_id
+        WHERE rp.test_id IS NOT NULL
+        GROUP BY a.user_id, rp.test_id, a.created_at
+        UNION ALL
+        SELECT a.user_id, 'listening' AS module, q.listening_test_id, a.created_at,
+               COUNT(*) AS total, SUM(a.is_correct) AS correct
+        FROM attempts a
+        JOIN questions q ON q.id = a.question_id
+        WHERE q.listening_test_id IS NOT NULL
+        GROUP BY a.user_id, q.listening_test_id, a.created_at
+      `);
+      for (const r of past) {
+        const total = Number(r.total);
+        const correct = Number(r.correct);
+        await connection.execute(
+          `INSERT INTO test_results (user_id, module, test_id, correct, total, band, created_at)
+           SELECT ?, ?, ?, ?, ?, ?, ? FROM DUAL
+           WHERE NOT EXISTS (SELECT 1 FROM test_results
+                             WHERE user_id = ? AND module = ? AND test_id = ? AND created_at = ?)`,
+          [r.user_id, r.module, r.test_id, correct, total, calculateIeltsBand(correct, total), r.created_at,
+           r.user_id, r.module, r.test_id, r.created_at]
+        );
+      }
+
+      // Replace every "latest single result" estimate with the aggregate.
+      const [users] = await connection.query('SELECT user_id FROM profiles');
+      for (const { user_id: userId } of users) {
+        await recalculateBandEstimate(userId, connection);
       }
     }
   }

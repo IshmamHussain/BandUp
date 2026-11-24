@@ -98,6 +98,21 @@ CREATE TABLE questions (
   INDEX idx_questions_listening (listening_test_id)
 ) ENGINE=InnoDB;
 
+-- One row per submitted reading/listening test (the band estimate
+-- averages recent tests; attempts holds the per-question rows).
+CREATE TABLE test_results (
+  id         BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  user_id    INT UNSIGNED NOT NULL,
+  module     ENUM('reading','listening') NOT NULL,
+  test_id    INT UNSIGNED NOT NULL,
+  correct    SMALLINT UNSIGNED NOT NULL,
+  total      SMALLINT UNSIGNED NOT NULL,
+  band       DECIMAL(2,1) NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_tr_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  INDEX idx_tr_user_module (user_id, module, created_at)
+) ENGINE=InnoDB;
+
 CREATE TABLE attempts (
   id           BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   user_id      INT UNSIGNED NOT NULL,
