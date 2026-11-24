@@ -1,7 +1,6 @@
 import { initAdminShell } from '../../admin-shell.js';
 import { adminApi } from '../../admin-api.js';
 import { buildCrudPage } from '../../admin-crud.js';
-import { toast } from '../../toast.js';
 
 await initAdminShell({ active: 'listening', title: 'Listening' });
 
@@ -10,7 +9,7 @@ const questionsSection = document.getElementById('questions-section');
 const questionsContainer = document.getElementById('questions-container');
 
 // -- Tests CRUD --
-const crud = await buildCrudPage({
+await buildCrudPage({
   container: crudContainer,
   entityName: 'test',
   fetchAll: adminApi.tests,

@@ -9,52 +9,6 @@ const model = genAI.getGenerativeModel({
   generationConfig: { responseMimeType: "application/json" }
 });
 
-const listeningTopics = [
-  { t: "Advertising", u: "a/advertising" },
-  { t: "Animals", u: "a/animals" },
-  { t: "Art", u: "a/art" },
-  { t: "Banks", u: "b/banks" },
-  { t: "Books", u: "b/books" },
-  { t: "Business", u: "b/business" },
-  { t: "Cars", u: "c/cars" },
-  { t: "Cats", u: "c/cats" },
-  { t: "Children", u: "c/children" },
-  { t: "Computers", u: "c/computers" },
-  { t: "Dogs", u: "d/dogs" },
-  { t: "Education", u: "e/education" },
-  { t: "Food", u: "f/food" },
-  { t: "Health", u: "h/health" },
-  { t: "History", u: "h/history" },
-  { t: "Internet", u: "i/internet" },
-  { t: "Money", u: "m/money" },
-  { t: "Music", u: "m/music" },
-  { t: "Science", u: "s/science" },
-  { t: "Sports", u: "s/sports" } // fallback or real
-];
-
-const readingTopics = [
-  "The History of Renewable Energy",
-  "Artificial Intelligence in Healthcare",
-  "The Migration Patterns of Monarch Butterflies",
-  "Urban Planning in the 21st Century",
-  "The Psychology of Decision Making",
-  "Deep Sea Exploration Techniques",
-  "The Evolution of Human Language",
-  "Climate Change and Ocean Acidification",
-  "The Future of Space Tourism",
-  "Microbiome and Human Health",
-  "The Economics of Fast Fashion",
-  "Ancient Civilizations: The Maya",
-  "Neuroplasticity and Learning",
-  "The Impact of Social Media on Society",
-  "Advancements in Quantum Computing",
-  "The Silk Road: A Historical Trade Route",
-  "Biodiversity in the Amazon Rainforest",
-  "The Science of Sleep and Dreams",
-  "Sustainable Agriculture Practices",
-  "The Role of Nanotechnology in Medicine"
-];
-
 async function generateListening() {
   console.log('Generating Listening tests in bulk to avoid 429...');
   const prompt = `You are generating IELTS listening test data.
@@ -77,7 +31,7 @@ Output ONLY a JSON array of 5 objects matching this exact structure:
     
   try {
     const result = await model.generateContent(prompt);
-    let data = JSON.parse(result.response.text());
+    const data = JSON.parse(result.response.text());
     // Duplicate to hit 20
     const results = [...data, ...data, ...data, ...data];
     await fs.mkdir('scripts/data', { recursive: true });
@@ -109,7 +63,7 @@ Output ONLY a JSON array of 5 objects matching this exact structure:
     
   try {
     const result = await model.generateContent(prompt);
-    let data = JSON.parse(result.response.text());
+    const data = JSON.parse(result.response.text());
     // Duplicate to hit 20
     const results = [...data, ...data, ...data, ...data];
     await fs.mkdir('scripts/data', { recursive: true });

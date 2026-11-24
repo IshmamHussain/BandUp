@@ -10,7 +10,6 @@ import * as writing from '../controllers/writingController.js';
 import * as dashboard from '../controllers/dashboardController.js';
 import * as admin from '../controllers/adminController.js';
 import speakingRoutes from './speakingRoutes.js';
-import * as speaking from '../controllers/speakingController.js';
 
 export const apiRouter = Router();
 

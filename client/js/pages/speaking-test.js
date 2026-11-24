@@ -20,7 +20,7 @@ let currentPromptText = '';
 async function init() {
   try {
     const tests = await api.speakingPrompts();
-    const test = tests.find(p => p.id == testId);
+    const test = tests.find(p => p.id === Number(testId));
     if (!test) {
       toast('Test not found', 'error');
       return;

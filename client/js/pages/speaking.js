@@ -2,7 +2,7 @@ import { initShell } from '../shell.js';
 import { api } from '../api.js';
 import { toast } from '../toast.js';
 
-const initPromise = initShell({ active: 'speaking', title: 'Speaking' });
+initShell({ active: 'speaking', title: 'Speaking' });
 
 const el = (id) => document.getElementById(id);
 

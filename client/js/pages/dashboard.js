@@ -6,9 +6,9 @@ import { renderGauge } from '../gauge.js';
 
 const el = (id) => document.getElementById(id);
 
-let user, data;
+let data;
 try {
-  [user, data] = await Promise.all([
+  [, data] = await Promise.all([
     initShell({ active: 'dashboard', title: 'Dashboard' }),
     api.dashboard()
   ]);

@@ -8,7 +8,9 @@
     "start": "npm start --prefix server",
     "build": "npm install --prefix server",
     "dev": "npm run dev --prefix server",
-    "db:reset": "npm run db:reset --prefix server"
+    "db:reset": "npm run db:reset --prefix server",
+    "lint": "npm run lint --prefix server",
+    "test": "npm test --prefix server"
   },
   "engines": {
     "node": ">=18.0.0"

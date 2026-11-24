@@ -3,7 +3,7 @@ https.get('https://takeielts.britishcouncil.org/take-ielts/prepare/free-ielts-pr
   let data = '';
   res.on('data', (chunk) => data += chunk);
   res.on('end', () => {
-    const match = data.match(/https?:\/\/[^\s\"\'\>]+?\.mp3/gi);
+    const match = data.match(/https?:\/\/[^\s"'>]+?\.mp3/gi);
     if (match) console.log('Found:', match);
     else console.log('No MP3 found');
   });

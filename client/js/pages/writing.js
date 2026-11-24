@@ -5,7 +5,6 @@ import { toast } from '../toast.js';
 import { renderGauge } from '../gauge.js';
 
 const el = (id) => document.getElementById(id);
-let TARGET_WORDS = 250;
 
 let user, prompts = [];
 try {
@@ -18,7 +17,7 @@ try {
 }
 
 const CACHE_KEY = `ielts_saved_essays_${user?.id}`;
-let savedEssays = JSON.parse(localStorage.getItem(CACHE_KEY) || '{}'); // Cache to store text when switching tasks
+const savedEssays = JSON.parse(localStorage.getItem(CACHE_KEY) || '{}'); // Cache to store text when switching tasks
 
 const tests = [...new Set(prompts.map((p) => p.category || 'General'))];
 const testSelect = el('test-select');
@@ -404,7 +403,7 @@ async function loadHistory() {
   }
 
   listEl.innerHTML = '';
-  testGroups.forEach((group, groupIdx) => {
+  testGroups.forEach((group) => {
     const task1 = group.submissions.find(s => s.task_type === 'task1');
     const task2 = group.submissions.find(s => s.task_type === 'task2');
     const hasBoth = task1 && task2;

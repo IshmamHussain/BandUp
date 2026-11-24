@@ -69,6 +69,19 @@ New here? Follow **SETUP.md** for a step-by-step walkthrough. Short version:
    ```
    Open http://localhost:5000
 
+## Tests, linting and CI
+
+```bash
+cd server
+npm test        # node:test suite - auth, admin access, private audio storage, startup guards
+npm run lint    # ESLint for server/ and client/
+```
+
+The tests boot the real Express app against in-memory fakes of MySQL and
+Supabase (see `server/tests/helpers/testApp.js`), so they need no database,
+no `.env` and no network, and never touch production. GitHub Actions
+(`.github/workflows/ci.yml`) runs lint + tests on every push and pull request.
+
 ## API overview
 
 All responses share one shape: `{ "success": bool, "data": ..., "error": null | "message" }`.

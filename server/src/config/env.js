@@ -3,7 +3,9 @@
 // fails loudly at startup instead of silently at 2am before the demo.
 import dotenv from 'dotenv';
 import { createHash } from 'node:crypto';
-dotenv.config();
+// Tests (NODE_ENV=test) set every variable themselves and must never pick up
+// a developer's real .env, which may point at production.
+if (process.env.NODE_ENV !== 'test') dotenv.config();
 
 // These must exist in .env. An empty value is allowed for most of them
 // (DB_PASSWORD is legitimately blank on a default XAMPP/WAMP install), so

@@ -9,7 +9,9 @@
     "dev": "node --watch server.js",
     "db:reset": "node scripts/run-seeds.js",
     "db:fix-vocab": "node scripts/fix-vocab-mojibake.js",
-    "admin": "node scripts/manage-admin.js"
+    "admin": "node scripts/manage-admin.js",
+    "test": "node --test --test-reporter=spec tests/*.test.js",
+    "lint": "cd .. && eslint -c server/eslint.config.js server client add-favicon.js fix.js"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
@@ -21,5 +23,10 @@
     "jsonwebtoken": "^9.0.2",
     "multer": "^2.2.0",
     "mysql2": "^3.11.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.1",
+    "eslint": "^9.39.1",
+    "globals": "^16.5.0"
   }
 }
