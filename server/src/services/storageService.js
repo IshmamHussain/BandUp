@@ -7,6 +7,44 @@
 import { createClient } from '@supabase/supabase-js';
 
 const BUCKET = 'speaking-audio';
+const MAX_AUDIO_BYTES = 25 * 1024 * 1024; // keep in sync with multer's limit
+
+// Audio formats browsers' MediaRecorder produces (plus common uploads).
+// Maps the base MIME type to the extension we store it under.
+const AUDIO_TYPES = {
+  'audio/webm': '.webm',
+  'audio/ogg': '.ogg',
+  'audio/mp4': '.mp4',
+  'audio/x-m4a': '.m4a',
+  'audio/aac': '.aac',
+  'audio/mpeg': '.mp3',
+  'audio/wav': '.wav',
+  'audio/x-wav': '.wav',
+};
+const EXT_TO_TYPE = Object.fromEntries(
+  Object.entries(AUDIO_TYPES).map(([type, ext]) => [ext, type])
+);
+
+/**
+ * Normalise a client-reported MIME type ("audio/webm;codecs=opus") to one of
+ * AUDIO_TYPES, or return null if it is not an accepted audio format.
+ * Chromium sometimes labels audio-only recordings "video/webm".
+ */
+export function normalizeAudioMime(mime) {
+  const base = String(mime || '').split(';')[0].trim().toLowerCase();
+  if (base === 'video/webm') return 'audio/webm';
+  return AUDIO_TYPES[base] ? base : null;
+}
+
+export function extensionForMime(mime) {
+  return AUDIO_TYPES[mime] || '.webm';
+}
+
+/** MIME type for a stored path, from its extension (for re-evaluation). */
+export function mimeForPath(storagePath) {
+  const ext = String(storagePath).slice(String(storagePath).lastIndexOf('.')).toLowerCase();
+  return EXT_TO_TYPE[ext] || 'audio/webm';
+}
 
 let supabase = null;
 
@@ -17,7 +55,7 @@ function getClient() {
   if (!url || !key) {
     throw new Error('SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required for audio storage.');
   }
-  supabase = createClient(url, key);
+  supabase = createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
   return supabase;
 }
 
@@ -36,7 +74,7 @@ export async function uploadAudio(buffer, filename, mimeType, userId) {
   const { error } = await client.storage
     .from(BUCKET)
     .upload(storagePath, buffer, {
-      contentType: (mimeType || 'audio/webm').split(';')[0],
+      contentType: normalizeAudioMime(mimeType) || 'audio/webm',
       upsert: false,
     });
 
@@ -101,4 +139,56 @@ export async function downloadAudio(storagePath) {
   // data is a Blob in the JS SDK — convert to Buffer
   const arrayBuffer = await data.arrayBuffer();
   return Buffer.from(arrayBuffer);
+}
+
+/**
+ * Delete every recording a user owns (all files under "<userId>/").
+ * Used when an admin deletes a student so no voice data is left behind.
+ * Throws on failure so the caller can stop before deleting the account.
+ */
+export async function deleteUserAudio(userId) {
+  const client = getClient();
+  const folder = String(userId);
+  for (;;) {
+    const { data, error } = await client.storage.from(BUCKET).list(folder, { limit: 100 });
+    if (error) throw new Error(`Could not list audio for user ${userId}: ${error.message}`);
+    if (!data || data.length === 0) return;
+    const paths = data.map((f) => `${folder}/${f.name}`);
+    const { error: rmError } = await client.storage.from(BUCKET).remove(paths);
+    if (rmError) throw new Error(`Could not delete audio for user ${userId}: ${rmError.message}`);
+    if (data.length < 100) return;
+  }
+}
+
+/**
+ * Startup check: make sure the bucket exists and is PRIVATE.
+ * Creates it (private, audio-only, size-limited) if missing; if someone has
+ * switched it to public, logs a loud error because every recording would be
+ * world-readable. Never throws - storage problems must not stop the server.
+ */
+export async function ensureAudioBucket() {
+  if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    console.warn('Audio storage: SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY missing - speaking uploads will fail.');
+    return;
+  }
+  try {
+    const client = getClient();
+    const { data, error } = await client.storage.getBucket(BUCKET);
+    if (error || !data) {
+      const { error: createError } = await client.storage.createBucket(BUCKET, {
+        public: false,
+        fileSizeLimit: MAX_AUDIO_BYTES,
+        allowedMimeTypes: Object.keys(AUDIO_TYPES),
+      });
+      if (createError) throw createError;
+      console.log(`Audio storage: created private bucket "${BUCKET}".`);
+      return;
+    }
+    if (data.public) {
+      console.error(`SECURITY: Supabase bucket "${BUCKET}" is PUBLIC - every speaking recording is world-readable. ` +
+        'Set it to private in Supabase → Storage → Edit bucket.');
+    }
+  } catch (err) {
+    console.error('Audio storage check failed:', err.message || err);
+  }
 }

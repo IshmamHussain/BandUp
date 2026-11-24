@@ -1,7 +1,6 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { HttpError } from '../utils/helpers.js';
 import { env } from '../config/env.js';
-import fs from 'fs';
 
 const SYSTEM_PROMPT = `You are a certified IELTS examiner. Evaluate the student's essay strictly against the official IELTS Writing band descriptors.
 
@@ -110,48 +109,6 @@ export async function evaluateEssay({ taskType, promptText, essayText }) {
   } catch (error) {
     console.error("Gemini API Error:", error);
     throw new HttpError(503, 'The AI evaluator is temporarily unavailable.');
-  }
-}
-
-export async function evaluateSpeaking({ promptText, audioFilePath, mimeType }) {
-  if (!env.ai.apiKey) return { evaluation: mockSpeakingEvaluation(), isMock: true };
-  
-  const userMessage = `Speaking Prompt:\n"""\n${promptText}\n"""\n\nPlease evaluate the provided audio file.`;
-  
-  try {
-    const genAI = new GoogleGenerativeAI(env.ai.apiKey);
-    const model = genAI.getGenerativeModel({ 
-      model: env.ai.model || "gemini-1.5-flash", 
-      systemInstruction: SPEAKING_SYSTEM_PROMPT 
-    });
-
-    const audioData = fs.readFileSync(audioFilePath).toString("base64");
-    const audioPart = {
-      inlineData: {
-        data: audioData,
-        mimeType: (mimeType || "audio/webm").split(';')[0]
-      }
-    };
-
-    const result = await model.generateContent({
-      contents: [{ role: 'user', parts: [{ text: userMessage }, audioPart] }],
-      generationConfig: { responseMimeType: "application/json" }
-    });
-
-    const text = result.response.text();
-    const match = text.match(/\{[\s\S]*\}/);
-    if (!match) throw new Error('The AI evaluator returned an unexpected response.');
-    
-    let evaluation;
-    try {
-      evaluation = JSON.parse(match[0]);
-    } catch {
-      throw new Error('The AI evaluator returned an unexpected response.');
-    }
-    return { evaluation, isMock: false };
-  } catch (error) {
-    console.error("Gemini Audio API Error:", error);
-    throw new Error('The AI evaluator failed to process the audio.');
   }
 }
 

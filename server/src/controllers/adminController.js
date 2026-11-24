@@ -2,6 +2,7 @@
 // Protected by requireAuth + requireAdmin middleware in routes.
 import * as adminModel from '../models/adminModel.js';
 import { findById as findUserById } from '../models/userModel.js';
+import { deleteUserAudio } from '../services/storageService.js';
 import { generateReadingQuestions } from '../services/aiService.js';
 import { ok, fail, asyncHandler } from '../utils/helpers.js';
 import { isNonEmptyString, isPositiveInt } from '../utils/validate.js';
@@ -342,6 +343,16 @@ export const deleteStudent = asyncHandler(async (req, res) => {
   // (role = 'student') is a no-op.
   if (!student || student.role !== 'student') {
     return fail(res, 'Student not found.', 404);
+  }
+
+  // Delete the student's voice recordings first. If this fails, stop before
+  // touching the account so the admin can retry without leaving orphaned
+  // personal data in storage.
+  try {
+    await deleteUserAudio(studentId);
+  } catch (err) {
+    console.error('Failed to delete student audio:', err);
+    return fail(res, "Could not delete the student's recordings. Please try again.", 500);
   }
 
   if (student.supabase_id) {

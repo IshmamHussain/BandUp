@@ -5,6 +5,7 @@ import { app } from './src/app.js';
 import { env } from './src/config/env.js';
 import { verifyDatabaseConnection } from './src/config/db.js';
 import { runMigrations } from './src/config/migrations.js';
+import { ensureAudioBucket } from './src/services/storageService.js';
 
 
 // Start listening immediately so the port is open for Render's health check.
@@ -15,6 +16,7 @@ app.listen(env.port, async () => {
     await verifyDatabaseConnection();
     console.log(`Database connected: ${env.db.database}@${env.db.host}`);
     await runMigrations();
+    await ensureAudioBucket();
   } catch (err) {
     console.error('Could not connect to MySQL. Is the database running and .env correct?');
     console.error(err.message);
