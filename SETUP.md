@@ -7,7 +7,7 @@ This project is already configured for local development. If you use XAMPP
 
 ## What you need first
 
-- **Node.js 18 or newer** — check with `node --version`
+- **Node.js 22 or newer** (Supabase's client needs Node's built-in WebSocket) — check with `node --version`
 - **MySQL or MariaDB running** — easiest via XAMPP (start the "MySQL" module)
 
 ---

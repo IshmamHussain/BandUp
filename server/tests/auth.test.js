@@ -21,7 +21,7 @@ before(async () => {
     },
   });
 });
-after(() => app.close());
+after(() => app?.close()); // app is undefined if before() failed
 
 const sign = (payload) => jwt.sign(payload, TEST_JWT_SECRET, { algorithm: 'HS256' });
 

@@ -18,7 +18,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node: [20, 22]
+        # @supabase/supabase-js needs Node's built-in WebSocket (Node 22+)
+        node: [22, 24]
     defaults:
       run:
         working-directory: server

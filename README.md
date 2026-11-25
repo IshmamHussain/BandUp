@@ -49,7 +49,7 @@ BandUp/
 
 New here? Follow **SETUP.md** for a step-by-step walkthrough. Short version:
 
-1. **Install** Node.js 18+ and MySQL 8 (or MariaDB 10.6+). XAMPP is the easiest way to get MySQL.
+1. **Install** Node.js 22+ and MySQL 8 (or MariaDB 10.6+). XAMPP is the easiest way to get MySQL.
 
 2. **Create the database** in one command (from the project root):
    ```bash

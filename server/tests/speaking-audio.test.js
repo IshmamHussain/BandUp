@@ -25,7 +25,7 @@ before(async () => {
   });
   [A, B, ADMIN] = await Promise.all([app.login('a@x.com', PW), app.login('b@x.com', PW), app.login('admin@x.com', PW)]);
 });
-after(() => app.close());
+after(() => app?.close()); // app is undefined if before() failed
 
 function upload(cookie, { type = 'audio/webm;codecs=opus', size = 2048, name = 'rec.webm' } = {}) {
   const form = new FormData();

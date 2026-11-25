@@ -27,7 +27,7 @@ before(async () => {
   });
   A = await app.login('a@x.com', PW);
 });
-after(() => app.close());
+after(() => app?.close()); // app is undefined if before() failed
 
 test('B1: speaking submit without a file is a 400, not a 500', async () => {
   const form = new FormData();

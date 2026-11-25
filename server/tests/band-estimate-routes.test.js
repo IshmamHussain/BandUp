@@ -22,7 +22,7 @@ before(async () => {
   });
   A = await app.login('a@x.com', PW);
 });
-after(() => app.close());
+after(() => app?.close()); // app is undefined if before() failed
 
 const submitListening = (testId, answers) =>
   app.request('POST', `/listening/tests/${testId}/submit`, { cookie: A, body: { answers, minutesSpent: 5 } });
